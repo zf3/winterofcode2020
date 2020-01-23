@@ -1,16 +1,12 @@
-
-var baseGunShotXs = [];
-var baseGunShotYs = [];
-
 function setup() {
   createCanvas(1200,700);
   frameRate(50);
-
-  baseGunShotXs = [0];
-  baseGunShotYs = [0];
-  baseGunShotXs.push(60);
-  console.log(baseGunShotXs);
+  for(var i = 0; i < 255; i++) {
+    pressedKeys.push(false);
+  }
 }
+var baseGunShotXs = [];
+var baseGunShotYs = [];
 var shotXVelocities = [];
 var shotYVelocities = [];
 var baseHealth = 100;
@@ -19,10 +15,9 @@ var baseGunPower = 10;
 var baseGunSpeed = 5;
 var maxGunPower = 25;
 var pressedKeys = [];
-var gravity = 10;
-for(var i = 0; i < 255; i++) {
-  pressedKeys.push(false);
-}
+var gravity = 0.08;
+var firerate = 100;
+var tick = 0;
 var drawBase = function(a,b,c,d) {
   switch(d) {
       case 0:
@@ -47,7 +42,6 @@ var drawBase = function(a,b,c,d) {
       break;
       }
 };
-
 function keyPressed () {
   pressedKeys[keyCode] = true;
 }
@@ -57,6 +51,7 @@ function keyReleased () {
 }
 
 function draw() {
+  tick++;
   background(128,128,255);
   drawBase(10,550,(baseGunAngle-30)/180*PI,0);
   if(pressedKeys[87] && baseGunAngle <= 180) {
@@ -71,21 +66,21 @@ function draw() {
   if(pressedKeys[65] && baseGunPower >= 0 ) {
       baseGunPower-=1/baseGunSpeed;
   }
-  if(pressedKeys[32]) {
-    console.log(baseGunShotXs);
-      baseGunShotXs.push(60+70*Math.sin(baseGunAngle+90));
-      baseGunShotYs.push(600+70*Math.cos(baseGunAngle+90));
-      shotXVelocities.push(baseGunPower*Math.sin(baseGunAngle+90));
-      shotYVelocities.push(baseGunPower*Math.cos(baseGunAngle+90));
+  if(pressedKeys[32] && tick % firerate === 0) {
+      print(baseGunShotXs.length);
+      baseGunShotXs.push(60+70*sin((baseGunAngle-270)/180*PI));
+      baseGunShotYs.push(600+70*cos((baseGunAngle-270)/180*PI));
+      shotXVelocities.push(baseGunPower/10*sin((baseGunAngle-270)/180*PI));
+      shotYVelocities.push(-baseGunPower/10*cos((baseGunAngle-270)/180*PI));
   }
   for(var i = 0; i < baseGunShotXs.length; i++) {
       fill(64,64,64);
       strokeWeight(5);
       ellipse(baseGunShotXs[i],baseGunShotYs[i],20,20);
-      baseGunShotXs[i]+=shotXVelocities;
-      baseGunShotXs[i]-=shotYVelocities;
-      shotYVelocities+=gravity;
-      if(shotYVelocities >= 700) {
+      baseGunShotXs[i]+=shotXVelocities[i];
+      baseGunShotYs[i]-=shotYVelocities[i];
+      shotYVelocities[i]-=gravity;
+      if(baseGunShotYs[i] >= 700) {
           baseGunShotXs.splice(i,1);
           baseGunShotYs.splice(i,1); 
           shotXVelocities.splice(i,1);
