@@ -543,8 +543,9 @@ function draw() {
       baseGunShotYs[i]-=shotYVelocities[i];
       shotYVelocities[i]-=gravity;
       if(baseGunShotYs[i] >= 650) {
-          for(var j = 0; j < enemyUnitXs.length; j++) {
+        for(var j = 0; j < enemyUnitXs.length; j++) {
             if(dist(enemyUnitXs[j],0,baseGunShotXs[i],0) <= 50 && enemyUnitTypes[j] !== 1) {
+              print("dot: .");
               if(enemyUnitHealths[j]- (abs(shotXVelocities[i])+abs(shotYVelocities[i]))*gunDamage/2 >= 0) {
                 enemyUnitHealths[j] -= (abs(shotXVelocities[i])+abs(shotYVelocities[i]))*gunDamage/2;
               }
@@ -553,6 +554,7 @@ function draw() {
               }
             }
             if(dist(enemyUnitXs[j],0,baseGunShotXs[i],0) <= 20 && enemyUnitTypes[j] === 1) {
+              print("...");
               if(enemyUnitHealths[j]- (abs(shotXVelocities[i])+abs(shotYVelocities[i]))*gunDamage/2 >= 0) {
                 enemyUnitHealths[j] -= (abs(shotXVelocities[i])+abs(shotYVelocities[i]))*gunDamage/2;
               }
@@ -560,48 +562,48 @@ function draw() {
                 enemyUnitHealths[j] = 0;
               }
             }
-          //   if(dist(enemyUnitXs[j],0,baseGunShotXs[i],0) <= 20+gunAoE*2 && enemyUnitTypes[j] === 1) {
-          //     if(dist(enemyUnitXs[j],0,baseGunShotXs[i],0) <= 20) {
-          //       if(enemyUnitHealths[j] - gunAoE >= 0) {
-          //         enemyUnitHealths[j] -= gunAoE;
-          //       }
-          //       else {
-          //         enemyUnitHealths[j] = 0;
-          //       }
-          //     }
-          //     else {
-          //       if(enemyUnitHealths[j] - (dist(enemyUnitXs[j],0,baseGunShotXs[i],0)-20)*gunAoE/10 >= 0) {
-          //         enemyUnitHealths[j] -= (dist(enemyUnitXs[j],0,baseGunShotXs[i],0)-20)*gunAoE/10;
-          //       }
-          //       else {
-          //         enemyUnitHealths[j] = 0;
-          //       }
-          //     }
-          //   }
-          //   if(dist(enemyUnitXs[j],0,baseGunShotXs[i],0) <= 50+gunAoE*2 && enemyUnitTypes[j] !== 1) {
-          //     if(dist(enemyUnitXs[j],0,baseGunShotXs[i],0) <= 50) {
-          //       if(enemyUnitHealths[j] - gunAoE >= 0) {
-          //         enemyUnitHealths[j] -= gunAoE;
-          //       }
-          //       else {
-          //         enemyUnitHealths[j] = 0;
-          //       }
-          //     }
-          //     else {
-          //       if(enemyUnitHealths[j] - (dist(enemyUnitXs[j],0,baseGunShotXs[i],0)-50)*gunAoE/10 >= 0) {
-          //         enemyUnitHealths[j] -= (dist(enemyUnitXs[j],0,baseGunShotXs[i],0)-50)*gunAoE/10;
-          //       }
-          //       else {
-          //         enemyUnitHealths[j] = 0;
-          //       }
-          //   }
-          // }
-          baseGunShotXs.splice(i,1);
-          baseGunShotYs.splice(i,1); 
-          shotXVelocities.splice(i,1);
-          shotYVelocities.splice(i,1);
+            if(dist(enemyUnitXs[j],0,baseGunShotXs[i],0) <= 20+gunAoE*2 && enemyUnitTypes[j] === 1) {
+              if(dist(enemyUnitXs[j],0,baseGunShotXs[i],0) <= 20) {
+                if(enemyUnitHealths[j] - gunAoE >= 0) {
+                  enemyUnitHealths[j] -= gunAoE*2;
+                }
+                else {
+                  enemyUnitHealths[j] = 0;
+                }
+              }
+              else {
+                if(enemyUnitHealths[j] - (dist(enemyUnitXs[j],0,baseGunShotXs[i],0)-20)*gunAoE/5 >= 0) {
+                  enemyUnitHealths[j] -= (dist(enemyUnitXs[j],0,baseGunShotXs[i],0)-20)*gunAoE/5;
+                }
+                else {
+                  enemyUnitHealths[j] = 0;
+                }
+              }
+            }
+            if(dist(enemyUnitXs[j],0,baseGunShotXs[i],0) <= 50+gunAoE*2 && enemyUnitTypes[j] !== 1) {
+              if(dist(enemyUnitXs[j],0,baseGunShotXs[i],0) <= 50) {
+                if(enemyUnitHealths[j] - gunAoE >= 0) {
+                  enemyUnitHealths[j] -= gunAoE;
+                }
+                else {
+                  enemyUnitHealths[j] = 0;
+                }
+              }
+              else {
+                if(enemyUnitHealths[j] - (dist(enemyUnitXs[j],0,baseGunShotXs[i],0)-50)*gunAoE/10 >= 0) {
+                  enemyUnitHealths[j] -= (dist(enemyUnitXs[j],0,baseGunShotXs[i],0)-50)*gunAoE/10;
+                }
+                else {
+                  enemyUnitHealths[j] = 0;
+                }
+            }
+          }
+        }
+        baseGunShotXs.splice(i,1);
+        baseGunShotYs.splice(i,1); 
+        shotXVelocities.splice(i,1);
+        shotYVelocities.splice(i,1);
       }
-    }
   }
   if(tick2 >= 60) {
     money+=economy;
@@ -767,6 +769,6 @@ function draw() {
     }
   }
   if(enemyBaseShooting === true && enemyBaseHealth > 0) {
-
+    //insert shooting algorithm here
   }
 }
