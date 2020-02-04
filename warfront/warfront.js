@@ -5,6 +5,9 @@ function setup() {
     pressedKeys.push(false);
   }
 }
+var targetEnemyAngle;
+var bestCandidate = 1000;
+var amountOfCandidates = 10;
 var enemyBaseShooting = false;
 var enemyTarget;
 var weaponType = 0;
@@ -46,15 +49,17 @@ var enemyUnitTicks = [];
 var enemyBaseHealth = 500;
 var enemyBaseArmor = 0;
 var enemyBaseGunAngle = 10;
-var enemyBaseGunPower = 10;
+var enemyBaseGunPower = 35;
 var enemyBaseGunSpeed = 2.5;
 var enemyMaxGunPower = 35;
 var pressedKeys = [];
 var gravity = 0.08;
 var firerate = 100;
+var enemyFirerate = 100;
 var tick = 100;
 var tick2 = 0;
 var tick3 = 0;
+var tick4 = 100;
 var enemyClose = false;
 var drawUnits = function(a,b,c,d,e) {
   switch(c) {
@@ -498,6 +503,7 @@ function draw() {
   tick++;
   tick2++;
   tick3++;
+  tick4++;
   background(128,128,255);
   fill(255,255,255);
   textSize(20);
@@ -545,7 +551,6 @@ function draw() {
       if(baseGunShotYs[i] >= 650) {
         for(var j = 0; j < enemyUnitXs.length; j++) {
             if(dist(enemyUnitXs[j],0,baseGunShotXs[i],0) <= 50 && enemyUnitTypes[j] !== 1) {
-              print("dot: .");
               if(enemyUnitHealths[j]- (abs(shotXVelocities[i])+abs(shotYVelocities[i]))*gunDamage/2 >= 0) {
                 enemyUnitHealths[j] -= (abs(shotXVelocities[i])+abs(shotYVelocities[i]))*gunDamage/2;
               }
@@ -554,7 +559,6 @@ function draw() {
               }
             }
             if(dist(enemyUnitXs[j],0,baseGunShotXs[i],0) <= 20 && enemyUnitTypes[j] === 1) {
-              print("...");
               if(enemyUnitHealths[j]- (abs(shotXVelocities[i])+abs(shotYVelocities[i]))*gunDamage/2 >= 0) {
                 enemyUnitHealths[j] -= (abs(shotXVelocities[i])+abs(shotYVelocities[i]))*gunDamage/2;
               }
@@ -605,6 +609,74 @@ function draw() {
         shotYVelocities.splice(i,1);
       }
   }
+  for(var i = 0; i < enemyBaseGunShotXs.length; i++) {
+    fill(64,64,64);
+    strokeWeight(5);
+    ellipse(enemyBaseGunShotXs[i],enemyBaseGunShotYs[i],20,20);
+    enemyBaseGunShotXs[i]+=enemyShotXVelocities[i];
+    enemyBaseGunShotYs[i]-=enemyShotYVelocities[i];
+    enemyShotYVelocities[i]-=gravity;
+    if(enemyBaseGunShotYs[i] >= 650) {
+      for(var j = 0; j < unitXs.length; j++) {
+          if(dist(unitXs[j],0,enemyBaseGunShotXs[i],0) <= 50 && unitTypes[j] !== 1) {
+            if(unitHealths[j]- (abs(enemyShotXVelocities[i])+abs(enemyShotYVelocities[i]))*enemyGunDamage/2 >= 0) {
+              unitHealths[j] -= (abs(enemyShotXVelocities[i])+abs(enemyShotYVelocities[i]))*enemyGunDamage/2;
+            }
+            else {
+              unitHealths[j] = 0;
+            }
+          }
+          if(dist(unitXs[j],0,enemyBaseGunShotXs[i],0) <= 20 && unitTypes[j] === 1) {
+            if(unitHealths[j]- (abs(enemyShotXVelocities[i])+abs(enemyShotYVelocities[i]))*enemyGunDamage/2 >= 0) {
+              unitHealths[j] -= (abs(enemyShotXVelocities[i])+abs(enemyShotYVelocities[i]))*enemyGunDamage/2;
+            }
+            else {
+              unitHealths[j] = 0;
+            }
+          }
+          if(dist(unitXs[j],0,enemyBaseGunShotXs[i],0) <= 20+gunAoE*2 && unitTypes[j] === 1) {
+            if(dist(unitXs[j],0,enemyBaseGunShotXs[i],0) <= 20) {
+              if(unitHealths[j] - enemyGunAoE >= 0) {
+                unitHealths[j] -= enemyGunAoE*2;
+              }
+              else {
+                unitHealths[j] = 0;
+              }
+            }
+            else {
+              if(unitHealths[j] - (dist(unitXs[j],0,enemyBaseGunShotXs[i],0)-20)*enemyGunAoE/5 >= 0) {
+                unitHealths[j] -= (dist(unitXs[j],0,enemyBaseGunShotXs[i],0)-20)*enemyGunAoE/5;
+              }
+              else {
+                unitHealths[j] = 0;
+              }
+            }
+          }
+          if(dist(unitXs[j],0,enemyBaseGunShotXs[i],0) <= 50+gunAoE*2 && unitTypes[j] !== 1) {
+            if(dist(unitXs[j],0,enemyBaseGunShotXs[i],0) <= 50) {
+              if(unitHealths[j] - enemyGunAoE >= 0) {
+                unitHealths[j] -= enemyGunAoE;
+              }
+              else {
+                unitHealths[j] = 0;
+              }
+            }
+            else {
+              if(unitHealths[j] - (dist(unitXs[j],0,enemyBaseGunShotXs[i],0)-50)*enemyGunAoE/10 >= 0) {
+                unitHealths[j] -= (dist(unitXs[j],0,enemyBaseGunShotXs[i],0)-50)*enemyGunAoE/10;
+              }
+              else {
+                unitHealths[j] = 0;
+              }
+          }
+        }
+      }
+      enemyBaseGunShotXs.splice(i,1);
+      enemyBaseGunShotYs.splice(i,1); 
+      enemyShotXVelocities.splice(i,1);
+      enemyShotYVelocities.splice(i,1);
+    }
+}
   if(tick2 >= 60) {
     money+=economy;
     enemyMoney+=enemyEconomy;
@@ -770,5 +842,30 @@ function draw() {
   }
   if(enemyBaseShooting === true && enemyBaseHealth > 0) {
     //insert shooting algorithm here
+    for(var i = 0;  i < 90; i+= 90/amountOfCandidates) {
+      var testGunXVelocity = enemyBaseGunPower/10*sin((enemyBaseGunAngle-90)/180*PI);
+      var testGunYVelocity = -enemyBaseGunPower/10*cos((enemyBaseGunAngle-90)/180*PI);
+      if(dist(unitXs[enemyTarget]*gravity,0,1140-(testGunXVelocity*testGunYVelocity*2),0) < bestCandidate) {
+        bestCandidate = dist(unitXs[enemyTarget]*gravity,0,1140-(testGunXVelocity*testGunYVelocity*2),0);
+        targetEnemyAngle = i;
+      }
+    }
+    if(targetEnemyAngle > enemyBaseGunAngle) {
+      enemyBaseGunAngle += 1/enemyBaseGunSpeed;
+    }
+    if(targetEnemyAngle < enemyBaseGunAngle) {
+      enemyBaseGunAngle -= 1/enemyBaseGunSpeed;
+    }
+    if(tick4 >= enemyFirerate) {
+      tick4 = 0;
+      enemyBaseGunShotXs.push(1140+70*sin((enemyBaseGunAngle-90)/180*PI));
+      enemyBaseGunShotYs.push(550+70*cos((enemyBaseGunAngle-90)/180*PI));
+      enemyShotXVelocities.push(enemyBaseGunPower/10*sin((enemyBaseGunAngle-90)/180*PI));
+      enemyShotYVelocities.push(-enemyBaseGunPower/10*cos((enemyBaseGunAngle-90)/180*PI));
+      print(enemyBaseGunAngle);
+    }
+  }
+  if(enemyBaseShooting === false) {
+    bestCandidate = 1000;
   }
 }
