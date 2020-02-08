@@ -8,6 +8,7 @@ function setup() {
 var targetEnemyAngle;
 var bestCandidate = 1000;
 var amountOfCandidates = 10;
+var amountOfMortarCandidates = 10;
 var enemyBaseShooting = false;
 var enemyTarget;
 var weaponType = 0;
@@ -26,6 +27,11 @@ var unitTypes = [];
 var unitAngles = [];
 var unitHealths = [];
 var unitTicks = [];
+var unitTargetAngles = [];
+var mortarShotXs = [];
+var mortarShotYs = [];
+var mortarShotXVels = [];
+var mortarShotYVels = [];
 var baseHealth = 500;
 var baseArmor = 0;
 var baseGunAngle = 0;
@@ -48,7 +54,7 @@ var enemyUnitHealths = [];
 var enemyUnitTicks = [];
 var enemyBaseHealth = 500;
 var enemyBaseArmor = 0;
-var enemyBaseGunAngle = 10;
+var enemyBaseGunAngle = 0;
 var enemyBaseGunPower = 35;
 var enemyBaseGunSpeed = 2.5;
 var enemyMaxGunPower = 35;
@@ -422,6 +428,7 @@ function mousePressed () {
     unitAngles.push(0);
     unitHealths.push(10);
     unitTicks.push(0);
+    unitTargetAngles.push(0);
     //3.5 DPS
     money-=10;
   }
@@ -432,6 +439,7 @@ function mousePressed () {
     unitAngles.push(0);
     unitHealths.push(200);
     unitTicks.push(0);
+    unitTargetAngles.push(0);
     //2 DPS
     money-=50;
   }
@@ -442,6 +450,7 @@ function mousePressed () {
     unitAngles.push(0);
     unitHealths.push(50);
     unitTicks.push(0);
+    unitTargetAngles.push(0);
     //10 DPS
     money-=50;
   }
@@ -452,6 +461,7 @@ function mousePressed () {
     unitAngles.push(0);
     unitHealths.push(10);
     unitTicks.push(0);
+    unitTargetAngles.push(0);
     //50 DPS
     money-=50;
   }
@@ -609,6 +619,38 @@ function draw() {
         shotYVelocities.splice(i,1);
       }
   }
+  for(var i = 0; i < mortarShotXs.length; i++) {
+    fill(64,64,64);
+    strokeWeight(5);
+    ellipse(mortarShotXs[i],mortarShotYs[i],10,10);
+    mortarShotXs[i]+=mortarShotXVels[i];
+    mortarShotYs[i]-=mortarShotYVels[i];
+    mortarShotYVels[i]-=gravity;
+    if(mortarShotYs[i] >= 650) {
+      for(var j = 0; j < enemyUnitXs.length; j++) {
+          if(dist(enemyUnitXs[j],0,mortarShotXs[i],0) <= 45 && enemyUnitTypes[j] !== 1) {
+            if(enemyUnitHealths[j]- (abs(mortarShotXVels[i])+abs(mortarShotYVels[i]))*5 >= 0) {
+              enemyUnitHealths[j] -= (abs(mortarShotXVels[i])+abs(mortarShotYVels[i]))*5;
+            }
+            else {
+              enemyUnitHealths[j] = 0;
+            }
+          }
+          if(dist(enemyUnitXs[j],0,mortarShotXs[i],0) <= 15 && enemyUnitTypes[j] === 1) {
+            if(enemyUnitHealths[j]- (abs(mortarShotXVels[i])+abs(shotYVels[i]))*5 >= 0) {
+              enemyUnitHealths[j] -= (abs(mortarShotXVels[i])+abs(mortarShotYVels[i]))*5;
+            }
+            else {
+              enemyUnitHealths[j] = 0;
+            }
+          }
+      }
+      mortarShotXs.splice(i,1);
+      mortarShotYs.splice(i,1); 
+      mortarShotXVels.splice(i,1);
+      mortarShotYVels.splice(i,1);
+    }
+}
   for(var i = 0; i < enemyBaseGunShotXs.length; i++) {
     fill(64,64,64);
     strokeWeight(5);
@@ -683,6 +725,10 @@ function draw() {
     tick2 = 0;
   }
   for(var i = 0; i < unitXs.length; i++) {
+    if(dist(unitXs[i],0,1090,0) <= enemyMaxGunPower*12) {
+      enemyBaseShooting = true;
+      enemyTarget = i;
+    }
     unitTicks[i]++;
     enemyClose = false;
     drawUnits(unitXs[i],unitYs[i],unitTypes[i],unitAngles[i]/180*PI,unitHealths[i]);
@@ -754,13 +800,10 @@ function draw() {
       unitAngles.splice(i,1);
       unitHealths.splice(i,1);
       unitTicks.splice(i,1);
+      unitTargetAngles.splice(i,1);
       if(enemyTarget === i) {
         enemyBaseShooting = false;
       }
-    }
-    if(dist(unitXs[i],0,1090,0) <= enemyMaxGunPower*12) {
-      enemyBaseShooting = true;
-      enemyTarget = i;
     }
   }
   for(var i = 0; i < enemyUnitXs.length; i++) {
@@ -842,12 +885,16 @@ function draw() {
   }
   if(enemyBaseShooting === true && enemyBaseHealth > 0) {
     //insert shooting algorithm here
-    for(var i = 0;  i < 90; i+= 90/amountOfCandidates) {
-      var testGunXVelocity = enemyBaseGunPower/10*sin((enemyBaseGunAngle-90)/180*PI);
-      var testGunYVelocity = -enemyBaseGunPower/10*cos((enemyBaseGunAngle-90)/180*PI);
-      if(dist(unitXs[enemyTarget]*gravity,0,1140-(testGunXVelocity*testGunYVelocity*2),0) < bestCandidate) {
-        bestCandidate = dist(unitXs[enemyTarget]*gravity,0,1140-(testGunXVelocity*testGunYVelocity*2),0);
-        targetEnemyAngle = i;
+    bestCandidate = 1000;
+    for(var i = 0; i < amountOfCandidates; i++) {
+      var testX = (1140+70*sin((-(i*90/amountOfCandidates)-90)/180*PI));
+      var testY = (550+70*cos((-(i*90/amountOfCandidates)-90)/180*PI));
+      var testXVel = (enemyBaseGunPower/10*sin((-(i*90/amountOfCandidates)-90)/180*PI));
+      var testYVel = (-enemyBaseGunPower/10*cos((-(i*90/amountOfCandidates))-90)/180*PI);
+      var endPoint = testX+testXVel*((testYVel/gravity)*2+Math.sqrt(testY*2/gravity));
+      if(dist(endPoint,0,unitXs[enemyTarget],0) < bestCandidate) {
+        targetEnemyAngle = i*90/amountOfCandidates;
+        bestCandidate = dist(endPoint,0,unitXs[enemyTarget],0);
       }
     }
     if(targetEnemyAngle > enemyBaseGunAngle) {
@@ -858,11 +905,10 @@ function draw() {
     }
     if(tick4 >= enemyFirerate) {
       tick4 = 0;
-      enemyBaseGunShotXs.push(1140+70*sin((enemyBaseGunAngle-90)/180*PI));
-      enemyBaseGunShotYs.push(550+70*cos((enemyBaseGunAngle-90)/180*PI));
-      enemyShotXVelocities.push(enemyBaseGunPower/10*sin((enemyBaseGunAngle-90)/180*PI));
-      enemyShotYVelocities.push(-enemyBaseGunPower/10*cos((enemyBaseGunAngle-90)/180*PI));
-      print(enemyBaseGunAngle);
+      enemyBaseGunShotXs.push(1140+70*sin((-enemyBaseGunAngle-90)/180*PI));
+      enemyBaseGunShotYs.push(550+70*cos((-enemyBaseGunAngle-90)/180*PI));
+      enemyShotXVelocities.push(enemyBaseGunPower/10*sin((-enemyBaseGunAngle-90)/180*PI));
+      enemyShotYVelocities.push(-enemyBaseGunPower/10*cos((-enemyBaseGunAngle-90)/180*PI));
     }
   }
   if(enemyBaseShooting === false) {
