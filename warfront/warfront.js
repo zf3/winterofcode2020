@@ -8,7 +8,7 @@ function setup() {
 var targetEnemyAngle;
 var bestCandidate = 1000;
 var amountOfCandidates = 10;
-var amountOfMortarCandidates = 10;
+var amountOfMortarCandidates = 8;
 var enemyBaseShooting = false;
 var enemyTarget;
 var weaponType = 0;
@@ -58,6 +58,11 @@ var enemyBaseGunAngle = 0;
 var enemyBaseGunPower = 35;
 var enemyBaseGunSpeed = 2.5;
 var enemyMaxGunPower = 35;
+var enemyUnitTargetAngles = [];
+var enemyMortarShotXs = [];
+var enemyMortarShotYs = [];
+var enemyMortarShotXVels = [];
+var enemyMortarShotYVels = [];
 var pressedKeys = [];
 var gravity = 0.08;
 var firerate = 100;
@@ -542,14 +547,14 @@ function draw() {
       shotYVelocities.push(-baseGunPower/10*cos((baseGunAngle-270)/180*PI));
       tick = 0;
   }
-  if(enemyMoney >= 10 && enemyBaseHealth > 0) {
+  if(enemyMoney >= 50 && enemyBaseHealth > 0) {
     enemyUnitXs.push(1090);
     enemyUnitYs.push(650);
-    enemyUnitTypes.push(1);
+    enemyUnitTypes.push(3);
     enemyUnitAngles.push(0);
     enemyUnitHealths.push(10);
     enemyUnitTicks.push(0);
-    enemyMoney -= 10;
+    enemyMoney -= 50;
   }
   for(var i = 0; i < baseGunShotXs.length; i++) {
       fill(64,64,64);
@@ -621,7 +626,7 @@ function draw() {
   }
   for(var i = 0; i < mortarShotXs.length; i++) {
     fill(64,64,64);
-    strokeWeight(5);
+    strokeWeight(2);
     ellipse(mortarShotXs[i],mortarShotYs[i],10,10);
     mortarShotXs[i]+=mortarShotXVels[i];
     mortarShotYs[i]-=mortarShotYVels[i];
@@ -637,7 +642,7 @@ function draw() {
             }
           }
           if(dist(enemyUnitXs[j],0,mortarShotXs[i],0) <= 15 && enemyUnitTypes[j] === 1) {
-            if(enemyUnitHealths[j]- (abs(mortarShotXVels[i])+abs(shotYVels[i]))*5 >= 0) {
+            if(enemyUnitHealths[j]- (abs(mortarShotXVels[i])+abs(mortarShotYVels[i]))*5 >= 0) {
               enemyUnitHealths[j] -= (abs(mortarShotXVels[i])+abs(mortarShotYVels[i]))*5;
             }
             else {
@@ -645,12 +650,80 @@ function draw() {
             }
           }
       }
+      if(dist(mortarShotXs[i],0,1140,0) <= 65 && enemyBaseHealth > 0) {
+        if(enemyBaseArmor <= 0) {
+          if(enemyBaseHealth- (abs(mortarShotXVels[i])+abs(mortarShotYVels[i]))*5 >= 0) {
+            enemyBaseHealth -= (abs(mortarShotXVels[i])+abs(mortarShotYVels[i]))*5;
+          }
+          else {
+            enemyBaseHealth = 0;
+          }
+        }
+        else {
+          if(enemyBaseArmor- (abs(mortarShotXVels[i])+abs(mortarShotYVels[i]))*5 >= 0) {
+            enemyBaseArmor -= (abs(mortarShotXVels[i])+abs(mortarShotYVels[i]))*5;
+          }
+          else {
+            enemyUnitArmor = 0;
+          }
+        }
+      }
       mortarShotXs.splice(i,1);
       mortarShotYs.splice(i,1); 
       mortarShotXVels.splice(i,1);
       mortarShotYVels.splice(i,1);
     }
 }
+  for(var i = 0; i < enemyMortarShotXs.length; i++) {
+    fill(64,64,64);
+    strokeWeight(2);
+    ellipse(enemyMortarShotXs[i],enemyMortarShotYs[i],10,10);
+    enemyMortarShotXs[i]+=enemyMortarShotXVels[i];
+    enemyMortarShotYs[i]-=enemyMortarShotYVels[i];
+    enemyMortarShotYVels[i]-=gravity;
+    if(enemyMortarShotYs[i] >= 650) {
+      for(var j = 0; j < unitXs.length; j++) {
+          if(dist(unitXs[j],0,enemyMortarShotXs[i],0) <= 45 && unitTypes[j] !== 1) {
+            if(unitHealths[j]- (abs(enemyMortarShotXVels[i])+abs(enemyMortarShotYVels[i]))*5 >= 0) {
+              unitHealths[j] -= (abs(enemyMortarShotXVels[i])+abs(enemyMortarShotYVels[i]))*5;
+            }
+            else {
+              unitHealths[j] = 0;
+            }
+          }
+          if(dist(unitXs[j],0,enemyMortarShotXs[i],0) <= 15 && unitTypes[j] === 1) {
+            if(unitHealths[j]- (abs(enemyMortarShotXVels[i])+abs(enemyMortarShotYVels[i]))*5 >= 0) {
+              unitHealths[j] -= (abs(enemyMortarShotXVels[i])+abs(enemyMortarShotYVels[i]))*5;
+            }
+            else {
+              unitHealths[j] = 0;
+            }
+          }
+      }
+      if(dist(enemyMortarShotXs[i],0,130,0) <= 65 && baseHealth > 0) {
+        if(baseArmor <= 0) {
+          if(baseHealth- (abs(enemyMortarShotXVels[i])+abs(enemyMortarShotYVels[i]))*5 >= 0) {
+            baseHealth -= (abs(enemyMortarShotXVels[i])+abs(enemyMortarShotYVels[i]))*5;
+          }
+          else {
+            baseHealth = 0;
+          }
+        }
+        else {
+          if(baseArmor- (abs(enemyMortarShotXVels[i])+abs(enemyMortarShotYVels[i]))*5 >= 0) {
+            baseArmor -= (abs(enemyMortarShotXVels[i])+abs(enemyMortarShotYVels[i]))*5;
+          }
+          else {
+            unitArmor = 0;
+          }
+        }
+      }
+      enemyMortarShotXs.splice(i,1);
+      enemyMortarShotYs.splice(i,1); 
+      enemyMortarShotXVels.splice(i,1);
+      enemyMortarShotYVels.splice(i,1);
+    }
+  }
   for(var i = 0; i < enemyBaseGunShotXs.length; i++) {
     fill(64,64,64);
     strokeWeight(5);
@@ -753,8 +826,33 @@ function draw() {
           unitTicks[i] = 0;
         }
       }
-      if(unitTypes[i] === 3 && dist(0,unitXs[i],0,enemyUnitXs[j]) <= 200) {
+      if(unitTypes[i] === 3 && dist(0,unitXs[i],0,enemyUnitXs[j]) <= 210 && enemyClose === false) {
         enemyClose = true;
+        bestCandidate = 1000;
+        for(var l = 0; l < amountOfMortarCandidates; l++) {
+          var testX = unitXs[i]+40*sin(((l*90/amountOfMortarCandidates)-270)/180*PI);
+          var testY = unitYs[i]+40*cos(((l*90/amountOfMortarCandidates)-270)/180*PI);
+          var testXVel = 35/10*sin(((l*90/amountOfMortarCandidates)-270)/180*PI);
+          var testYVel = -35/10*cos(((l*90/amountOfMortarCandidates)-270)/180*PI);
+          var endPoint = testX+testXVel*((testYVel/gravity)*2+(Math.sqrt((650-testY)*2/gravity)));
+          if(dist(endPoint,0,enemyUnitXs[j],0) < bestCandidate) {
+            unitTargetAngles[i] = l*90/amountOfMortarCandidates;
+            bestCandidate = dist(endPoint,0,enemyUnitXs[j],0);
+          }
+        }
+        if(unitTargetAngles[i] > unitAngles[i]) {
+          unitAngles[i] += 1/2.5;
+        }
+        if(unitTargetAngles[i] < unitAngles[i]) {
+          unitAngles[i] -= 1/2.5;
+        }
+        if(unitTicks[i] >= 100) {
+          unitTicks[i] = 0;
+          mortarShotXs.push(unitXs[i]+40*sin((unitAngles[i]-270)/180*PI));
+          mortarShotYs.push(unitYs[i]+40*cos((unitAngles[i]-270)/180*PI));
+          mortarShotXVels.push(35/10*sin((unitAngles[i]-270)/180*PI));
+          mortarShotYVels.push(-35/10*cos((unitAngles[i]-270)/180*PI));
+        }
       }
     }
     if(unitTypes[i] !== 3 && dist(0,unitXs[i],0,1090) <= 100 && enemyBaseHealth > 0 && enemyClose === false) {
@@ -787,8 +885,33 @@ function draw() {
         unitTicks[i] = 0;
       }
     }
-    if(unitTypes[i] === 3 && dist(0,unitXs[i],0,1090) <= 200) {
+    if(unitTypes[i] === 3 && dist(0,unitXs[i],0,1140) <= 200 && enemyClose === false) {
       enemyClose = true;
+      bestCandidate = 1000;
+      for(var l = 0; l < amountOfMortarCandidates; l++) {
+        var testX = unitXs[i]+40*sin(((l*90/amountOfMortarCandidates)-270)/180*PI);
+        var testY = unitYs[i]+40*cos(((l*90/amountOfMortarCandidates)-270)/180*PI);
+        var testXVel = 35/10*sin(((l*90/amountOfMortarCandidates)-270)/180*PI);
+        var testYVel = -35/10*cos(((l*90/amountOfMortarCandidates)-270)/180*PI);
+        var endPoint = testX+testXVel*((testYVel/gravity)*2+(Math.sqrt((650-testY)*2/gravity)));
+        if(dist(endPoint,0,1140,0) < bestCandidate) {
+          unitTargetAngles[i] = l*90/amountOfMortarCandidates;
+          bestCandidate = dist(endPoint,0,1140,0);
+        }
+      }
+      if(unitTargetAngles[i] > unitAngles[i]) {
+        unitAngles[i] += 1/2.5;
+      }
+      if(unitTargetAngles[i] < unitAngles[i]) {
+        unitAngles[i] -= 1/2.5;
+      }
+      if(unitTicks[i] >= 100) {
+        unitTicks[i] = 0;
+        mortarShotXs.push(unitXs[i]+40*sin((unitAngles[i]-270)/180*PI));
+        mortarShotYs.push(unitYs[i]+40*cos((unitAngles[i]-270)/180*PI));
+        mortarShotXVels.push(35/10*sin((unitAngles[i]-270)/180*PI));
+        mortarShotYVels.push(-35/10*cos((unitAngles[i]-270)/180*PI));
+      }
     }
     if(enemyClose === false) {
       unitXs[i] += 1;
@@ -831,11 +954,37 @@ function draw() {
           enemyUnitTicks[i] = 0;
         }
       }
-      if(enemyUnitTypes[i] === 3 && dist(0,unitXs[j],0,enemyUnitXs[i]) <= 200) {
-        enemyClose = true;
+      if(enemyUnitTypes[i] === 3 && dist(0,unitXs[j],0,enemyUnitXs[i]) <= 210 && enemyClose === false) {
+          enemyClose = true;
+          bestCandidate = 1000;
+          //This part(960 to 984)
+          for(var l = 0; l < amountOfMortarCandidates; l++) {
+            var testX = (unitXs[i]+40*sin((-(l*90/amountOfMortarCandidates)-90)/180*PI));
+            var testY = (unitYs[i]+40*cos((-(l*90/amountOfMortarCandidates)-90)/180*PI));
+            var testXVel = (35/10*sin((-(l*90/amountOfMortarCandidates)-90)/180*PI));
+            var testYVel = (-35/10*cos((-(l*90/amountOfMortarCandidates))-90)/180*PI);
+            var endPoint = testX+testXVel*((testYVel/gravity)*2+Math.sqrt(testY*2/gravity));
+            if(dist(endPoint,0,unitXs[j],0) < bestCandidate) {
+              targetEnemyAngle = i*90/amountOfMortarCandidates;
+              bestCandidate = dist(endPoint,0,unitXs[j],0);
+            }
+          }
+          if(enemyUnitTargetAngles[i] > enemyUnitAngles[i]) {
+            unitAngles[i] += 1/2.5;
+          }
+          if(enemyUnitTargetAngles[i] < enemyUnitAngles[i]) {
+            unitAngles[i] -= 1/2.5;
+          }
+          if(enemyUnitTicks[i] >= 100) {
+            enemyUnitTicks[i] = 0;
+            enemyMortarShotXs.push(enemyUnitXs[i]+40*sin((-(enemyUnitAngles[i])-90)/180*PI));
+            enemyMortarShotYs.push(enemyUnitYs[i]+40*cos((-(enemyUnitAngles[i])-90)/180*PI));
+            enemyMortarShotXVels.push(35/10*sin((-(enemyUnitAngles[i])-90)/180*PI));
+            enemyMortarShotYVels.push(-35/10*cos((-(enemyUnitAngles[i])-90)/180*PI));
+          }
       }
     }
-    if(enemyUnitTypes[i] !== 3 && dist(0,enemyUnitXs[i],0,130) <= 100 && baseHealth > 0 && enemyClose === false) {
+    if(enemyUnitTypes[i] !== 3 && dist(0,enemyUnitXs[i],0,60) <= 100 && baseHealth > 0 && enemyClose === false) {
       enemyClose = true;
       if(enemyUnitTypes[i] === 1 && enemyUnitTicks[i] >= 5) {
         if(baseArmor <= 0) {
@@ -865,8 +1014,33 @@ function draw() {
         enemyUnitTicks[i] = 0;
       }
     }
-    if(enemyUnitTypes[i] === 3 && dist(0,enemyUnitXs[i],0,130) <= 200) {
+    if(enemyUnitTypes[i] === 3 && dist(0,enemyUnitXs[i],0,60) <= 210 && enemyClose === false && baseHealth > 0) {
       enemyClose = true;
+      bestCandidate = 1000;
+      for(var l = 0; l < amountOfMortarCandidates; l++) {
+        var testX = enemyUnitXs[i]+40*sin((-(l*90/amountOfMortarCandidates)-90)/180*PI);
+        var testY = enemyUnitYs[i]+40*cos((-(l*90/amountOfMortarCandidates)-90)/180*PI);
+        var testXVel = 35/10*sin((-(l*90/amountOfMortarCandidates)-90)/180*PI);
+        var testYVel = -35/10*cos((-(l*90/amountOfMortarCandidates)-90)/180*PI);
+        var endPoint = testX+testXVel*((testYVel/gravity)*2+(Math.sqrt((650-testY)*2/gravity)));
+        if(dist(endPoint,0,60,0) < bestCandidate) {
+          enemyUnitTargetAngles[i] = l*90/amountOfMortarCandidates;
+          bestCandidate = dist(endPoint,0,60,0);
+        }
+      }
+      if(enemyUnitTargetAngles[i] > enemyUnitAngles[i]) {
+        enemyUnitAngles[i] += 1/2.5;
+      }
+      if(enemyUnitTargetAngles[i] < enemyUnitAngles[i]) {
+        enemyUnitAngles[i] -= 1/2.5;
+      }
+      if(enemyUnitTicks[i] >= 100) {
+        enemyUnitTicks[i] = 0;
+        enemyMortarShotXs.push(enemyUnitXs[i]+40*sin((-(enemyUnitAngles[i])-90)/180*PI));
+        enemyMortarShotYs.push(enemyUnitYs[i]+40*cos((-(enemyUnitAngles[i])-90)/180*PI));
+        enemyMortarShotXVels.push(35/10*sin((-(enemyUnitAngles[i])-90)/180*PI));
+        enemyMortarShotYVels.push(-35/10*cos((-(enemyUnitAngles[i])-90)/180*PI));
+      }
     }
     if(enemyClose === false) {
       enemyUnitXs[i] -= 1;
@@ -884,7 +1058,6 @@ function draw() {
     }
   }
   if(enemyBaseShooting === true && enemyBaseHealth > 0) {
-    //insert shooting algorithm here
     bestCandidate = 1000;
     for(var i = 0; i < amountOfCandidates; i++) {
       var testX = (1140+70*sin((-(i*90/amountOfCandidates)-90)/180*PI));
@@ -898,10 +1071,10 @@ function draw() {
       }
     }
     if(targetEnemyAngle > enemyBaseGunAngle) {
-      enemyBaseGunAngle += 1/enemyBaseGunSpeed;
+      enemyBaseGunAngle+=1/enemyBaseGunSpeed;
     }
     if(targetEnemyAngle < enemyBaseGunAngle) {
-      enemyBaseGunAngle -= 1/enemyBaseGunSpeed;
+      enemyBaseGunAngle-=1/enemyBaseGunSpeed;
     }
     if(tick4 >= enemyFirerate) {
       tick4 = 0;
