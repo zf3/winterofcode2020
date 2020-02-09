@@ -965,15 +965,16 @@ function draw() {
             var testYVel = (-35/10*cos((-(l*90/amountOfMortarCandidates))-90)/180*PI);
             var endPoint = testX+testXVel*((testYVel/gravity)*2+Math.sqrt(testY*2/gravity));
             if(dist(endPoint,0,unitXs[j],0) < bestCandidate) {
-              targetEnemyAngle = i*90/amountOfMortarCandidates;
+              targetEnemyAngle = l*90/amountOfMortarCandidates;
               bestCandidate = dist(endPoint,0,unitXs[j],0);
             }
           }
+          enemyUnitTargetAngles[i] = targetEnemyAngle;
           if(enemyUnitTargetAngles[i] > enemyUnitAngles[i]) {
-            unitAngles[i] += 1/2.5;
+            enemyUnitAngles[i] += 1/2.5;
           }
           if(enemyUnitTargetAngles[i] < enemyUnitAngles[i]) {
-            unitAngles[i] -= 1/2.5;
+            enemyUnitAngles[i] -= 1/2.5;
           }
           if(enemyUnitTicks[i] >= 100) {
             enemyUnitTicks[i] = 0;
