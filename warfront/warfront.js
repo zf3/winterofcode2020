@@ -5,6 +5,8 @@ function setup() {
     pressedKeys.push(false);
   }
 }
+var pauseGame = false;
+var gameScreen = 0;
 var shotSize = 20;
 var enemyShotSize = 20;
 var multiplier = 1;
@@ -425,6 +427,84 @@ var drawMenu = function() {
   textSize(100);
   text("?",875,80);
 }
+var resetGame = function() {
+  shotSize = 20;
+  enemyShotSize = 20;
+  multiplier = 1;
+  enemyMultiplier = 1;
+  totalGunAoE;
+  totalEnemyGunAoE;
+  targetEnemyAngle;
+  bestCandidate = 1000;
+  amountOfCandidates = 10;
+  amountOfMortarCandidates = 10;
+  enemyBaseShooting = false;
+  enemyTarget;
+  weaponType = 0;
+  armorUses = 0;
+  economy = 5;
+  money = 100;
+  gunDamage = 10;
+  gunAoE = 0;
+  baseGunShotXs = [];
+  baseGunShotYs = [];
+  shotXVelocities = [];
+  shotYVelocities = [];
+  unitSpeeds = [];
+  unitXs = [];
+  unitYs = [];
+  unitTypes = [];
+  unitAngles = [];
+  unitHealths = [];
+  unitTicks = [];
+  unitTargetAngles = [];
+  mortarShotXs = [];
+  mortarShotYs = [];
+  mortarShotXVels = [];
+  mortarShotYVels = [];
+  baseHealth = 500;
+  baseArmor = 0;
+  baseGunAngle = 0;
+  baseGunPower = 35;
+  baseGunSpeed = 2.5;
+  maxGunPower = 35;
+  enemyEconomy = 5;
+  enemyMoney = 100;
+  enemyGunDamage = 10;
+  enemyGunAoE = 0;
+  enemyBaseGunShotXs = [];
+  enemyBaseGunShotYs = [];
+  enemyShotXVelocities = [];
+  enemyShotYVelocities = [];
+  enemyWeaponType = 0;
+  enemyUnitSpeeds = [];
+  enemyUnitXs = [];
+  enemyUnitYs = [];
+  enemyUnitTypes = [];
+  enemyUnitAngles = [];
+  enemyUnitHealths = [];
+  enemyUnitTicks = [];
+  enemyBaseHealth = 500;
+  enemyBaseArmor = 0;
+  enemyBaseGunAngle = 0;
+  enemyBaseGunPower = 35;
+  enemyBaseGunSpeed = 2.5;
+  enemyMaxGunPower = 35;
+  enemyUnitTargetAngles = [];
+  enemyMortarShotXs = [];
+  enemyMortarShotYs = [];
+  enemyMortarShotXVels = [];
+  enemyMortarShotYVels = [];
+  pressedKeys = [];
+  gravity = 0.08;
+  firerate = 100;
+  enemyFirerate = 100;
+  tick = 100;
+  tick2 = 0;
+  tick3 = 0;
+  tick4 = 100;
+  enemyClose = false;
+}
 
 function keyPressed () {
   pressedKeys[keyCode] = true;
@@ -435,106 +515,166 @@ function keyReleased () {
 }
 
 function mousePressed () {
-  if(baseHealth > 0) {
-  if(mouseX >= 25 && mouseX <= 65 && mouseY >= 5 && mouseY <= 45 && money >= 10) {
-    unitXs.push(140);
-    unitYs.push(650);
-    unitTypes.push(1);
-    unitAngles.push(0);
-    unitHealths.push(10);
-    unitTicks.push(0);
-    unitTargetAngles.push(0);
-    unitSpeeds.push(1);
-    //3.5 DPS
-    money-=10;
+  switch(gameScreen) {
+  case 0:{
+    if(dist(600,400,mouseX,mouseY) <= 100) {
+      gameScreen = 1;
+    }
+    if(dist(300,400,mouseX,mouseY) <= 100) {
+      gameScreen = 2;
+    }
+    if(dist(900,400,mouseX,mouseY) <= 100) {
+      gameScreen = 3;
+    }
   }
-  if(mouseX >= 75 && mouseX <= 115 && mouseY >= 5 && mouseY <= 45 && money >= 50) {
-    unitXs.push(150);
-    unitYs.push(650);
-    unitTypes.push(2);
-    unitAngles.push(0);
-    unitHealths.push(200);
-    unitTicks.push(0);
-    unitTargetAngles.push(0);
-    unitSpeeds.push(1);
-    //2 DPS
-    money-=50;
+  break;
+  case 1: {
+    if(baseHealth > 0 && pauseGame === false) {
+      if(mouseX >= 25 && mouseX <= 65 && mouseY >= 5 && mouseY <= 45 && money >= 10) {
+        unitXs.push(140);
+        unitYs.push(650);
+        unitTypes.push(1);
+        unitAngles.push(0);
+        unitHealths.push(10);
+        unitTicks.push(0);
+        unitTargetAngles.push(0);
+        unitSpeeds.push(1);
+        //3.5 DPS
+        money-=10;
+      }
+      if(mouseX >= 75 && mouseX <= 115 && mouseY >= 5 && mouseY <= 45 && money >= 50) {
+        unitXs.push(150);
+        unitYs.push(650);
+        unitTypes.push(2);
+        unitAngles.push(0);
+        unitHealths.push(200);
+        unitTicks.push(0);
+        unitTargetAngles.push(0);
+        unitSpeeds.push(1);
+        //2 DPS
+        money-=50;
+      }
+      if(mouseX >= 75 && mouseX <= 115 && mouseY >= 55 && mouseY <= 95 && money >= 50) {
+        unitXs.push(150);
+        unitYs.push(650);
+        unitTypes.push(4);
+        unitAngles.push(0);
+        unitHealths.push(50);
+        unitTicks.push(0);
+        unitTargetAngles.push(0);
+        unitSpeeds.push(1);
+        //10 DPS
+        money-=50;
+      }
+      if(mouseX >= 25 && mouseX <= 65 && mouseY >= 55 && mouseY <= 95 && money >= 50) {
+        unitXs.push(150);
+        unitYs.push(650);
+        unitTypes.push(3);
+        unitAngles.push(0);
+        unitHealths.push(10);
+        unitTicks.push(0);
+        unitTargetAngles.push(0);
+        unitSpeeds.push(1);
+        //50 DPS
+        money-=50;
+      }
+      if(mouseX >= 275 && mouseX <= 315 && mouseY >= 5 && mouseY <= 45 && firerate > 50 && money >= 50) {
+        firerate -= 10;
+        money-=50;
+      }
+      if(mouseX >= 325 && mouseX <= 365 && mouseY >= 5 && mouseY <= 45 && gunDamage < 20 && money >= 50) {
+        gunDamage += 2;
+        money-=50;
+      }
+      if(mouseX >= 325 && mouseX <= 365 && mouseY >= 55 && mouseY <= 95 && gunAoE < 10 && money >= 50) {
+        gunAoE += 2;
+        money-=50;
+      }
+      if(mouseX >= 275 && mouseX <= 315 && mouseY >= 55 && mouseY <= 95 && maxGunPower < 50 && money >= 50) {
+        maxGunPower += 3;
+        money-=50;
+      }
+      if(mouseX >= 150 && mouseX <= 190 && mouseY >= 5 && mouseY <= 45 && weaponType!==1 && money >= 100) {
+        weaponType = 1;
+        money-=100;
+      }
+      if(mouseX >= 150 && mouseX <= 190 && mouseY >= 55 && mouseY <= 95 && weaponType!==2 && money >= 100) {
+        weaponType = 2;
+        money-=100;
+      }  
+      if(mouseX >= 200 && mouseX <= 240 && mouseY >= 5 && mouseY <= 45 && weaponType!==3 && money >= 100) {
+        weaponType = 3;
+        money-=100;
+      }  
+      if(mouseX >= 200 && mouseX <= 240 && mouseY >= 55 && mouseY <= 95 && weaponType!==4 && money >= 100) {
+        weaponType = 4;
+        money-=100;
+      }
+      if(mouseX >= 380 && mouseX <= 470 && mouseY >= 5 && mouseY <= 95 && economy < 10 && money >= economy*20) {
+        money-=economy*20;
+        economy++;
+      }
+      if(mouseX >= 480 && mouseX <= 570 && mouseY >= 5 && mouseY <= 95 && money >= armorUses*20+100 && baseArmor < 100) {
+        baseArmor+=20;
+        money-=100+armorUses*20;
+        armorUses++;
+      }
+    }
+    if(dist(1150,150,mouseX,mouseY) <= 50 && pauseGame === false) {
+      gameScreen = 0;
+    }
+    if(dist(1040,150,mouseX,mouseY) <= 50 && pauseGame === false) {
+      resetGame();
+    }
+    if(dist(930,150,mouseX,mouseY) <= 50) {
+      if(pauseGame === false) {
+        pauseGame = true;
+      }
+      else {
+        pauseGame = false;
+      }
+    }
   }
-  if(mouseX >= 75 && mouseX <= 115 && mouseY >= 55 && mouseY <= 95 && money >= 50) {
-    unitXs.push(150);
-    unitYs.push(650);
-    unitTypes.push(4);
-    unitAngles.push(0);
-    unitHealths.push(50);
-    unitTicks.push(0);
-    unitTargetAngles.push(0);
-    unitSpeeds.push(1);
-    //10 DPS
-    money-=50;
+  break;
+  case 2: {
+    if(dist(1150,50,mouseX,mouseY) <= 50) {
+      gameScreen = 0;
+    }
   }
-  if(mouseX >= 25 && mouseX <= 65 && mouseY >= 55 && mouseY <= 95 && money >= 50) {
-    unitXs.push(150);
-    unitYs.push(650);
-    unitTypes.push(3);
-    unitAngles.push(0);
-    unitHealths.push(10);
-    unitTicks.push(0);
-    unitTargetAngles.push(0);
-    unitSpeeds.push(1);
-    //50 DPS
-    money-=50;
+  break;
+  case 3: {
+    if(dist(1150,50,mouseX,mouseY) <= 50) {
+      gameScreen = 0;
+    }
   }
-  if(mouseX >= 275 && mouseX <= 315 && mouseY >= 5 && mouseY <= 45 && firerate > 50 && money >= 50) {
-    firerate -= 10;
-    money-=50;
-  }
-  if(mouseX >= 325 && mouseX <= 365 && mouseY >= 5 && mouseY <= 45 && gunDamage < 20 && money >= 50) {
-    gunDamage += 2;
-    money-=50;
-  }
-  if(mouseX >= 325 && mouseX <= 365 && mouseY >= 55 && mouseY <= 95 && gunAoE < 10 && money >= 50) {
-    gunAoE += 2;
-    money-=50;
-  }
-  if(mouseX >= 275 && mouseX <= 315 && mouseY >= 55 && mouseY <= 95 && maxGunPower < 50 && money >= 50) {
-    maxGunPower += 3;
-    money-=50;
-  }
-  if(mouseX >= 150 && mouseX <= 190 && mouseY >= 5 && mouseY <= 45 && weaponType!==1 && money >= 100) {
-    weaponType = 1;
-    money-=100;
-  }
-  if(mouseX >= 150 && mouseX <= 190 && mouseY >= 55 && mouseY <= 95 && weaponType!==2 && money >= 100) {
-    weaponType = 2;
-    money-=100;
-  }  
-  if(mouseX >= 200 && mouseX <= 240 && mouseY >= 5 && mouseY <= 45 && weaponType!==3 && money >= 100) {
-    weaponType = 3;
-    money-=100;
-  }  
-  if(mouseX >= 200 && mouseX <= 240 && mouseY >= 55 && mouseY <= 95 && weaponType!==4 && money >= 100) {
-    weaponType = 4;
-    money-=100;
-  }
-  if(mouseX >= 380 && mouseX <= 470 && mouseY >= 5 && mouseY <= 95 && economy < 10 && money >= economy*20) {
-    money-=economy*20;
-    economy++;
-  }
-  if(mouseX >= 480 && mouseX <= 570 && mouseY >= 5 && mouseY <= 95 && money >= armorUses*20+100 && baseArmor < 100) {
-    baseArmor+=20;
-    money-=100+armorUses*20;
-    armorUses++;
-  }
+  break;
   }
 }
 
 function draw() {
+  switch(gameScreen) {
+  case 1: {
+  if(pauseGame === false) {
   tick++;
   tick2++;
   tick3++;
   tick4++;
   background(128,128,255);
+  textSize(35);
+  strokeWeight(5);
+  fill(64,64,64);
+  ellipse(1150,150,100,100);
+  ellipse(1040,150,100,100);
+  if(dist(mouseX,mouseY,930,150) <= 50) {
+    strokeWeight(15);
+  }
+  ellipse(930,150,100,100);
+  strokeWeight(5);
   fill(255,255,255);
+  text("Back",1110,160);
+  textSize(25);
+  text("Restart",1000,155);
+  text("Pause",895,155);
   textSize(20);
   strokeWeight(2);
   text("Money: $"+money,5,130);
@@ -936,9 +1076,9 @@ function draw() {
           var testXVel = 35/10*sin(((l*90/amountOfMortarCandidates)-270)/180*PI);
           var testYVel = -35/10*cos(((l*90/amountOfMortarCandidates)-270)/180*PI);
           var endPoint = testX+testXVel*((testYVel/gravity)*2+(Math.sqrt((650-testY)*2/gravity)));
-          if(dist(endPoint,0,enemyUnitXs[j]+10,0) < bestCandidate) {
+          if(dist(endPoint,0,enemyUnitXs[j],0) < bestCandidate) {
             unitTargetAngles[i] = l*90/amountOfMortarCandidates;
-            bestCandidate = dist(endPoint,0,enemyUnitXs[j]+10,0);
+            bestCandidate = dist(endPoint,0,enemyUnitXs[j],0);
           }
         }
         if(unitTargetAngles[i] > unitAngles[i]) {
@@ -1195,5 +1335,68 @@ function draw() {
   }
   if(enemyBaseShooting === false) {
     bestCandidate = 1000;
+  }
+}
+  break;
+  }
+  break;
+  case 0: {
+  background(128,128,255);
+  drawGround();
+  drawBase(10,500,(45)/180*PI,0,500,100);
+  drawBase(1090,500,(180-(45))/180*PI,1,500,100);
+  textSize(200);
+  fill(64,64,64);
+  text("Warfront",200,200);
+  strokeWeight(20);
+  ellipse(600,400,200,200);
+  ellipse(300,400,200,200);
+  ellipse(900,400,200,200);
+  fill(255,255,255);
+  strokeWeight(10);
+  triangle(575,410,635,445,575,480)
+  textSize(75);
+  text("Play",525,400);
+  textSize(50);
+  text("Settings",815,410)
+  textSize(35);
+  text("Instructions",215,410);
+  }
+  break;
+  case 2: {
+    textSize(150);
+    background(128,128,255);
+    drawBase(10,500,(45)/180*PI,0,500,100);
+    drawBase(1090,500,(180-(45))/180*PI,1,500,100);
+    drawGround();
+    fill(64,64,64);
+    strokeWeight(10);
+    text("Instructions",200,125);
+    strokeWeight(5);
+    ellipse(1150,50,100,100);
+    textSize(20);
+    fill(255,255,255);
+    text("Back",1125,55);
+    {
+    text("\n    Welcome to Warfront! Warfront is a strategy game where you control a base and\n try to destroy the AI-controlled enemy base. You have a menu, which you can use\n to buy the Economy upgrade, which increases money earning so you can buy more\n stuff, you can buy troops, of which there are four types - Soliders (Basic soliders,\n cheap), Mortars (High-damage, but require setup time and are easily destroyed),\n Tanks (Ok at everything, can one-shot soliders and mortars), and Shielders \n(Extremely tough, but have the lowest DPS. Other than troops, you can upgrade\n your base's cannon, which you can use to shoot enemies, though even maxed out\n it cannot hit the enemy base. There are two ways to upgrade the cannon. There \nare the normal upgrades, which are Damage (increases damage), Max Power \n(increases max range), Firerate (increases firerate, obviously), and AoE (adds \nexplosives - explosives deal extra damage and have a larger area of effect compared \nto the cannonball). There are also the cannon types - your cannon can be turned into \na type, which has special attributes as follows: Piercing - doubled damage! Scattershot\n - fires three lower-damage shots, Slowdown - Slows down enemies if they are hit, \nand Explosive - Extra explosives! Finally, you can also buy base Armor, which \nincreases in cost as you keep buying it and basically adds a second health bar with a\n max HP of 100 - the first has a HP of 500. Have fun!",210,150);
+    }
+  }
+  break;
+  case 3: {
+    textSize(150);
+    background(128,128,255);
+    drawBase(10,500,(45)/180*PI,0,500,100);
+    drawBase(1090,500,(180-(45))/180*PI,1,500,100);
+    drawGround();
+    fill(64,64,64);
+    strokeWeight(10);
+    text("Settings",300,125);
+    strokeWeight(5);
+    ellipse(1150,50,100,100);
+    textSize(20);
+    fill(255,255,255);
+    text("Back",1125,55);
+  }
+  break;
   }
 }
