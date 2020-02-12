@@ -5,6 +5,10 @@ function setup() {
     pressedKeys.push(false);
   }
 }
+var enemyCannonAiming = 2;
+var enemyUnitStrategy = 2;
+var playerColor = 1;
+var enemyColor = 2;
 var pauseGame = false;
 var gameScreen = 0;
 var shotSize = 20;
@@ -83,12 +87,36 @@ var tick2 = 0;
 var tick3 = 0;
 var tick4 = 100;
 var enemyClose = false;
+
+var ColorFill = function(type,opacity) {
+  if(type === 1) {
+    fill(0,0,255,opacity);
+  }
+  if(type === 2) {
+    fill(255,0,0,opacity);
+  }
+  if(type === 3) {
+    fill(0,255,0,opacity);
+  }
+  if(type === 4) {
+    fill(255,0,255,opacity);
+  }
+  if(type === 5) {
+    fill(0,255,255,opacity);
+  }
+  if(type === 6) {
+    fill(255,255,0,opacity);
+  }
+  if(type === 7) {
+    fill(128,128,128,opacity);
+  }
+};
 var drawUnits = function(a,b,c,d,e) {
   switch(c) {
     //solider
     case 1: {
     strokeWeight(2);
-    fill(0,0,255);
+    ColorFill(playerColor,255); 
     line(a-5,b,a,b-5);
     line(a+5,b,a+10,b-5);
     line(a,b-5,a-5,b-10);
@@ -98,7 +126,7 @@ var drawUnits = function(a,b,c,d,e) {
     line(a+5,b-30,a+15,b-20);
     fill(0,0,0);
     rect(a+5,b-20,15,5);
-    fill(0,0,255);
+    ColorFill(playerColor,255); 
     ellipse(a,b-35,10,10);
     rect(a-3,b-37,1,3);
     rect(a+2,b-37,1,3);
@@ -112,7 +140,7 @@ var drawUnits = function(a,b,c,d,e) {
     //shield
     case 2: {
     strokeWeight(2);
-    fill(0,0,255);
+    ColorFill(playerColor,255); 
     rect(a+16,b-20,10,5);
     rect(a-16,b-25,10,20,5);
     rect(a+6,b-25,10,20,5);
@@ -121,7 +149,7 @@ var drawUnits = function(a,b,c,d,e) {
     strokeWeight(1);
     triangle(a,b-35,a,b-30,a-11,b-25);
     triangle(a,b-35,a,b-30,a+11,b-25);
-    fill(0,0,255,128);
+    ColorFill(playerColor,128); 
     arc(a,b,40,70,PI,2*PI);
     strokeWeight(1);
     fill(255,255,255);
@@ -137,7 +165,7 @@ var drawUnits = function(a,b,c,d,e) {
     line(a+5*sin(d+PI)+35*sin(d+PI/2),b-8+5*cos(d+PI)+35*cos(d+PI/2),
     a+5*sin(d)+35*sin(d+PI/2),b-8+5*cos(d)+35*cos(d+PI/2));
     strokeWeight(2);
-    fill(0,0,255);
+    ColorFill(playerColor,255); 
     quad(a+5*sin(d),b-8+5*cos(d),a+5*sin(d+PI),b-8+5*cos(d+PI),
     a+5*sin(d+PI)+35*sin(d+PI/2),b-8+5*cos(d+PI)+35*cos(d+PI/2),
     a+5*sin(d)+35*sin(d+PI/2),b-8+5*cos(d)+35*cos(d+PI/2));
@@ -149,8 +177,7 @@ var drawUnits = function(a,b,c,d,e) {
     rect(a-5,b-30,10,20);
     line(a-5,b-30,a+5*sin(d+PI)+10*sin(d+PI/2),b-8+5*cos(d+PI)+10*cos(d+PI/2));
     line(a+5,b-30,a+5*sin(d+PI)+20*sin(d+PI/2),b-8+5*cos(d+PI)+20*cos(d+PI/2));
-    fill(0,0,0);
-    fill(0,0,255);
+    ColorFill(playerColor,255); 
     ellipse(a,b-35,10,10);
     rect(a-3,b-37,1,3);
     rect(a+2,b-37,1,3);
@@ -165,9 +192,9 @@ var drawUnits = function(a,b,c,d,e) {
     case 4:
     {
     strokeWeight(2);
-    fill(0,0,255,100);
+    ColorFill(playerColor,128); 
     arc(a,b-28,20,20,PI,PI*2);
-    fill(0,0,255,255);
+    ColorFill(playerColor,255); 
     rect(a-20,b-10,40,10,5);
     quad(a-10,b-28,a+30,b-28,a+30,b-18,a-15,b-18);
     quad(a-10,b-28,a+10,b-28,a+20,b-8,a-20,b-8);
@@ -185,7 +212,7 @@ var drawEnemyUnits = function(a,b,c,d,e) {
     //solider
     case 1: {
     strokeWeight(2);
-    fill(255,0,0);
+    ColorFill(enemyColor,255); 
     line(a+5,b,a,b-5);
     line(a-5,b,a-10,b-5);
     line(a,b-5,a+5,b-10);
@@ -195,7 +222,7 @@ var drawEnemyUnits = function(a,b,c,d,e) {
     line(a-5,b-30,a-15,b-20);
     fill(0,0,0);
     rect(a-20,b-20,15,5);
-    fill(255,0,0);
+    ColorFill(enemyColor,255); 
     ellipse(a,b-35,10,10);
     rect(a-3,b-37,1,3);
     rect(a+2,b-37,1,3);
@@ -209,7 +236,7 @@ var drawEnemyUnits = function(a,b,c,d,e) {
     //shield
     case 2: {
     strokeWeight(2);
-    fill(255,0,0);
+    ColorFill(enemyColor,255); 
     rect(a-26,b-20,10,5);
     rect(a-16,b-25,10,20,5);
     rect(a+6,b-25,10,20,5);
@@ -218,7 +245,7 @@ var drawEnemyUnits = function(a,b,c,d,e) {
     strokeWeight(1);
     triangle(a,b-35,a,b-30,a-11,b-25);
     triangle(a,b-35,a,b-30,a+11,b-25);
-    fill(255,0,0,128);
+    ColorFill(enemyColor,128); 
     arc(a,b,40,70,PI,2*PI);
     strokeWeight(1);
     fill(255,255,255);
@@ -234,7 +261,7 @@ var drawEnemyUnits = function(a,b,c,d,e) {
     line(a+5*sin(d+PI)+35*sin(d+PI/2),b-8+5*cos(d+PI)+35*cos(d+PI/2),
     a+5*sin(d)+35*sin(d+PI/2),b-8+5*cos(d)+35*cos(d+PI/2));
     strokeWeight(2);
-    fill(255,0,0);
+    ColorFill(enemyColor,255); 
     quad(a+5*sin(d),b-8+5*cos(d),a+5*sin(d+PI),b-8+5*cos(d+PI),
     a+5*sin(d+PI)+35*sin(d+PI/2),b-8+5*cos(d+PI)+35*cos(d+PI/2),
     a+5*sin(d)+35*sin(d+PI/2),b-8+5*cos(d)+35*cos(d+PI/2));
@@ -247,7 +274,7 @@ var drawEnemyUnits = function(a,b,c,d,e) {
     line(a-5,b-30,a+5*sin(d+PI)+20*sin(d+PI/2),b-18+5*cos(d+PI)+20*cos(d+PI/2));
     line(a+5,b-30,a+5*sin(d+PI)+10*sin(d+PI/2),b-18+5*cos(d+PI)+10*cos(d+PI/2));
     fill(0,0,0);
-    fill(255,0,0);
+    ColorFill(enemyColor,255); 
     ellipse(a,b-35,10,10);
     rect(a-3,b-37,1,3);
     rect(a+2,b-37,1,3);
@@ -262,9 +289,9 @@ var drawEnemyUnits = function(a,b,c,d,e) {
     case 4:
     {
     strokeWeight(2);
-    fill(255,0,0,100);
+    ColorFill(enemyColor,128); 
     arc(a,b-28,20,20,PI,PI*2);
-    fill(255,0,0,255);
+    ColorFill(enemyColor,255); 
     rect(a-20,b-10,40,10,5);
     quad(a-10,b-28,a-30,b-28,a-30,b-18,a+10,b-18);
     quad(a-10,b-28,a+10,b-28,a+20,b-8,a-20,b-8);
@@ -281,7 +308,7 @@ var drawBase = function(a,b,c,d,e,f) {
   switch(d) {
       case 0:
       strokeWeight(5);
-      fill(0,0,255);
+      ColorFill(playerColor,255); 
       quad(a+50+10*sin(c),b+50+10*cos(c),a+50+10*sin(c+PI),b+50+10*cos(c+PI),
       a+50+10*sin(c+PI)+70*sin(c+PI/2),b+50+10*cos(c+PI)+70*cos(c+PI/2),
       a+50+10*sin(c)+70*sin(c+PI/2),b+50+10*cos(c)+70*cos(c+PI/2));
@@ -297,9 +324,9 @@ var drawBase = function(a,b,c,d,e,f) {
       a+50+10*sin(c+PI)+baseGunPower*sin(c+PI/2),b+50+10*cos(c+PI)+baseGunPower*cos(c+PI/2),
       a+50+10*sin(c)+baseGunPower*sin(c+PI/2),b+50+10*cos(c)+baseGunPower*cos(c+PI/2));
       strokeWeight(5);
-      fill(0,0,255,200);
+      ColorFill(playerColor,192); 
       arc(a+50,b+50,100,100,90,360);
-      fill(0,0,255,255);
+      ColorFill(playerColor,255); 
       triangle(a+100,b+80,a+100,b+97.5,a+117.5,b+97.5);
       rect(a,b+50,100,100);
       rect(a+100,b+100,20,50);
@@ -309,7 +336,7 @@ var drawBase = function(a,b,c,d,e,f) {
       break;
       case 1:
       strokeWeight(5);
-      fill(255,0,0);
+      ColorFill(enemyColor,255); 
       quad(a+50+10*sin(c),b+50+10*cos(c),a+50+10*sin(c+PI),b+50+10*cos(c+PI),
       a+50+10*sin(c+PI)+70*sin(c+PI/2),b+50+10*cos(c+PI)+70*cos(c+PI/2),
       a+50+10*sin(c)+70*sin(c+PI/2),b+50+10*cos(c)+70*cos(c+PI/2));
@@ -326,9 +353,9 @@ var drawBase = function(a,b,c,d,e,f) {
       a+50+10*sin(c+PI)+enemyBaseGunPower*sin(c+PI/2),b+50+10*cos(c+PI)+enemyBaseGunPower*cos(c+PI/2),
       a+50+10*sin(c)+enemyBaseGunPower*sin(c+PI/2),b+50+10*cos(c)+enemyBaseGunPower*cos(c+PI/2));
       strokeWeight(5);
-      fill(255,0,0,200);
+      ColorFill(enemyColor,192);
       arc(a+50,b+50,100,100,90,360);
-      fill(255,0,0,255);
+      ColorFill(enemyColor,255);
       rect(a,b+50,100,100);
       triangle(a-17.5,b+97.5,a,b+97.5,a,b+80);
       rect(a-20,b+100,20,50);
@@ -383,7 +410,6 @@ var drawMenu = function() {
   rect(380,5,90,90); 
   rect(480,5,90,90); 
   fill(255,0,0);
-  rect(600,0,600,100);
   textSize(8);
   fill(255,255,255);
   text("Max Power",275,62);
@@ -425,7 +451,6 @@ var drawMenu = function() {
   text("$"+(100+armorUses*20),500,55);
   text(economy-5,420,75)
   textSize(100);
-  text("?",875,80);
 }
 var resetGame = function() {
   shotSize = 20;
@@ -620,13 +645,13 @@ function mousePressed () {
         armorUses++;
       }
     }
-    if(dist(1150,150,mouseX,mouseY) <= 50 && pauseGame === false) {
+    if(dist(1150,50,mouseX,mouseY) <= 50 && pauseGame === false) {
       gameScreen = 0;
     }
-    if(dist(1040,150,mouseX,mouseY) <= 50 && pauseGame === false) {
+    if(dist(1040,50,mouseX,mouseY) <= 50 && pauseGame === false) {
       resetGame();
     }
-    if(dist(930,150,mouseX,mouseY) <= 50) {
+    if(dist(930,50,mouseX,mouseY) <= 50) {
       if(pauseGame === false) {
         pauseGame = true;
       }
@@ -646,6 +671,28 @@ function mousePressed () {
     if(dist(1150,50,mouseX,mouseY) <= 50) {
       gameScreen = 0;
     }
+    for(var i = 1; i < 8; i++) {
+      if(mouseX > 225 && mouseX < 400 && mouseY > 150+i*50 && mouseY < 175+i*50) {
+        playerColor = i;
+      }
+      if(mouseX > 375 && mouseX < 550 && mouseY > 150+i*50 && mouseY < 175+i*50) {
+        enemyColor = i;
+      }
+    }
+    for(var i = 1; i < 4; i++) {
+      if(mouseX > 525 && mouseX < 725 && mouseY < 675-i*125 && mouseY > 575-i*125) {
+        if(enemyCannonAiming !== i) {
+          enemyCannonAiming = i;
+          resetGame();
+        }
+      }
+      if(mouseX > 775 && mouseX < 975 && mouseY < 675-i*125 && mouseY > 575-i*125) {
+        if(enemyUnitStrategy !== i) {
+          enemyUnitStrategy = i;
+          resetGame();
+        }
+      }
+    }
   }
   break;
   }
@@ -663,25 +710,25 @@ function draw() {
   textSize(35);
   strokeWeight(5);
   fill(64,64,64);
-  ellipse(1150,150,100,100);
-  ellipse(1040,150,100,100);
-  if(dist(mouseX,mouseY,930,150) <= 50) {
+  ellipse(1150,50,100,100);
+  ellipse(1040,50,100,100);
+  if(dist(mouseX,mouseY,930,50) <= 50) {
     strokeWeight(15);
   }
-  ellipse(930,150,100,100);
+  ellipse(930,50,100,100);
   strokeWeight(5);
   fill(255,255,255);
-  text("Back",1110,160);
+  text("Back",1110,60);
   textSize(25);
-  text("Restart",1000,155);
-  text("Pause",895,155);
+  text("Restart",1000,55);
+  text("Pause",895,55);
   textSize(20);
   strokeWeight(2);
   text("Money: $"+money,5,130);
   drawGround();
-  drawMenu();
-  drawBase(10,500,(baseGunAngle)/180*PI,0,baseHealth,baseArmor);
-  drawBase(1090,500,(180-(enemyBaseGunAngle))/180*PI,1,enemyBaseHealth,enemyBaseArmor);
+  drawMenu(playerColor);
+  drawBase(10,500,(baseGunAngle)/180*PI,0,baseHealth,baseArmor,playerColor);
+  drawBase(1090,500,(180-(enemyBaseGunAngle))/180*PI,1,enemyBaseHealth,enemyBaseArmor,enemyColor);
   if(pressedKeys[87] && baseGunAngle <= 180) {
       baseGunAngle+=1/baseGunSpeed;
   }
@@ -718,7 +765,39 @@ function draw() {
       tick = 0;
     }
   }
-  if(enemyMoney >= 10 && enemyBaseHealth > 0) {
+  if(enemyMoney >= 100 && enemyBaseHealth > 0 && enemyUnitStrategy === 1) {
+    enemyUnitXs.push(1090);
+    enemyUnitYs.push(650);
+    enemyUnitTypes.push(2);
+    enemyUnitAngles.push(0);
+    enemyUnitHealths.push(200);
+    enemyUnitTicks.push(0);
+    enemyUnitSpeeds.push(1);
+    enemyMoney -= 50;
+    for(var i = 0; i < 5; i++) {
+    enemyUnitXs.push(1090);
+    enemyUnitYs.push(650);
+    enemyUnitTypes.push(1);
+    enemyUnitAngles.push(0);
+    enemyUnitHealths.push(10);
+    enemyUnitTicks.push(0);
+    enemyUnitSpeeds.push(1);
+    enemyMoney -= 10;
+    }
+  }
+  if(enemyMoney >= 50 && enemyBaseHealth > 0 && enemyUnitStrategy === 2) {
+    for(var i = 0; i < 5; i++) {
+    enemyUnitXs.push(1090);
+    enemyUnitYs.push(650);
+    enemyUnitTypes.push(1);
+    enemyUnitAngles.push(0);
+    enemyUnitHealths.push(10);
+    enemyUnitTicks.push(0);
+    enemyUnitSpeeds.push(1);
+    enemyMoney -= 10;
+    }
+  }
+  if(enemyMoney >= 10 && enemyBaseHealth > 0 && enemyUnitStrategy === 3) {
     enemyUnitXs.push(1090);
     enemyUnitYs.push(650);
     enemyUnitTypes.push(1);
@@ -753,7 +832,7 @@ function draw() {
         multiplier = 2;
       }
       if(weaponType === 1) {
-        multiplier = 0.7;
+        multiplier = 0.6;
       }
       if(weaponType === 2 || weaponType === 4) {
         multiplier = 1;
@@ -1045,7 +1124,7 @@ function draw() {
     }
     unitTicks[i]++;
     enemyClose = false;
-    drawUnits(unitXs[i],unitYs[i],unitTypes[i],unitAngles[i]/180*PI,unitHealths[i]);
+    drawUnits(unitXs[i],unitYs[i],unitTypes[i],unitAngles[i]/180*PI,unitHealths[i],playerColor);
     for(var j = 0; j < enemyUnitXs.length; j++) {
       if(unitTypes[i] !== 3 && dist(0,unitXs[i],0,enemyUnitXs[j]) <= 100 && enemyClose === false) {
         enemyClose = true;
@@ -1177,7 +1256,7 @@ function draw() {
   for(var i = 0; i < enemyUnitXs.length; i++) {
     enemyUnitTicks[i]++;
     enemyClose = false;
-    drawEnemyUnits(enemyUnitXs[i],enemyUnitYs[i],enemyUnitTypes[i],(180-enemyUnitAngles[i])/180*PI,enemyUnitHealths[i]);
+    drawEnemyUnits(enemyUnitXs[i],enemyUnitYs[i],enemyUnitTypes[i],(180-enemyUnitAngles[i])/180*PI,enemyUnitHealths[i],enemyColor);
     for(var j = 0; j < unitXs.length; j++) {
       if(enemyUnitTypes[i] !== 3 && dist(0,unitXs[j],0,enemyUnitXs[i]) <= 100 && enemyClose === false) {
         enemyClose = true;
@@ -1319,6 +1398,7 @@ function draw() {
         bestCandidate = dist(endPoint,0,unitXs[enemyTarget],0);
       }
     }
+    targetEnemyAngle += random(5*enemyCannonAiming-5,-5*enemyCannonAiming+5);
     if(targetEnemyAngle > enemyBaseGunAngle) {
       enemyBaseGunAngle+=1/enemyBaseGunSpeed;
     }
@@ -1396,6 +1476,51 @@ function draw() {
     textSize(20);
     fill(255,255,255);
     text("Back",1125,55);
+    strokeWeight(2);
+    text("Your Colors",220,190);
+    for(var i = 1; i < 8; i++) {
+      ColorFill(i,255);
+      if(playerColor === i) {
+        strokeWeight(7);
+      }
+      rect(225,150+i*50,100,25);
+      strokeWeight(2);
+    }
+    fill(255,255,255);
+    text("Enemy's Colors",355,190);
+    text("AI Cannon Shooting",530,190);
+    text("AI Unit Strategy",775,190);
+    for(var i = 1; i < 8; i++) {
+      ColorFill(i,255);
+      if(enemyColor === i) {
+        strokeWeight(7);
+      }
+      rect(375,150+i*50,100,25);
+      strokeWeight(2);
+    }
+    fill(64,64,64);
+    for(var i = 1; i < 4; i++) {
+      if(4-enemyCannonAiming === i) {
+        strokeWeight(5);
+      }
+      rect(525,75+i*125,200,100);
+      strokeWeight(2);
+    }
+    for(var i = 1; i < 4; i++) {
+      if(4-enemyUnitStrategy === i) {
+        strokeWeight(5);
+      }
+      rect(775,75+i*125,200,100);
+      strokeWeight(2);
+    }
+    textSize(75);
+    fill(255,255,255);
+    text("Bad",525,275);
+    text("OK",525,400);
+    text("Good",525,525);
+    text("Bad",775,275);
+    text("OK",775,400);
+    text("Good",775,525);
   }
   break;
   }
