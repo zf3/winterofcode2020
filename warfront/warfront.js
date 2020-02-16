@@ -1,3 +1,4 @@
+//sets up game
 function setup() {
   createCanvas(1200,700);
   frameRate(50);
@@ -5,6 +6,8 @@ function setup() {
     pressedKeys.push(false);
   }
 }
+//variables
+{
 var enemyCannonAiming = 2;
 var enemyUnitStrategy = 2;
 var playerColor = 1;
@@ -87,30 +90,39 @@ var tick2 = 0;
 var tick3 = 0;
 var tick4 = 100;
 var enemyClose = false;
-
+}
+//fill colors
 var ColorFill = function(type,opacity) {
   if(type === 1) {
+    //blue
     fill(0,0,255,opacity);
   }
   if(type === 2) {
+    //red
     fill(255,0,0,opacity);
   }
   if(type === 3) {
+    //green
     fill(0,255,0,opacity);
   }
   if(type === 4) {
+    //magenta
     fill(255,0,255,opacity);
   }
   if(type === 5) {
+    //aqua
     fill(0,255,255,opacity);
   }
   if(type === 6) {
+    //yellow
     fill(255,255,0,opacity);
   }
   if(type === 7) {
+    //gray
     fill(128,128,128,opacity);
   }
 };
+//draw your units
 var drawUnits = function(a,b,c,d,e) {
   switch(c) {
     //solider
@@ -207,6 +219,7 @@ var drawUnits = function(a,b,c,d,e) {
     break;
   }
 };
+//draw enemy units
 var drawEnemyUnits = function(a,b,c,d,e) {
   switch(c) {
     //solider
@@ -304,9 +317,12 @@ var drawEnemyUnits = function(a,b,c,d,e) {
     break;
   }
 }
+//draw bases
 var drawBase = function(a,b,c,d,e,f) {
   switch(d) {
+      //your base
       case 0:
+      {
       strokeWeight(5);
       ColorFill(playerColor,255); 
       quad(a+50+10*sin(c),b+50+10*cos(c),a+50+10*sin(c+PI),b+50+10*cos(c+PI),
@@ -333,8 +349,11 @@ var drawBase = function(a,b,c,d,e,f) {
       strokeWeight(10);
       line(a+50+10*sin(c+PI)+70*sin(c+PI/2),b+50+10*cos(c+PI)+70*cos(c+PI/2),
       a+50+10*sin(c)+70*sin(c+PI/2),b+50+10*cos(c)+70*cos(c+PI/2));
+      }
       break;
+      //enemy base
       case 1:
+      {
       strokeWeight(5);
       ColorFill(enemyColor,255); 
       quad(a+50+10*sin(c),b+50+10*cos(c),a+50+10*sin(c+PI),b+50+10*cos(c+PI),
@@ -362,9 +381,11 @@ var drawBase = function(a,b,c,d,e,f) {
       strokeWeight(10);
       line(a+50+10*sin(c+PI)+70*sin(c+PI/2),b+50+10*cos(c+PI)+70*cos(c+PI/2),
       a+50+10*sin(c)+70*sin(c+PI/2),b+50+10*cos(c)+70*cos(c+PI/2));
+      }
       break;
       }
 };
+//draw the ground
 var drawGround = function() {
   strokeWeight(1);
   fill(64,32,0);
@@ -374,6 +395,7 @@ var drawGround = function() {
   rect(-10,650,1220,10,5);
   stroke(0,0,0);
 }
+//draw menu
 var drawMenu = function() {
   fill(0,0,255)
   strokeWeight(2);
@@ -452,6 +474,7 @@ var drawMenu = function() {
   text(economy-5,420,75)
   textSize(100);
 }
+//reset all variables
 var resetGame = function() {
   shotSize = 20;
   enemyShotSize = 20;
@@ -530,17 +553,18 @@ var resetGame = function() {
   tick4 = 100;
   enemyClose = false;
 }
-
+//sets keys to true
 function keyPressed () {
   pressedKeys[keyCode] = true;
 }
-
+//sets keys to false
 function keyReleased () {
   pressedKeys[keyCode] = false;
 }
-
+//detects clicks
 function mousePressed () {
   switch(gameScreen) {
+  //menu screen
   case 0:{
     if(dist(600,400,mouseX,mouseY) <= 100) {
       gameScreen = 1;
@@ -553,6 +577,7 @@ function mousePressed () {
     }
   }
   break;
+  //game
   case 1: {
     if(baseHealth > 0 && pauseGame === false) {
       if(mouseX >= 25 && mouseX <= 65 && mouseY >= 5 && mouseY <= 45 && money >= 10) {
@@ -661,12 +686,14 @@ function mousePressed () {
     }
   }
   break;
+  //instructions
   case 2: {
     if(dist(1150,50,mouseX,mouseY) <= 50) {
       gameScreen = 0;
     }
   }
   break;
+  //settings
   case 3: {
     if(dist(1150,50,mouseX,mouseY) <= 50) {
       gameScreen = 0;
@@ -682,8 +709,8 @@ function mousePressed () {
     for(var i = 1; i < 4; i++) {
       if(mouseX > 525 && mouseX < 725 && mouseY < 675-i*125 && mouseY > 575-i*125) {
         if(enemyCannonAiming !== i) {
-          enemyCannonAiming = i;
           resetGame();
+          enemyCannonAiming = i;
         }
       }
       if(mouseX > 775 && mouseX < 975 && mouseY < 675-i*125 && mouseY > 575-i*125) {
@@ -697,15 +724,25 @@ function mousePressed () {
   break;
   }
 }
-
+//runs main code
 function draw() {
   switch(gameScreen) {
+  //game
   case 1: {
+  //good cannon shooting detection
+  if(enemyCannonAiming === 1) {
+    enemyWeaponType = 1;
+  }
   if(pauseGame === false) {
+  //tick increases
+  {
   tick++;
   tick2++;
   tick3++;
   tick4++;
+  }
+  //game screen rendering
+  {
   background(128,128,255);
   textSize(35);
   strokeWeight(5);
@@ -729,18 +766,26 @@ function draw() {
   drawMenu(playerColor);
   drawBase(10,500,(baseGunAngle)/180*PI,0,baseHealth,baseArmor,playerColor);
   drawBase(1090,500,(180-(enemyBaseGunAngle))/180*PI,1,enemyBaseHealth,enemyBaseArmor,enemyColor);
+  }
+  //player base cannon key detection
+  {
+  //cannon angle increase
   if(pressedKeys[87] && baseGunAngle <= 180) {
       baseGunAngle+=1/baseGunSpeed;
   }
-  if(pressedKeys[83] && baseGunAngle >= 0) {
+  //cannon angle reduction
+  if(pressedKeys[83] && baseGunAngle > 0) {
       baseGunAngle-=1/baseGunSpeed;
   }
-  if(pressedKeys[68] && baseGunPower <= maxGunPower) {
+  //cannon power increase
+  if(pressedKeys[68] && baseGunPower < maxGunPower) {
       baseGunPower+=1/baseGunSpeed;
   }
-  if(pressedKeys[65] && baseGunPower >= 0 ) {
+  //cannon power reduction
+  if(pressedKeys[65] && baseGunPower > 0 ) {
       baseGunPower-=1/baseGunSpeed;
   }
+  //cannon shot detection
   if(pressedKeys[32] && tick >= firerate && baseHealth > 0) {
     if(weaponType !== 1) {
       baseGunShotXs.push(60+70*sin((baseGunAngle-270)/180*PI));
@@ -765,6 +810,9 @@ function draw() {
       tick = 0;
     }
   }
+  }
+  //enemy unit strategy
+  {
   if(enemyMoney >= 100 && enemyBaseHealth > 0 && enemyUnitStrategy === 1) {
     enemyUnitXs.push(1090);
     enemyUnitYs.push(650);
@@ -774,16 +822,14 @@ function draw() {
     enemyUnitTicks.push(0);
     enemyUnitSpeeds.push(1);
     enemyMoney -= 50;
-    for(var i = 0; i < 5; i++) {
     enemyUnitXs.push(1090);
     enemyUnitYs.push(650);
-    enemyUnitTypes.push(1);
+    enemyUnitTypes.push(3);
     enemyUnitAngles.push(0);
     enemyUnitHealths.push(10);
     enemyUnitTicks.push(0);
     enemyUnitSpeeds.push(1);
-    enemyMoney -= 10;
-    }
+    enemyMoney -= 50;
   }
   if(enemyMoney >= 50 && enemyBaseHealth > 0 && enemyUnitStrategy === 2) {
     for(var i = 0; i < 5; i++) {
@@ -807,6 +853,8 @@ function draw() {
     enemyUnitSpeeds.push(1);
     enemyMoney -= 10;
   }
+  }
+  //player base cannon projectiles
   for(var i = 0; i < baseGunShotXs.length; i++) {
       fill(64,64,64);
       if(weaponType === 1) {
@@ -910,6 +958,7 @@ function draw() {
         shotYVelocities.splice(i,1);
       }
   }
+  //player mortar projectiles
   for(var i = 0; i < mortarShotXs.length; i++) {
     fill(64,64,64);
     strokeWeight(2);
@@ -960,6 +1009,7 @@ function draw() {
       mortarShotYVels.splice(i,1);
     }
 }
+  //enemy mortar projectiles
   for(var i = 0; i < enemyMortarShotXs.length; i++) {
     fill(64,64,64);
     strokeWeight(2);
@@ -1010,6 +1060,7 @@ function draw() {
       enemyMortarShotYVels.splice(i,1);
     }
   }
+  //enemy base cannon projectiles
   for(var i = 0; i < enemyBaseGunShotXs.length; i++) {
     fill(64,64,64);
     strokeWeight(5);
@@ -1023,17 +1074,19 @@ function draw() {
       enemyMultiplier = 2;
     }
     if(enemyWeaponType === 1) {
-      multiplier = 0.7;
+      multiplier = 0.6;
     }
     if(enemyWeaponType === 2 || enemyWeaponType === 4) {
       enemyMultiplier = 1;
     }
     if(enemyWeaponType === 1) {
       enemyShotSize = 10;
+      strokeWeight(2);
       ellipse(enemyBaseGunShotXs[i],enemyBaseGunShotYs[i],10,10);
     }
     else {
       enemyShotSize = 20;
+      strokeWeight(5);
       ellipse(enemyBaseGunShotXs[i],enemyBaseGunShotYs[i],20,20);
     }
     enemyBaseGunShotXs[i]+=enemyShotXVelocities[i];
@@ -1112,11 +1165,13 @@ function draw() {
       enemyShotYVelocities.splice(i,1);
     }
 }
+  //money increases
   if(tick2 >= 60) {
     money+=economy;
     enemyMoney+=enemyEconomy;
     tick2 = 0;
   }
+  //player units
   for(var i = 0; i < unitXs.length; i++) {
     if(dist(unitXs[i],0,1090,0) <= enemyMaxGunPower*12) {
       enemyBaseShooting = true;
@@ -1253,6 +1308,7 @@ function draw() {
       }
     }
   }
+  //enemy units
   for(var i = 0; i < enemyUnitXs.length; i++) {
     enemyUnitTicks[i]++;
     enemyClose = false;
@@ -1279,33 +1335,32 @@ function draw() {
         }
       }
       if(enemyUnitTypes[i] === 3 && dist(0,unitXs[j],0,enemyUnitXs[i]) <= 210 && enemyClose === false) {
-          enemyClose = true;
-          bestCandidate = 1000;
-          //This part(960 to 984)
-          for(var l = 0; l < amountOfMortarCandidates; l++) {
-            var testX = (unitXs[i]+40*sin((-(l*90/amountOfMortarCandidates)-90)/180*PI));
-            var testY = (unitYs[i]+40*cos((-(l*90/amountOfMortarCandidates)-90)/180*PI));
-            var testXVel = (35/10*sin((-(l*90/amountOfMortarCandidates)-90)/180*PI));
-            var testYVel = (-35/10*cos((-(l*90/amountOfMortarCandidates))-90)/180*PI);
-            var endPoint = testX+testXVel*((testYVel/gravity)*2+Math.sqrt(testY*2/gravity));
-            if(dist(endPoint,0,unitXs[j]+10,0) < bestCandidate) {
-              enemyUnitTargetAngles[i] = l*90/amountOfMortarCandidates;
-              bestCandidate = dist(endPoint,0,unitXs[j]+10,0);
-            }
+        enemyClose = true;
+        bestCandidate = 1000;
+        for(var l = 0; l < amountOfMortarCandidates; l++) {
+          var testX = enemyUnitXs[i]+40*sin((-(l*90/amountOfMortarCandidates)-90)/180*PI);
+          var testY = enemyUnitYs[i]+40*cos((-(l*90/amountOfMortarCandidates)-90)/180*PI);
+          var testXVel = 35/10*sin((-(l*90/amountOfMortarCandidates)-90)/180*PI);
+          var testYVel = -35/10*cos((-(l*90/amountOfMortarCandidates)-90)/180*PI);
+          var endPoint = testX+testXVel*((testYVel/gravity)*2+(Math.sqrt((650-testY)*2/gravity)));
+          if(dist(endPoint,0,unitXs[j],0) < bestCandidate) {
+            enemyUnitTargetAngles[i] = l*90/amountOfMortarCandidates;
+            bestCandidate = dist(endPoint,0,unitXs[j],0);
           }
-          if(enemyUnitTargetAngles[i] > enemyUnitAngles[i]) {
-            enemyUnitAngles[i] += 1/2.5;
-          }
-          if(enemyUnitTargetAngles[i] < enemyUnitAngles[i]) {
-            enemyUnitAngles[i] -= 1/2.5;
-          }
-          if(enemyUnitTicks[i] >= 100) {
-            enemyUnitTicks[i] = 0;
-            enemyMortarShotXs.push(enemyUnitXs[i]+40*sin((-(enemyUnitAngles[i])-90)/180*PI));
-            enemyMortarShotYs.push(enemyUnitYs[i]+40*cos((-(enemyUnitAngles[i])-90)/180*PI));
-            enemyMortarShotXVels.push(35/10*sin((-(enemyUnitAngles[i])-90)/180*PI));
-            enemyMortarShotYVels.push(-35/10*cos((-(enemyUnitAngles[i])-90)/180*PI));
-          }
+        }
+        if(enemyUnitTargetAngles[i] > enemyUnitAngles[i]) {
+          enemyUnitAngles[i] += 1/2.5;
+        }
+        if(enemyUnitTargetAngles[i] < enemyUnitAngles[i]) {
+          enemyUnitAngles[i] -= 1/2.5;
+        }
+        if(enemyUnitTicks[i] >= 100) {
+          enemyUnitTicks[i] = 0;
+          enemyMortarShotXs.push(enemyUnitXs[i]+40*sin((-(enemyUnitAngles[i])-90)/180*PI));
+          enemyMortarShotYs.push(enemyUnitYs[i]+40*cos((-(enemyUnitAngles[i])-90)/180*PI));
+          enemyMortarShotXVels.push(35/10*sin((-(enemyUnitAngles[i])-90)/180*PI));
+          enemyMortarShotYVels.push(-35/10*cos((-(enemyUnitAngles[i])-90)/180*PI));
+        }
       }
     }
     if(enemyUnitTypes[i] !== 3 && dist(0,enemyUnitXs[i],0,130) <= 100 && baseHealth > 0 && enemyClose === false) {
@@ -1385,6 +1440,8 @@ function draw() {
       }
     }
   }
+  //enemy base cannon shooting
+  {
   if(enemyBaseShooting === true && enemyBaseHealth > 0) {
     bestCandidate = 1000;
     for(var i = 0; i < amountOfCandidates; i++) {
@@ -1407,24 +1464,45 @@ function draw() {
     }
     if(tick4 >= enemyFirerate) {
       tick4 = 0;
+      if(enemyWeaponType !== 1) { 
       enemyBaseGunShotXs.push(1140+70*sin((-enemyBaseGunAngle-90)/180*PI));
       enemyBaseGunShotYs.push(550+70*cos((-enemyBaseGunAngle-90)/180*PI));
       enemyShotXVelocities.push(enemyBaseGunPower/10*sin((-enemyBaseGunAngle-90)/180*PI));
       enemyShotYVelocities.push(-enemyBaseGunPower/10*cos((-enemyBaseGunAngle-90)/180*PI));
+      }
+      else {
+      enemyBaseGunShotXs.push(1140+70*sin((-enemyBaseGunAngle-90)/180*PI));
+      enemyBaseGunShotYs.push(550+70*cos((-enemyBaseGunAngle-90)/180*PI));
+      enemyShotXVelocities.push(enemyBaseGunPower/10*sin((-enemyBaseGunAngle-90)/180*PI));
+      enemyShotYVelocities.push(-enemyBaseGunPower/10*cos((-enemyBaseGunAngle-90)/180*PI));
+      enemyBaseGunShotXs.push(1140+70*sin((-enemyBaseGunAngle-85)/180*PI));
+      enemyBaseGunShotYs.push(550+70*cos((-enemyBaseGunAngle-85)/180*PI));
+      enemyShotXVelocities.push(enemyBaseGunPower/10*sin((-enemyBaseGunAngle-85)/180*PI));
+      enemyShotYVelocities.push(-enemyBaseGunPower/10*cos((-enemyBaseGunAngle-85)/180*PI));
+      enemyBaseGunShotXs.push(1140+70*sin((-enemyBaseGunAngle-95)/180*PI));
+      enemyBaseGunShotYs.push(550+70*cos((-enemyBaseGunAngle-95)/180*PI));
+      enemyShotXVelocities.push(enemyBaseGunPower/10*sin((-enemyBaseGunAngle-95)/180*PI));
+      enemyShotYVelocities.push(-enemyBaseGunPower/10*cos((-enemyBaseGunAngle-95)/180*PI));
+      }
     }
   }
   if(enemyBaseShooting === false) {
     bestCandidate = 1000;
   }
+  }
 }
   break;
   }
   break;
+  //menu
   case 0: {
+  //background
+  {
   background(128,128,255);
   drawGround();
   drawBase(10,500,(45)/180*PI,0,500,100);
   drawBase(1090,500,(180-(45))/180*PI,1,500,100);
+  }
   textSize(200);
   fill(64,64,64);
   text("Warfront",200,200);
@@ -1443,12 +1521,16 @@ function draw() {
   text("Instructions",215,410);
   }
   break;
+  //instructions
   case 2: {
+    //background
+    {
     textSize(150);
     background(128,128,255);
     drawBase(10,500,(45)/180*PI,0,500,100);
     drawBase(1090,500,(180-(45))/180*PI,1,500,100);
     drawGround();
+    }
     fill(64,64,64);
     strokeWeight(10);
     text("Instructions",200,125);
@@ -1457,17 +1539,22 @@ function draw() {
     textSize(20);
     fill(255,255,255);
     text("Back",1125,55);
+    //main text
     {
     text("\n    Welcome to Warfront! Warfront is a strategy game where you control a base and\n try to destroy the AI-controlled enemy base. You have a menu, which you can use\n to buy the Economy upgrade, which increases money earning so you can buy more\n stuff, you can buy troops, of which there are four types - Soliders (Basic soliders,\n cheap), Mortars (High-damage, but require setup time and are easily destroyed),\n Tanks (Ok at everything, can one-shot soliders and mortars), and Shielders \n(Extremely tough, but have the lowest DPS. Other than troops, you can upgrade\n your base's cannon, which you can use to shoot enemies, though even maxed out\n it cannot hit the enemy base. There are two ways to upgrade the cannon. There \nare the normal upgrades, which are Damage (increases damage), Max Power \n(increases max range), Firerate (increases firerate, obviously), and AoE (adds \nexplosives - explosives deal extra damage and have a larger area of effect compared \nto the cannonball). There are also the cannon types - your cannon can be turned into \na type, which has special attributes as follows: Piercing - doubled damage! Scattershot\n - fires three lower-damage shots, Slowdown - Slows down enemies if they are hit, \nand Explosive - Extra explosives! Finally, you can also buy base Armor, which \nincreases in cost as you keep buying it and basically adds a second health bar with a\n max HP of 100 - the first has a HP of 500. Have fun!",210,150);
     }
   }
+  //settings
   break;
   case 3: {
+    //background
+    {
     textSize(150);
     background(128,128,255);
     drawBase(10,500,(45)/180*PI,0,500,100);
     drawBase(1090,500,(180-(45))/180*PI,1,500,100);
     drawGround();
+    }
     fill(64,64,64);
     strokeWeight(10);
     text("Settings",300,125);
@@ -1478,6 +1565,7 @@ function draw() {
     text("Back",1125,55);
     strokeWeight(2);
     text("Your Colors",220,190);
+    //your color selection rendering
     for(var i = 1; i < 8; i++) {
       ColorFill(i,255);
       if(playerColor === i) {
@@ -1490,6 +1578,7 @@ function draw() {
     text("Enemy's Colors",355,190);
     text("AI Cannon Shooting",530,190);
     text("AI Unit Strategy",775,190);
+    //enemy color selection rendering
     for(var i = 1; i < 8; i++) {
       ColorFill(i,255);
       if(enemyColor === i) {
@@ -1499,6 +1588,7 @@ function draw() {
       strokeWeight(2);
     }
     fill(64,64,64);
+    //enemy cannon aiming selection rendering
     for(var i = 1; i < 4; i++) {
       if(4-enemyCannonAiming === i) {
         strokeWeight(5);
@@ -1506,6 +1596,7 @@ function draw() {
       rect(525,75+i*125,200,100);
       strokeWeight(2);
     }
+    //enemy unit strategy selection rendering
     for(var i = 1; i < 4; i++) {
       if(4-enemyUnitStrategy === i) {
         strokeWeight(5);
