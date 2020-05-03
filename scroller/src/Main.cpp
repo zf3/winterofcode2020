@@ -8,7 +8,43 @@
 #include <ctime>
 #include <cstdlib>
 
+#include "TileMap.hpp"
+
 using namespace sf;
+using namespace std;
+
+// 读取Tiled格式的CSV文件，成功的话返回true
+// result是row-major的所有整数结果
+bool loadTiledCsv(string f, vector<int> &result, int *width, int *height) {
+    ifstream file(f);
+    if (!file) {
+        cout << "Cannot open file " << f << endl;
+        return false;
+    }
+    std::string line = "";
+    *width = -1;
+    *height = 0;
+    // Iterate through each line and split the content using delimeter
+    while (getline(file, line)) {
+        std::string token;
+        size_t pos;
+        while (line.length() > 0) {
+            pos = line.find(",");
+            if (pos == string::npos)
+                pos = line.length();
+            token = line.substr(0, pos);
+            result.push_back(stoi(token));
+            line.erase(0, pos + 1);
+        }
+        if (*width == -1)
+            *width = result.size();
+        (*height) ++;
+    }
+    // Close the File
+    file.close();
+    return true;
+}
+
 
 ////////////////////////////////////////////////////////////
 /// Entry point of application
@@ -35,7 +71,7 @@ int main()
     window.setVerticalSyncEnabled(true);
     window.setFramerateLimit(60);
 
-    View view(sf::FloatRect(200.f, 200.f, 400.f, 300.f));
+    View view(sf::FloatRect(200.f, 200.f, 800.f, 600.f));
     window.setView(view);
 
     // Load the sounds used in the game
@@ -44,14 +80,30 @@ int main()
         return EXIT_FAILURE;
     sf::Sound ballSound(ballSoundBuffer);
 
+    // Load tilemap
+    vector<int> level0, level1;
+    int width, height;
+    if (!loadTiledCsv("resources/map_Bottom Layer.csv", level0, &width, &height))
+        return -1;
+    if (!loadTiledCsv("resources/map_Top Layer.csv", level1, &width, &height))
+        return -1;
+    cout << "Levels loaded width=" << width << ", height=" << height << endl;
+    TileMap map;
+    if (!map.load("resources/RPG Nature Tileset.png", sf::Vector2u(32, 32), level0, width, height))
+        return -1;
+    if (!map.addLayer(level1, width, height))
+        return -1;
+
     // Load background image
+    /*
     Texture texture;
-    texture.loadFromFile("resources/background.jpg");
+    texture.loadFromFile("resources/background.bmp");
     Sprite bg;
     // Vector2u size = texture.getSize();
     bg.setTexture(texture);
     // bg.setOrigin(size.x / 2, size.y / 2);
     // bg.setOrigin(size.x / 2, size.y / 2);
+    */
 
     // Create the left paddle
     sf::RectangleShape leftPaddle;
@@ -97,7 +149,7 @@ int main()
     float rightPaddleSpeed  = 0.f;
     const float ballSpeed   = 400.f;
     float ballAngle         = 0.f; // to be changed later
-    float speed = 50.f;
+    float speed = 80.f;
 
     sf::Clock clock;
     bool isPlaying = false;
@@ -276,7 +328,7 @@ int main()
         // Clear the window
         window.clear(sf::Color(50, 200, 50));
 
-        window.draw(bg);
+        window.draw(map);
 
         if (isPlaying)
         {
