@@ -13,38 +13,10 @@
 using namespace sf;
 using namespace std;
 
-// 读取Tiled格式的CSV文件，成功的话返回true
-// result是row-major的所有整数结果
-bool loadTiledCsv(string f, vector<int> &result, int *width, int *height) {
-    ifstream file(f);
-    if (!file) {
-        cout << "Cannot open file " << f << endl;
-        return false;
-    }
-    std::string line = "";
-    *width = -1;
-    *height = 0;
-    // Iterate through each line and split the content using delimeter
-    while (getline(file, line)) {
-        std::string token;
-        size_t pos;
-        while (line.length() > 0) {
-            pos = line.find(",");
-            if (pos == string::npos)
-                pos = line.length();
-            token = line.substr(0, pos);
-            result.push_back(stoi(token));
-            line.erase(0, pos + 1);
-        }
-        if (*width == -1)
-            *width = result.size();
-        (*height) ++;
-    }
-    // Close the File
-    file.close();
-    return true;
-}
-
+bool prompt = true;
+const int L = 1, R = 2, U = 3, D = 0;       // corresponding to lines in sprites
+const int PER_FRAME = 20;       // distance to move before changing sprite frame
+const int TOTAL_FRAMES = 3;
 
 ////////////////////////////////////////////////////////////
 /// Entry point of application
@@ -57,18 +29,22 @@ int main()
     std::srand(static_cast<unsigned int>(std::time(NULL)));
 
     // Define some constants
-    const int gameWidth = 1400;
-    const int gameHeight = 1400;
+    int winWidth = 1400;
+    int winHeight = 1400;
+    float scale = 2.f;      // increase to magnify
+
     // Key status
     bool UP=false,DOWN=false,LEFT=false,RIGHT=false;
+    float distance = 0.f;
+    int direction = R;
 
     // Create the window of the application
-    sf::RenderWindow window(sf::VideoMode(gameWidth, gameHeight, 32), "SFML Pong",
-                            sf::Style::Titlebar | sf::Style::Close);
+    sf::RenderWindow window(sf::VideoMode(winWidth, winHeight, 32), "SFML Pong",
+                            sf::Style::Titlebar | sf::Style::Close | sf::Style::Resize);
     window.setVerticalSyncEnabled(true);
     window.setFramerateLimit(60);
 
-    View view(sf::FloatRect(0.f, 0.f, 600.f, 600.f));
+    View view(sf::FloatRect(0.f, 0.f, winWidth / scale, winHeight / scale));
     window.setView(view);
 
     // Load the sounds used in the game
@@ -90,6 +66,14 @@ int main()
         return -1;
     if (!map.addLayer(level1, width, height))
         return -1;
+
+    // Init our character
+    Texture t;
+    if (!t.loadFromFile("resources/Pipoya/Female/Female 01-1.png"))
+        return -1;
+    Sprite character;
+    character.setTexture(t);
+    character.setTextureRect(IntRect(0, 64, 32, 32));
 
     // Load the text font
     sf::Font font;
@@ -121,6 +105,13 @@ int main()
                 break;
             }
 
+            if (event.type == sf::Event::Resized) {
+                cout << "Resized" << endl;
+                Vector2u s = window.getSize();
+                view.setSize(s.x / scale, s.y / scale);
+                window.setView(view);
+            }
+
             // Move view, speed is pixels per second
             if (event.type == sf::Event::KeyPressed || event.type == sf::Event::KeyReleased) {
                 bool pressed = event.type == sf::Event::KeyPressed;
@@ -143,20 +134,43 @@ int main()
             }
         }
 
+        float tomove = deltaTime * speed;
+        int frame = 0;
+        if (UP || DOWN || LEFT || RIGHT) {
+            // We are walking
+            prompt = false;
+            int newDirection = R;
+            if (UP)
+                newDirection = U;
+            else if (DOWN)
+                newDirection = D;
+            if (RIGHT)
+                newDirection = R;
+            else if (LEFT)
+                newDirection = L;
+            distance += tomove;
+            if (direction != newDirection) {
+                direction = newDirection;
+                distance = 0.f;
+            }
+            frame = (int)distance / PER_FRAME % TOTAL_FRAMES;
+            cout << "direction=" << direction << ", frame=" << frame << endl;
+            character.setTextureRect(IntRect(32 * frame, 32 * direction, 32, 32));
+        }
         if (UP) {
-            view.move(0, -deltaTime * speed);
+            view.move(0, -tomove);
             window.setView(view);
         }
         if (DOWN) {
-            view.move(0, deltaTime * speed);
+            view.move(0, tomove);
             window.setView(view);
         }
         if (LEFT) {
-            view.move(-deltaTime * speed, 0);
+            view.move(-tomove, 0);
             window.setView(view);
         }
         if (RIGHT) {
-            view.move(deltaTime * speed, 0);
+            view.move(tomove, 0);
             window.setView(view);
         }
 
@@ -165,8 +179,12 @@ int main()
 
         window.draw(map);
 
+        character.setPosition(view.getCenter());
+        window.draw(character);
+
         // Draw the pause message
-        window.draw(message);
+        if (prompt)
+            window.draw(message);
 
         // Display things on screen
         window.display();

@@ -1,6 +1,11 @@
 #pragma once
 #include <SFML/Graphics.hpp>
 #include <vector>
+#include <string>
+
+// 读取Tiled格式的CSV文件，成功的话返回true
+// result是row-major的所有整数结果
+bool loadTiledCsv(std::string f, std::vector<int> &result, int *width, int *height);
 
 class TileMap : public sf::Drawable, public sf::Transformable
 {

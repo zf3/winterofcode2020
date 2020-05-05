@@ -1,5 +1,40 @@
 #include "TileMap.hpp"
 
+using namespace std;
+
+// 读取Tiled格式的CSV文件，成功的话返回true
+// result是row-major的所有整数结果
+bool loadTiledCsv(string f, vector<int> &result, int *width, int *height) {
+    ifstream file(f);
+    if (!file) {
+        cout << "Cannot open file " << f << endl;
+        return false;
+    }
+    std::string line = "";
+    *width = -1;
+    *height = 0;
+    // Iterate through each line and split the content using delimeter
+    while (getline(file, line)) {
+        std::string token;
+        size_t pos;
+        while (line.length() > 0) {
+            pos = line.find(",");
+            if (pos == string::npos)
+                pos = line.length();
+            token = line.substr(0, pos);
+            result.push_back(stoi(token));
+            line.erase(0, pos + 1);
+        }
+        if (*width == -1)
+            *width = result.size();
+        (*height) ++;
+    }
+    // Close the File
+    file.close();
+    return true;
+}
+
+
 bool TileMap::load(const std::string& tileset, sf::Vector2u tileSize, const std::vector<int> &tiles, unsigned int width, unsigned int height)
 {
 	// load the tileset texture
