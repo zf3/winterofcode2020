@@ -6,8 +6,6 @@
 using namespace sf;
 using namespace std;
 
-// 读取Tiled格式的CSV文件，成功的话返回true
-// result是row-major的所有整数结果
 bool loadTiledCsv(string f, vector<int> &result, int *width, int *height) {
     ifstream file(f);
     if (!file) {
@@ -64,8 +62,6 @@ int main()
     if (!map.addLayer(level4, width, height))
         return -1;
     int screenWidth = 800, screenHeight = 600;
-    int tileWidth = 1000, tileHeight = 1000;
-    float playerX = 0, playerY = 0;
     sf::Clock clock;
     bool keyStatus[4] = {false};
     RenderWindow window(VideoMode(screenWidth, screenHeight), "Test window");
@@ -73,13 +69,19 @@ int main()
     View view(FloatRect(0.f, 0.f, 800.f, 600.f));
     window.setView(view);
 
-    int spriteX = 0, spriteY = 0;
     Texture texture;
-    texture.loadFromFile("resources/Desert_1.png");
-    Sprite bg;
-    bg.setTextureRect(IntRect(0, 0, tileWidth, tileHeight));
-    bg.setTexture(texture);
-    bg.move(spriteX,spriteY);
+    texture.loadFromFile("resources/PlayerChar1_Small.png", sf::IntRect(0, 0, 110, 230));
+    texture.setSmooth(true);
+    // Texture texture2;
+    // texture2.loadFromFile("resources/PlayerChar2_Small.png", sf::IntRect(0, 0, 110, 150));
+    // texture2.setSmooth(true);
+    Sprite player;
+    // player.setTexture(texture2);
+    // player.setOrigin(55, 95);
+    player.setTexture(texture);
+    player.setOrigin(55, 175);
+    player.setPosition(400,300);
+    player.setScale(0.5,0.5);
     float speed = 2;
 
     while (window.isOpen())
@@ -126,6 +128,11 @@ int main()
                     keyStatus[3] = false;
                 }
             }
+            sf::Vector2i localPosition = sf::Mouse::getPosition(window);
+            float mouseX = localPosition.x;
+            float mouseY = localPosition.y;
+            float direction = (atan2(mouseY-300, mouseX-400)/3.14159)*180+90;
+            player.setRotation(direction);
         }
         Time time = clock.getElapsedTime();
         float deltaTime = time.asMilliseconds();
@@ -133,33 +140,27 @@ int main()
         if(keyStatus[0] == true) {
             view.move(0,deltaTime*speed);
             window.setView(view);
-            playerY+=deltaTime*speed;
+            player.move(0,deltaTime*speed);
         }
         if(keyStatus[1] == true) {
             view.move(0,-deltaTime*speed);
             window.setView(view);
-            playerY-=deltaTime*speed;
+            player.move(0,-deltaTime*speed);
         }
         if(keyStatus[2] == true) {
             view.move(-deltaTime*speed,0);
             window.setView(view);
-            playerX-=deltaTime*speed;
+            player.move(-deltaTime*speed,0);
         }
         if(keyStatus[3] == true) {
             view.move(deltaTime*speed,0);
             window.setView(view);
-            playerX+=deltaTime*speed;
+            player.move(deltaTime*speed,0);
         }
         window.clear(Color::White);
 
         window.draw(map);
-
-        // if(playerX >= -screenWidth+spriteX &&
-        //     playerY >= -screenHeight+spriteY &&
-        //     playerX+spriteX <= screenWidth+tileWidth &&
-        //     playerY <= screenHeight+tileHeight+spriteY) {
-        //     window.draw(bg);
-        // }
+        window.draw(player);
 
         window.display();
     }
