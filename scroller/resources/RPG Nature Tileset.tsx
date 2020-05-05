@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tileset version="1.2" tiledversion="1.3.4" name="RPG Nature Tileset" tilewidth="32" tileheight="32" tilecount="180" columns="20">
+ <image source="../../../gameart/RPG Nature Tileset.png" width="641" height="288"/>
+ <terraintypes>
+  <terrain name="Road" tile="42"/>
+  <terrain name="Water" tile="67"/>
+  <terrain name="Rugged Road" tile="127"/>
+  <terrain name="Lake" tile="132"/>
+ </terraintypes>
+ <tile id="41" terrain="1,1,1,1"/>
+ <tile id="42" terrain="0,0,0,0"/>
+ <tile id="60" terrain="0,0,0,"/>
+ <tile id="61" terrain="0,0,,"/>
+ <tile id="62" terrain="0,0,,0"/>
+ <tile id="63" terrain=",,,0"/>
+ <tile id="64" terrain=",,0,"/>
+ <tile id="65" terrain="1,1,1,"/>
+ <tile id="66" terrain="1,1,,"/>
+ <tile id="67" terrain="1,1,,1"/>
+ <tile id="68" terrain=",,,1"/>
+ <tile id="69" terrain=",,1,"/>
+ <tile id="80" terrain="0,,0,"/>
+ <tile id="82" terrain=",0,,0"/>
+ <tile id="83" terrain=",0,,"/>
+ <tile id="84" terrain="0,,,"/>
+ <tile id="85" terrain="1,,1,"/>
+ <tile id="87" terrain=",1,,1"/>
+ <tile id="88" terrain=",1,,"/>
+ <tile id="89" terrain="1,,,"/>
+ <tile id="100" terrain="0,,0,0"/>
+ <tile id="101" terrain=",,0,0"/>
+ <tile id="102" terrain=",0,0,0"/>
+ <tile id="103" terrain=",0,0,"/>
+ <tile id="104" terrain="0,,,0"/>
+ <tile id="105" terrain="1,,1,1"/>
+ <tile id="106" terrain=",,1,1"/>
+ <tile id="107" terrain=",1,1,1"/>
+ <tile id="108" terrain=",1,1,"/>
+ <tile id="109" terrain="1,,,1"/>
+ <tile id="125" terrain=",,,2"/>
+ <tile id="126" terrain=",,2,2"/>
+ <tile id="127" terrain=",,2,"/>
+ <tile id="128" terrain="2,2,2,"/>
+ <tile id="129" terrain="2,2,,2"/>
+ <tile id="130" terrain=",,,3"/>
+ <tile id="131" terrain=",,3,3"/>
+ <tile id="132" terrain=",,3,"/>
+ <tile id="133" terrain="3,3,3,"/>
+ <tile id="134" terrain="3,3,,3"/>
+ <tile id="145" terrain=",2,,2"/>
+ <tile id="146" terrain="2,2,2,2"/>
+ <tile id="147" terrain="2,,2,"/>
+ <tile id="148" terrain="2,,2,2"/>
+ <tile id="149" terrain=",2,2,2"/>
+ <tile id="150" terrain=",3,,3"/>
+ <tile id="151" terrain="3,3,3,3"/>
+ <tile id="152" terrain="3,,3,"/>
+ <tile id="153" terrain="3,,3,3"/>
+ <tile id="154" terrain=",3,3,3"/>
+ <tile id="165" terrain=",2,,"/>
+ <tile id="166" terrain="2,2,,"/>
+ <tile id="167" terrain="2,,,"/>
+ <tile id="168" terrain="2,,,2"/>
+ <tile id="169" terrain=",2,2,"/>
+ <tile id="170" terrain=",3,,"/>
+ <tile id="171" terrain="3,3,,"/>
+ <tile id="172" terrain="3,,,"/>
+ <tile id="173" terrain="3,,,3"/>
+ <tile id="174" terrain=",3,3,"/>
+</tileset>
