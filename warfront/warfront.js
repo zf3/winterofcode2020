@@ -744,6 +744,18 @@ function draw() {
   //game screen rendering
   {
   background(128,128,255);
+  if(enemyBaseHealth <= 0) {
+    background(0,255,0);
+    textSize(200);
+    fill(64,64,64);
+    text("YOU WIN!",100,300);
+  }
+  if(baseHealth <= 0) {
+    background(255,0,0);
+    textSize(200);
+    fill(64,64,64);
+    text("YOU LOSE!",50,300);
+  }
   textSize(35);
   strokeWeight(5);
   fill(64,64,64);
@@ -1008,7 +1020,7 @@ function draw() {
       mortarShotXVels.splice(i,1);
       mortarShotYVels.splice(i,1);
     }
-}
+  }
   //enemy mortar projectiles
   for(var i = 0; i < enemyMortarShotXs.length; i++) {
     fill(64,64,64);
