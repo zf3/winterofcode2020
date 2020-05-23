@@ -9,18 +9,25 @@
 using namespace sf;
 using namespace std;
 
-bool hitboxD (vector<int> csv, float mult, float x, float y, int width) {
+bool hitboxD (vector<int> csv, float mult, float x, float y, int width, int targ) {
     int a = floor(x/mult), b = ceil(x/mult), c = floor(y/mult), d = ceil(y/mult);
-    if(csv[c*width+a] == 43) {
+    if(csv[c*width+a] == targ) {
         return true;
     }
-    if(csv[d*width+a] == 43) {
+    if(csv[d*width+a] == targ) {
         return true;
     }
-    if(csv[c*width+b] == 43) {
+    if(csv[c*width+b] == targ) {
         return true;
     }
-    if(csv[d*width+b] == 43) {
+    if(csv[d*width+b] == targ) {
+        return true;
+    }
+    return false;
+}
+bool hitboxD2(vector<int> csv, float mult, float x, float y, int width, int targ) {
+    int a = x/mult, b = y/mult;
+    if(csv[b*width+a] == targ) {
         return true;
     }
     return false;
@@ -55,16 +62,23 @@ bool loadTiledCsv(string f, vector<int> &result, int *width, int *height) {
     return true;
 }
 struct weapon {
-    int weaponType = 2, handleType = 1, barrelType = 1;
-    float firerate = 1;
+    int weaponType = 2, handleType = 1, barrelType = 1, energy = 100, maxEnergy = 100, reloadTime = 1;
+    float firerate = 1, energyU = 10, damage;
 };
 int main()
 {
     int shotAmn = 0;
     weapon curr;
-    bool isFiring = false;
+    bool isFiring = false, isReloading = false;
     float speed = 0.5;
+
     vector<int> level0, level1, level2, level3, level4;
+    vector<Sprite> shots;
+    vector<float> speeds;
+    vector<float> rots;
+    vector<int> maxDur;
+    vector<float> dur;
+
     int width, height;
     if (!loadTiledCsv("resources/testmap_Tile Layer 1.csv", level0, &width, &height))
         return -1;
@@ -88,8 +102,6 @@ int main()
     if (!map.addLayer(level4, width, height))
         return -1;
     int screenWidth = 1200, screenHeight = 1200;
-    Clock clock;
-    Clock clock2;
     bool keyStatus[4] = {false};
     RenderWindow window(VideoMode(screenWidth, screenHeight), "Game window");
 
@@ -106,6 +118,8 @@ int main()
     texture3.loadFromFile("resources/Force_Orb.png");
     Texture texture4;
     texture4.loadFromFile("resources/Plasma_Orb.png");
+    Texture texture5;
+    texture5.loadFromFile("resources/Pulse-Impact.png");
     Sprite player;
     if(curr.weaponType == 1) {
         player.setTexture(texture2);
@@ -119,13 +133,18 @@ int main()
     player.setScale(0.5,0.5);
     view.move(100,100);
     window.setView(view);
+    Clock clock;
+    Clock clock2;
+    Clock clock3;
 
-    vector<Sprite> shots;
-    vector<float> speeds;
-    vector<float> rots;
-    vector<int> maxDur;
-    vector<float> dur;
-
+    sf::RectangleShape barBack(sf::Vector2f(50,10));
+    barBack.setFillColor(sf::Color(255, 255, 255));
+    barBack.setOutlineThickness(2.f);
+    barBack.setOutlineColor(sf::Color(0, 0, 0));
+    barBack.setPosition(475,450);
+    sf::RectangleShape bar(sf::Vector2f(0,6));
+    bar.setFillColor(sf::Color(0, 192, 0));
+    bar.setPosition(477,452);
     while (window.isOpen())
     {
         Event event;
@@ -157,6 +176,11 @@ int main()
                 {
                     keyStatus[3] = true;
                 }
+                if (event.key.code == sf::Keyboard::R)
+                {
+                    isReloading = true;
+                    clock3.restart();
+                }
             }
             if (event.type == Event::KeyReleased) {
                 if (event.key.code == sf::Keyboard::S)
@@ -186,7 +210,14 @@ int main()
         float deltaTime = time.asMilliseconds();
         Time time2 = clock2.getElapsedTime();
         float Timer = time2.asSeconds();
-        if(Timer >= curr.firerate && isFiring == true) {
+        Time time3 = clock3.getElapsedTime();
+        float Timer2 = time3.asSeconds();
+        bar.setSize(sf::Vector2f(46*Timer2/curr.reloadTime,6));
+        if(isReloading == true && Timer2 >= curr.reloadTime) {
+            curr.energy = curr.maxEnergy;
+            isReloading = false;
+        }
+        if(Timer >= curr.firerate && isFiring == true && curr.energy-curr.energyU >= 0 && isReloading == false) {
             if(curr.barrelType == 1) {
                 shots.push_back(Sprite(texture3));
                 speeds.push_back(1);
@@ -196,6 +227,11 @@ int main()
                 shots.push_back(Sprite(texture4));
                 speeds.push_back(0.1);
                 maxDur.push_back(4000);
+            }
+            else if(curr.barrelType == 3) {
+                shots.push_back(Sprite(texture5));
+                speeds.push_back(0);
+                maxDur.push_back(1000);
             }
             rots.push_back(player.getRotation());
             shots[shots.size()-1].getPosition();
@@ -207,54 +243,67 @@ int main()
             if(curr.handleType == 2) {
                 isFiring = false;
             }
+            curr.energy-=curr.energyU;
         }
         clock.restart();
         if(keyStatus[0] == true) {
-            if(hitboxD(level0,32,player.getPosition().x, player.getPosition().y+deltaTime*speed,50) == false
-            && hitboxD(level1,32,player.getPosition().x, player.getPosition().y+deltaTime*speed,50) == false
-            && hitboxD(level2,32,player.getPosition().x, player.getPosition().y+deltaTime*speed,50) == false
-            && hitboxD(level3,32,player.getPosition().x, player.getPosition().y+deltaTime*speed,50) == false
-            && hitboxD(level4,32,player.getPosition().x, player.getPosition().y+deltaTime*speed,50) == false) {
+            if(hitboxD(level0,32,player.getPosition().x-16, player.getPosition().y+deltaTime*speed-16,50,43) == false
+            && hitboxD(level1,32,player.getPosition().x-16, player.getPosition().y+deltaTime*speed-16,50,43) == false
+            && hitboxD(level2,32,player.getPosition().x-16, player.getPosition().y+deltaTime*speed-16,50,43) == false
+            && hitboxD(level3,32,player.getPosition().x-16, player.getPosition().y+deltaTime*speed-16,50,43) == false
+            && hitboxD(level4,32,player.getPosition().x-16, player.getPosition().y+deltaTime*speed-16,50,43) == false) {
                 view.move(0,deltaTime*speed);
                 window.setView(view);
                 player.move(0,deltaTime*speed);
+                bar.move(0,deltaTime*speed);
+                barBack.move(0,deltaTime*speed);
             }
         }
         if(keyStatus[1] == true) {
-            if(hitboxD(level0,32,player.getPosition().x, player.getPosition().y-deltaTime*speed,50) == false
-            && hitboxD(level1,32,player.getPosition().x, player.getPosition().y-deltaTime*speed,50) == false
-            && hitboxD(level2,32,player.getPosition().x, player.getPosition().y-deltaTime*speed,50) == false
-            && hitboxD(level3,32,player.getPosition().x, player.getPosition().y-deltaTime*speed,50) == false
-            && hitboxD(level4,32,player.getPosition().x, player.getPosition().y-deltaTime*speed,50) == false) {
+            if(hitboxD(level0,32,player.getPosition().x-16, player.getPosition().y-deltaTime*speed-16,50,43) == false
+            && hitboxD(level1,32,player.getPosition().x-16, player.getPosition().y-deltaTime*speed-16,50,43) == false
+            && hitboxD(level2,32,player.getPosition().x-16, player.getPosition().y-deltaTime*speed-16,50,43) == false
+            && hitboxD(level3,32,player.getPosition().x-16, player.getPosition().y-deltaTime*speed-16,50,43) == false
+            && hitboxD(level4,32,player.getPosition().x-16, player.getPosition().y-deltaTime*speed-16,50,43) == false) {
                 view.move(0,-deltaTime*speed);
                 window.setView(view);
                 player.move(0,-deltaTime*speed);
+                bar.move(0,-deltaTime*speed);
+                barBack.move(0,-deltaTime*speed);
             }
         }
         if(keyStatus[2] == true) {
-            if(hitboxD(level0,32,player.getPosition().x-deltaTime*speed, player.getPosition().y,50) == false
-            && hitboxD(level1,32,player.getPosition().x-deltaTime*speed, player.getPosition().y,50) == false
-            && hitboxD(level2,32,player.getPosition().x-deltaTime*speed, player.getPosition().y,50) == false
-            && hitboxD(level3,32,player.getPosition().x-deltaTime*speed, player.getPosition().y,50) == false
-            && hitboxD(level4,32,player.getPosition().x-deltaTime*speed, player.getPosition().y,50) == false) {
+            if(hitboxD(level0,32,player.getPosition().x-deltaTime*speed-16, player.getPosition().y-16,50,43) == false
+            && hitboxD(level1,32,player.getPosition().x-deltaTime*speed-16, player.getPosition().y-16,50,43) == false
+            && hitboxD(level2,32,player.getPosition().x-deltaTime*speed-16, player.getPosition().y-16,50,43) == false
+            && hitboxD(level3,32,player.getPosition().x-deltaTime*speed-16, player.getPosition().y-16,50,43) == false
+            && hitboxD(level4,32,player.getPosition().x-deltaTime*speed-16, player.getPosition().y-16,50,43) == false) {
                 view.move(-deltaTime*speed,0);
                 window.setView(view);
                 player.move(-deltaTime*speed,0);
+                bar.move(-deltaTime*speed,0);
+                barBack.move(-deltaTime*speed,0);
             }
         }
         if(keyStatus[3] == true) {
-            if(hitboxD(level0,32,player.getPosition().x+deltaTime*speed, player.getPosition().y,50) == false
-            && hitboxD(level1,32,player.getPosition().x+deltaTime*speed, player.getPosition().y,50) == false
-            && hitboxD(level2,32,player.getPosition().x+deltaTime*speed, player.getPosition().y,50) == false
-            && hitboxD(level3,32,player.getPosition().x+deltaTime*speed, player.getPosition().y,50) == false
-            && hitboxD(level4,32,player.getPosition().x+deltaTime*speed, player.getPosition().y,50) == false) {
+            if(hitboxD(level0,32,player.getPosition().x+deltaTime*speed-16, player.getPosition().y-16,50,43) == false
+            && hitboxD(level1,32,player.getPosition().x+deltaTime*speed-16, player.getPosition().y-16,50,43) == false
+            && hitboxD(level2,32,player.getPosition().x+deltaTime*speed-16, player.getPosition().y-16,50,43) == false
+            && hitboxD(level3,32,player.getPosition().x+deltaTime*speed-16, player.getPosition().y-16,50,43) == false
+            && hitboxD(level4,32,player.getPosition().x+deltaTime*speed-16, player.getPosition().y-16,50,43) == false) {
                 view.move(deltaTime*speed,0);
                 window.setView(view);
                 player.move(deltaTime*speed,0);
+                bar.move(deltaTime*speed,0);
+                barBack.move(deltaTime*speed,0);
             }
         }
         for(int i = 0; i < shotAmn; i++) {
-            if(dur[i] >= maxDur[i]) {
+            if(dur[i] >= maxDur[i] || hitboxD2(level0,32,shots[i].getPosition().x,shots[i].getPosition().y,50,43) == true
+            || hitboxD2(level1,32,shots[i].getPosition().x,shots[i].getPosition().y,50,43)
+            || hitboxD2(level2,32,shots[i].getPosition().x,shots[i].getPosition().y,50,43)
+            || hitboxD2(level3,32,shots[i].getPosition().x,shots[i].getPosition().y,50,43)
+            || hitboxD2(level4,32,shots[i].getPosition().x,shots[i].getPosition().y,50,43)) {
                 shots.erase(shots.begin()+i);
                 speeds.erase(speeds.begin()+i);
                 rots.erase(rots.begin()+i);
@@ -276,6 +325,11 @@ int main()
             window.draw(shots[i]);
         }
         window.draw(player);
+        if(isReloading) {
+            window.draw(barBack);
+            window.draw(bar);
+        }
+
         window.display();
     }
 
