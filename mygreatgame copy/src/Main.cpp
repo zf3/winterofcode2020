@@ -3,6 +3,7 @@
 #include<vector>
 #include "TileMap.hpp"
 #include<math.h>
+#include <stdlib.h>
 
 #define PI 3.14159265
 
@@ -87,7 +88,7 @@ struct pistol {
 	bool isFiring = false, isReloading = false;
     float weight = h.weight+b.weight+o.weight, energyUsage = b.energyUsage,
     damageM = b.damage, accuracy = h.accuracy, maxEnergy = o.maxEnergy, energy = maxEnergy,
-    energyOutput = o.energyOutput, reloadTime = o.reloadTime;
+    energyOutput = o.energyOutput, reloadTime = o.reloadTime, firerate = energyUsage/energyOutput;
 };
 struct rifle {
 	handle h;
@@ -98,19 +99,20 @@ struct rifle {
 	bool isFiring = false, isReloading = false;
     float weight = h.weight+b.weight+o.weight+a.weight+s.weight, energyUsage = a.energyUsage+b.energyUsage,
     damageM = a.damage+b.damage, accuracy = h.accuracy+a.accuracy, maxEnergy = o.maxEnergy, energy = maxEnergy,
-    energyOutput = o.energyOutput, reloadTime = o.reloadTime;
+    energyOutput = o.energyOutput, reloadTime = o.reloadTime, firerate = energyUsage/energyOutput;
 };
 struct shot {
 	Sprite s;
 	float dur, speed, rotation;
-	int maxDur;
+	int maxDur, type;
 };
 int main () {
 	//variable definitions
-	int screenWidth = 1200, screenHeight = 1200,holding = 1;
+	int screenWidth = 1200, screenHeight = 1200,holding = 1, shotAmn = 0;
     rifle primary;
     pistol secondary;
     vector<int> level0, level1;
+    vector<shot> shots;
 	bool keyStatus[4] = {false};
     int width, height;
     float playerSpeed = 2, deltaTime;
@@ -140,6 +142,7 @@ int main () {
 	//window and view initialization
     RenderWindow window(VideoMode(screenWidth, screenHeight), "Game window");
 	View view(FloatRect(0.f, 0.f, 800.f, 800.f));
+    window.setView(view);
 	//clock initialization
 	Clock clock;
 	Clock clock2;
@@ -218,14 +221,14 @@ int main () {
                     }
                     clock3.restart();
                 }
-                if (event.key.code == sf::Keyboard::Numpad1) {
+                if (event.key.code == sf::Keyboard::Num1) {
                     holding = 1;
                     player.setTexture(playerT1);
                     player.setOrigin(55, 175);
                     secondary.isFiring = false;
                     secondary.isReloading = false;
                 }
-                if (event.key.code == sf::Keyboard::Numpad2) {
+                if (event.key.code == sf::Keyboard::Num2) {
                     holding = 2;
                     player.setTexture(playerT2);
                     player.setOrigin(55, 95);
@@ -261,8 +264,8 @@ int main () {
         //Timer setting
         Time time = clock.getElapsedTime();
         deltaTime = time.asMilliseconds();
-        //Time time2 = clock2.getElapsedTime();
-        //float Timer = time2.asSeconds();
+        Time time2 = clock2.getElapsedTime();
+        float Timer = time2.asSeconds();
         Time time3 = clock3.getElapsedTime();
         float Timer2 = time3.asSeconds();
         clock.restart();
@@ -284,7 +287,7 @@ int main () {
             secondary.isReloading = false;
             clock3.restart();
         }
-        //movement
+        //S movement
         if(keyStatus[0] == true) {
             if(hitboxD(level0,32,player.getPosition().x-16, player.getPosition().y+deltaTime*playerSpeed-16,50,43) == false) {
                 view.move(0,deltaTime*playerSpeed);
@@ -294,6 +297,7 @@ int main () {
                 barBack.move(0,deltaTime*playerSpeed);
             }
         }
+        //W movement
         if(keyStatus[1] == true) {
             if(hitboxD(level0,32,player.getPosition().x-16, player.getPosition().y-deltaTime*playerSpeed-16,50,43) == false) {
                 view.move(0,-deltaTime*playerSpeed);
@@ -303,6 +307,7 @@ int main () {
                 barBack.move(0,-deltaTime*playerSpeed);
             }
         }
+        //A movement
         if(keyStatus[2] == true) {
             if(hitboxD(level0,32,player.getPosition().x-deltaTime*playerSpeed-16, player.getPosition().y-16,50,43) == false) {
                 view.move(-deltaTime*playerSpeed,0);
@@ -312,6 +317,7 @@ int main () {
                 barBack.move(-deltaTime*playerSpeed,0);
             }
         }
+        //D movement
         if(keyStatus[3] == true) {
             if(hitboxD(level0,32,player.getPosition().x+deltaTime*playerSpeed-16, player.getPosition().y-16,50,43) == false) {
                 view.move(deltaTime*playerSpeed,0);
@@ -321,15 +327,71 @@ int main () {
                 barBack.move(deltaTime*playerSpeed,0);
             }
         }
+        //shooting
+        if(holding == 1 && primary.isFiring == true && Timer >= primary.firerate && primary.energy-primary.energyUsage >= 0 && primary.isReloading == false) {
+            primary.energy-=primary.energyUsage;
+            shot temp;
+            int range = 21-primary.accuracy;
+            int rc = rand() % range;
+            float trc = rc/2.0;
+            float tr = range/4.0;
+            temp.s.setTexture(shotT1);
+            temp.s.setPosition(player.getPosition().x,player.getPosition().y);
+            temp.s.setRotation(player.getRotation()+tr-trc);
+            temp.s.setScale(0.05,0.05);
+            temp.dur = 0;
+            temp.rotation = player.getRotation()+tr-trc;
+            temp.maxDur = 10000;
+            temp.speed = 10;
+            temp.type = 1;
+            shotAmn++;
+            shots.push_back(temp);
+            clock2.restart();
+        }
+        if(holding == 2 && secondary.isFiring == true && Timer >= secondary.firerate && secondary.energy-secondary.energyUsage >= 0 && secondary.isReloading == false) {
+            secondary.energy-=secondary.energyUsage;
+            shot temp;
+            int range = 21-secondary.accuracy;
+            int rc = rand() % range;
+            float trc = rc/2.0;
+            float tr = range/4.0;
+            temp.s.setTexture(shotT1);
+            temp.s.setPosition(player.getPosition().x,player.getPosition().y);
+            temp.s.setRotation(player.getRotation()+tr-trc);
+            temp.s.setScale(0.05,0.05);
+            temp.dur = 0;
+            temp.rotation = player.getRotation()+tr-trc;
+            temp.maxDur = 10000;
+            temp.speed = 10;
+            temp.type = 1;
+            shotAmn++;
+            shots.push_back(temp);
+            clock2.restart();
+        }
+        for(int i = 0; i < shotAmn; i++) {
+            shots[i].dur+=deltaTime;
+            if(shots[i].dur>= shots[i].maxDur || hitboxD2(level0,32,shots[i].s.getPosition().x,shots[i].s.getPosition().y,50,43) == true) {
+                shots.erase(shots.begin()+i);
+                shotAmn--;
+            }
+            shots[i].s.move(shots[i].speed*deltaTime*cos ((shots[i].rotation-90)*PI/180),shots[i].speed*deltaTime*sin ((shots[i].rotation-90)*PI/180));
+        }
+        //clear
         window.clear(Color::White);
-
+        //draw map
         window.draw(map);
+        //draw player
         window.draw(player);
+        //draw shots
+        for(int i = 0; i < shotAmn; i++) {
+            window.draw(shots[i].s);
+        }
+        //draw reload bar
         if(primary.isReloading == true || secondary.isReloading) {
             window.draw(barBack);
             window.draw(bar);
         }
-
+        //display
         window.display();
     }
 }
