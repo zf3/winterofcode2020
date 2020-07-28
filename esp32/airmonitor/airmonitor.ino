@@ -1,13 +1,14 @@
+
 // kn100.me - Arduairs
 // Available on Github: https://github.com/kn100/arduairs
 // Note: This code is provided as an example only - it does not implement authentication, TLS or anything even remotely close to security. It's probably fine if all your infrastructure lives on your local network, but you might want to consider looking into security.
-
-#include <PubSubClient.h>
 
 #include "bsec.h"
 #include <LiquidCrystal_I2C.h>
 #include <WiFi.h>
 #include <EEPROM.h>
+#include <BigNumbers_I2C.h>
+#include <PubSubClient.h>
 
 // Controls which pins are the I2C ones.
 #define PIN_I2C_SDA 21
@@ -47,6 +48,7 @@ const uint8_t LCD_ADDR = 0x27;
 
 // 20 characters across, 4 lines deep
 LiquidCrystal_I2C lcd(LCD_ADDR, 20, 4);
+BigNumbers_I2C bigNum(&lcd);
 
 void setup(void)
 {
@@ -88,6 +90,8 @@ void setup(void)
   lcd.backlight();
   // I wanted some iconography, so this function creates some icons in the LCDs memory. They were created using Maxpromers LCD Character Creator
   createLCDSymbols();
+
+  bigNum.begin();
   /* zf: No network for now
   connectToNetwork();
   */
@@ -96,25 +100,47 @@ void setup(void)
 // Function that is looped forever
 void loop(void)
 {
+  // 0: clock, 1: air quality
+  int screen = 0; 
 /* zf: disable MQTT for now
   if (!broker.connected()) {
     reconnectToBroker();
   }
   broker.loop();
   */
-  // iaqSensor.run() will return true once new data becomes available
-  if (iaqSensor.run()) {
-    lcd.clear();
-    displayIAQ(String(iaqSensor.staticIaq));
-    displayTemp(String(iaqSensor.temperature));
-    displayHumidity(String(iaqSensor.humidity));
-    displayPressure(String(iaqSensor.pressure/100));
-    displayCO2(String(iaqSensor.co2Equivalent));
-    displayVOC(String(iaqSensor.breathVocEquivalent));
-    displaySensorPersisted();
-    updateState();
-  } else {
-    checkIaqSensorStatus();
+  switch (screen) {
+    case 0: {
+      byte x = 0;//x & y determines position of character on screen
+      byte y = 0;    
+      int currentTime = millis() / 100; // assigns the current time since boot in tenths of a second to currentTime
+      byte lastDigit = currentTime % 10;
+      currentTime = currentTime /= 10;
+      
+      bigNum.displayLargeInt(currentTime, x, y, 4, false);
+      
+      // print out the decimal point and the digit after it
+      lcd.setCursor(12, 1);
+      lcd.print(".");
+      lcd.print(lastDigit);    
+      break;
+    }
+    case 1: {
+      // iaqSensor.run() will return true once new data becomes available
+      if (iaqSensor.run()) {
+        lcd.clear();
+        displayIAQ(String(iaqSensor.staticIaq));
+        displayTemp(String(iaqSensor.temperature));
+        displayHumidity(String(iaqSensor.humidity));
+        displayPressure(String(iaqSensor.pressure/100));
+        displayCO2(String(iaqSensor.co2Equivalent));
+        displayVOC(String(iaqSensor.breathVocEquivalent));
+        displaySensorPersisted();
+        updateState();
+      } else {
+        checkIaqSensorStatus();
+      }
+      break;
+    }
   }
 }
 
