@@ -53,6 +53,9 @@ WiFiClient espClient;
 WebServer server;
 AutoConnect portal(server);
 
+bool wifiConfigured = false;
+unsigned long wifiStatusMillis = 0;
+
 // The I2C address of your LCD, it will likely either be 0x27 or 0x3F
 const uint8_t LCD_ADDR = 0x27;
 
@@ -65,12 +68,14 @@ int screen = 0;       // Current screen
 int active = 1;       // Are we "active" (backlight on)
 int activeMillis = millis(); // Millis when we become active
 // Stay active for this long (millis)
-#define ACTIVE_DURATION 5000 
+#define ACTIVE_DURATION 10000 
 
 // Button setup
 #define BUTTON_PIN 12
 
 // NTP and time keeping
+WiFiUDP ntpUDP;
+NTPClient timeClient(ntpUDP);
 int timezone = 8;   // Beijing time
 unsigned long ntpEpoch = 1577808000;    // 2020-1-1 0:0:0 Beijing time
 unsigned long ntpMillis;    // millis() value at NTP sync time
@@ -85,6 +90,12 @@ void onButtonPressed() {
   } else {
     screen = (screen + 1) % 3;
     lcd.clear();
+    if (screen == 0) {
+      bigNum.begin();
+    } else {
+      // I wanted some iconography, so this function creates some icons in the LCDs memory. They were created using Maxpromers LCD Character Creator
+      createLCDSymbols();
+    }
   }
   activeMillis = millis();
 }
@@ -134,8 +145,6 @@ void setup(void)
 
   lcd.begin();
   lcd.backlight();
-  // I wanted some iconography, so this function creates some icons in the LCDs memory. They were created using Maxpromers LCD Character Creator
-  createLCDSymbols();
 
   bigNum.begin();
 
@@ -147,7 +156,32 @@ void setup(void)
 
   Serial.println("Starting Web Server");
   server.on("/", rootPage);
-  
+
+  lcd.clear();
+  lcd.setCursor(0, 0);
+  lcd.print("Connecting Wifi...");
+  lcd.setCursor(0, 1);
+  lcd.print("To setup, connect");
+  lcd.setCursor(0, 2);
+  lcd.print("your phone to:");
+  lcd.setCursor(0, 3);
+  lcd.print("  esp32ap/12345678");
+  Serial.println("Starting AutoConnect Server");
+  if (portal.begin()) {
+    Serial.println("HTTP server:" + WiFi.localIP().toString());
+    wifiConfigured = true;    
+  } else {
+    Serial.println("Cannot start AutoConnect Server");
+  }
+  lcd.clear();
+
+  timeClient.begin();
+  timeClient.update();
+  ntpEpoch = timeClient.getEpochTime();
+  ntpMillis = millis();
+
+  activeMillis = millis();
+
   /* zf: No network for now
   connectToNetwork();
   */
@@ -178,6 +212,7 @@ void clockScreen() {
 void airQualityScreen() {
   // iaqSensor.run() will return true once new data becomes available
   if (iaqSensor.run()) {
+
     lcd.clear();
     displayIAQ(String(iaqSensor.staticIaq));
     displayTemp(String(iaqSensor.temperature));
@@ -192,20 +227,17 @@ void airQualityScreen() {
   }  
 }
 
-bool wifiConfigured = false;
-unsigned long wifiStatusMillis = 0;
-
 void wifiScreen() {
   if (!wifiConfigured) {
     lcd.clear();
     lcd.setCursor(0, 0);
-    lcd.println("Connecting Wifi...");
+    lcd.print("Connecting Wifi...");
     lcd.setCursor(0, 1);
-    lcd.println("To setup, connect");
+    lcd.print("To setup, connect");
     lcd.setCursor(0, 2);
-    lcd.println("your phone to:");
+    lcd.print("your phone to:");
     lcd.setCursor(0, 3);
-    lcd.println("  esp32ap/12345678");
+    lcd.print("  esp32ap/12345678");
     Serial.println("Starting AutoConnect Server");
     if (portal.begin()) {
       Serial.println("HTTP server:" + WiFi.localIP().toString());
@@ -219,9 +251,9 @@ void wifiScreen() {
       wifiStatusMillis = now;
       lcd.clear();
       lcd.setCursor(0, 0);
-      lcd.println("Pls browse:");
+      lcd.print("Pls browse:");
       lcd.setCursor(0, 1);
-      lcd.println("http://" + WiFi.localIP().toString());
+      lcd.print("http://" + WiFi.localIP().toString());
     }
     portal.handleClient();   
   }
@@ -238,9 +270,9 @@ void loop(void)
   broker.loop();
   */
 //  Serial.println(digitalRead(BUTTON_PIN));
+  unsigned long now = millis();
   button.read();
   if (screen == 0 || screen == 1) {
-    unsigned long now = millis();
     if (active && now - activeMillis > ACTIVE_DURATION) {
       active = 0;
       lcd.noBacklight();
@@ -261,14 +293,21 @@ void loop(void)
       break;
     }
   }
-  /*
+
+  // update NTP every 10 mins
+  if (now - ntpMillis > 600 * 1000) {
+    timeClient.update();
+    ntpEpoch = timeClient.getEpochTime();
+    ntpMillis = millis();
+  }
+    
   if (screen != 2) {
     // Go to sleep to save power, wake up 4 times a second
     esp_sleep_enable_timer_wakeup(250000);
     esp_sleep_enable_ext0_wakeup(GPIO_NUM_12, 0);    // Press button to wake. 0 means wake up on high to low
     int ret = esp_light_sleep_start();  
     //  Serial.printf("light_sleep: %d\n", ret);
-  }*/
+  }
 }
 
 // checks to make sure the BME680 Sensor is working correctly.
