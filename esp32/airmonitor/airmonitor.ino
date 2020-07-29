@@ -6,10 +6,15 @@
 #include "bsec.h"
 #include <LiquidCrystal_I2C.h>
 #include <WiFi.h>
+#include <WifiUdp.h>
+#include <NTPClient.h>
 #include <EEPROM.h>
 #include <BigNumbers_I2C.h>
 #include <PubSubClient.h>
 #include <EasyButton.h>
+#include <time.h>
+
+#include "util.h"
 
 // Controls which pins are the I2C ones.
 #define PIN_I2C_SDA 21
@@ -60,6 +65,11 @@ int activeMillis = millis(); // Millis when we become active
 
 // Button setup
 #define BUTTON_PIN 12
+
+// NTP and time keeping
+int timezone = 8;   // Beijing time
+unsigned long ntpEpoch = 1577808000;    // 2020-1-1 0:0:0 Beijing time
+unsigned long ntpMillis;    // millis() value at NTP sync time
 
 EasyButton button(BUTTON_PIN);
 
@@ -130,6 +140,45 @@ void setup(void)
   */
 }
 
+
+void clockScreen() {
+  unsigned long nowMillis = millis();
+  unsigned long nowEpoch = ntpEpoch + (nowMillis - ntpMillis) / 1000;
+
+  struct tm dt;
+  epochToDateTime(nowEpoch, timezone, &dt);
+
+  // print time
+  bigNum.displayLargeInt(dt.tm_hour, 0, 0, 2, true);
+  bigNum.displayLargeInt(dt.tm_min, 7, 0, 2, true);
+  bigNum.displayLargeInt(dt.tm_sec, 14, 0, 2, true);  
+  lcd.setCursor(6, 1);
+  lcd.print(":");
+  lcd.setCursor(13, 1);
+  lcd.print(":");
+
+  // print date at bottom
+  lcd.setCursor(5, 3);
+  lcd.printf("%04d-%02d-%02d", dt.tm_year, dt.tm_mon+1, dt.tm_mday);
+}
+
+void airQualityScreen() {
+  // iaqSensor.run() will return true once new data becomes available
+  if (iaqSensor.run()) {
+    lcd.clear();
+    displayIAQ(String(iaqSensor.staticIaq));
+    displayTemp(String(iaqSensor.temperature));
+    displayHumidity(String(iaqSensor.humidity));
+    displayPressure(String(iaqSensor.pressure/100));
+    displayCO2(String(iaqSensor.co2Equivalent));
+    displayVOC(String(iaqSensor.breathVocEquivalent));
+    displaySensorPersisted();
+    updateState();
+  } else {
+    checkIaqSensorStatus();
+  }  
+}
+
 // Function that is looped forever
 void loop(void)
 {
@@ -150,41 +199,17 @@ void loop(void)
   
   switch (screen) {
     case 0: {
-      byte x = 0;//x & y determines position of character on screen
-      byte y = 0;    
-      int currentTime = millis() / 100; // assigns the current time since boot in tenths of a second to currentTime
-      byte lastDigit = currentTime % 10;
-      currentTime = currentTime /= 10;
-      
-      bigNum.displayLargeInt(currentTime, x, y, 4, false);
-      
-      // print out the decimal point and the digit after it
-      lcd.setCursor(12, 1);
-      lcd.print(".");
-      lcd.print(lastDigit);    
+      clockScreen();
       break;
     }
     case 1: {
-      // iaqSensor.run() will return true once new data becomes available
-      if (iaqSensor.run()) {
-        lcd.clear();
-        displayIAQ(String(iaqSensor.staticIaq));
-        displayTemp(String(iaqSensor.temperature));
-        displayHumidity(String(iaqSensor.humidity));
-        displayPressure(String(iaqSensor.pressure/100));
-        displayCO2(String(iaqSensor.co2Equivalent));
-        displayVOC(String(iaqSensor.breathVocEquivalent));
-        displaySensorPersisted();
-        updateState();
-      } else {
-        checkIaqSensorStatus();
-      }
+      airQualityScreen();
       break;
     }
   }
-  // Go to sleep to save power
-  esp_sleep_enable_timer_wakeup(100000);
-  esp_sleep_enable_ext0_wakeup(GPIO_NUM_12, 0);    // 0 means wake up on high to low
+  // Go to sleep to save power, wake up 4 times a second
+  esp_sleep_enable_timer_wakeup(250000);
+  esp_sleep_enable_ext0_wakeup(GPIO_NUM_12, 0);    // Press button to wake. 0 means wake up on high to low
   int ret = esp_light_sleep_start();  
   Serial.printf("light_sleep: %d\n", ret);
   
