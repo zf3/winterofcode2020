@@ -9,6 +9,8 @@ Feng Zhou, July-August, 2020
 
 ## Soft AP for setting up Wifi
 
+ * [ESP8266/ESP32 Connect WiFi Made Easy](https://www.hackster.io/hieromon-ikasamo/esp8266-esp32-connect-wifi-made-easy-d75f45)
+
 ## WebServer for configuration
 
  * For setting time zone, alarm time, NTP server address and etc.

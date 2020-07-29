@@ -13,6 +13,8 @@
 #include <PubSubClient.h>
 #include <EasyButton.h>
 #include <time.h>
+#include <WebServer.h>
+#include <AutoConnect.h>
 
 #include "util.h"
 
@@ -47,7 +49,9 @@ uint8_t bsecState[BSEC_MAX_STATE_BLOB_SIZE] = {0};
 uint16_t stateUpdateCounter = 0;
 
 WiFiClient espClient;
-PubSubClient broker(espClient);
+//PubSubClient broker(espClient);
+WebServer server;
+AutoConnect portal(server);
 
 // The I2C address of your LCD, it will likely either be 0x27 or 0x3F
 const uint8_t LCD_ADDR = 0x27;
@@ -79,17 +83,23 @@ void onButtonPressed() {
     active = 1;
     lcd.backlight();
   } else {
-    screen = (screen + 1) % 2;
+    screen = (screen + 1) % 3;
     lcd.clear();
   }
   activeMillis = millis();
+}
+
+void rootPage() {
+  Serial.println("Serving home page");
+  char content[] = "Hello, world!";
+  server.send(200, "text/plain", content);
 }
 
 void setup(void)
 {
   Serial.begin(115200);
   Serial.println("Airmonitor started.\n");
-  broker.setServer(mqtt_server, 1883);
+//  broker.setServer(mqtt_server, 1883);
 
   Wire.begin(PIN_I2C_SDA, PIN_I2C_SCL);
   // Your module MAY use the primary address, which is available as BME680_I2C_ADDR_PRIMARY
@@ -134,6 +144,9 @@ void setup(void)
   button.begin();
 
   button.onPressed(onButtonPressed);
+
+  Serial.println("Starting Web Server");
+  server.on("/", rootPage);
   
   /* zf: No network for now
   connectToNetwork();
@@ -179,10 +192,45 @@ void airQualityScreen() {
   }  
 }
 
+bool wifiConfigured = false;
+unsigned long wifiStatusMillis = 0;
+
+void wifiScreen() {
+  if (!wifiConfigured) {
+    lcd.clear();
+    lcd.setCursor(0, 0);
+    lcd.println("Connecting Wifi...");
+    lcd.setCursor(0, 1);
+    lcd.println("To setup, connect");
+    lcd.setCursor(0, 2);
+    lcd.println("your phone to:");
+    lcd.setCursor(0, 3);
+    lcd.println("  esp32ap/12345678");
+    Serial.println("Starting AutoConnect Server");
+    if (portal.begin()) {
+      Serial.println("HTTP server:" + WiFi.localIP().toString());
+      wifiConfigured = true;    
+    } else {
+      Serial.println("Cannot start AutoConnect Server");
+    }
+  } else {
+    unsigned long now = millis();
+    if (now - wifiStatusMillis > 1000) {
+      wifiStatusMillis = now;
+      lcd.clear();
+      lcd.setCursor(0, 0);
+      lcd.println("Pls browse:");
+      lcd.setCursor(0, 1);
+      lcd.println("http://" + WiFi.localIP().toString());
+    }
+    portal.handleClient();   
+  }
+}
+
 // Function that is looped forever
 void loop(void)
 {
-  // 0: clock, 1: air quality
+  // 0: clock, 1: air quality, 2: Wifi Setup
 /* zf: disable MQTT for now
   if (!broker.connected()) {
     reconnectToBroker();
@@ -191,10 +239,12 @@ void loop(void)
   */
 //  Serial.println(digitalRead(BUTTON_PIN));
   button.read();
-  unsigned long now = millis();
-  if (active && now - activeMillis > ACTIVE_DURATION) {
-    active = 0;
-    lcd.noBacklight();
+  if (screen == 0 || screen == 1) {
+    unsigned long now = millis();
+    if (active && now - activeMillis > ACTIVE_DURATION) {
+      active = 0;
+      lcd.noBacklight();
+    }
   }
   
   switch (screen) {
@@ -206,13 +256,19 @@ void loop(void)
       airQualityScreen();
       break;
     }
+    case 2: {
+      wifiScreen();
+      break;
+    }
   }
-  // Go to sleep to save power, wake up 4 times a second
-  esp_sleep_enable_timer_wakeup(250000);
-  esp_sleep_enable_ext0_wakeup(GPIO_NUM_12, 0);    // Press button to wake. 0 means wake up on high to low
-  int ret = esp_light_sleep_start();  
-  Serial.printf("light_sleep: %d\n", ret);
-  
+  /*
+  if (screen != 2) {
+    // Go to sleep to save power, wake up 4 times a second
+    esp_sleep_enable_timer_wakeup(250000);
+    esp_sleep_enable_ext0_wakeup(GPIO_NUM_12, 0);    // Press button to wake. 0 means wake up on high to low
+    int ret = esp_light_sleep_start();  
+    //  Serial.printf("light_sleep: %d\n", ret);
+  }*/
 }
 
 // checks to make sure the BME680 Sensor is working correctly.
@@ -256,7 +312,7 @@ void displayIAQ(String iaq)
   lcd.print(iaq);
   char carr[iaq.length()];
   iaq.toCharArray(carr, iaq.length());
-  broker.publish("bme680/iaq", carr);
+//  broker.publish("bme680/iaq", carr);
 }
 
 void displayTemp(String tmp)
@@ -266,7 +322,7 @@ void displayTemp(String tmp)
   lcd.write(1);
   char carr[tmp.length()];
   tmp.toCharArray(carr, tmp.length());
-  broker.publish("bme680/temperature", carr);
+//  broker.publish("bme680/temperature", carr);
 }
 
 void displayHumidity(String humidity)
@@ -276,7 +332,7 @@ void displayHumidity(String humidity)
   lcd.print(humidity + "%");
   char carr[humidity.length()];
   humidity.toCharArray(carr, humidity.length());
-  broker.publish("bme680/humidity", carr);
+//  broker.publish("bme680/humidity", carr);
 }
 
 void displayPressure(String pressure)
@@ -286,7 +342,7 @@ void displayPressure(String pressure)
   lcd.write(3);
   char carr[pressure.length()];
   pressure.toCharArray(carr, pressure.length());
-  broker.publish("bme680/pressure", carr);
+//  broker.publish("bme680/pressure", carr);
 }
 
 void displayCO2(String co)
@@ -295,7 +351,7 @@ void displayCO2(String co)
   lcd.print("CO2 " + co + "ppm");
   char carr[co.length()];
   co.toCharArray(carr, co.length());
-  broker.publish("bme680/co", carr);
+//  broker.publish("bme680/co", carr);
 }
 
 void displayVOC(String voc)
@@ -304,7 +360,7 @@ void displayVOC(String voc)
   lcd.print("VOC " + voc + "ppm");
   char carr[voc.length()];
   voc.toCharArray(carr, voc.length());
-  broker.publish("bme680/voc", carr);
+//  broker.publish("bme680/voc", carr);
 }
 
 void displaySensorPersisted()
@@ -333,6 +389,7 @@ void connectToNetwork() {
   lcd.clear();
 }
 
+/*
 void reconnectToBroker() {
   // Loop until we're reconnected
   while (!broker.connected()) {
@@ -363,6 +420,7 @@ void reconnectToBroker() {
     lcd.clear();
   }
 }
+*/
 
 void createLCDSymbols() {
     byte iaqsymbol[] = {
