@@ -9,6 +9,7 @@
 #include <EEPROM.h>
 #include <BigNumbers_I2C.h>
 #include <PubSubClient.h>
+#include <EasyButton.h>
 
 // Controls which pins are the I2C ones.
 #define PIN_I2C_SDA 21
@@ -50,9 +51,34 @@ const uint8_t LCD_ADDR = 0x27;
 LiquidCrystal_I2C lcd(LCD_ADDR, 20, 4);
 BigNumbers_I2C bigNum(&lcd);
 
+// Current active screen
+int screen = 0;       // Current screen
+int active = 1;       // Are we "active" (backlight on)
+int activeMillis = millis(); // Millis when we become active
+// Stay active for this long (millis)
+#define ACTIVE_DURATION 5000 
+
+// Button setup
+#define BUTTON_PIN 12
+
+EasyButton button(BUTTON_PIN);
+
+void onButtonPressed() {
+  Serial.println("Button pressed");
+  if (!active) {
+    active = 1;
+    lcd.backlight();
+  } else {
+    screen = (screen + 1) % 2;
+    lcd.clear();
+  }
+  activeMillis = millis();
+}
+
 void setup(void)
 {
   Serial.begin(115200);
+  Serial.println("Airmonitor started.\n");
   broker.setServer(mqtt_server, 1883);
 
   Wire.begin(PIN_I2C_SDA, PIN_I2C_SCL);
@@ -92,6 +118,13 @@ void setup(void)
   createLCDSymbols();
 
   bigNum.begin();
+
+  // Set up button
+  pinMode(BUTTON_PIN, INPUT_PULLUP);
+  button.begin();
+
+  button.onPressed(onButtonPressed);
+  
   /* zf: No network for now
   connectToNetwork();
   */
@@ -101,13 +134,20 @@ void setup(void)
 void loop(void)
 {
   // 0: clock, 1: air quality
-  int screen = 0; 
 /* zf: disable MQTT for now
   if (!broker.connected()) {
     reconnectToBroker();
   }
   broker.loop();
   */
+//  Serial.println(digitalRead(BUTTON_PIN));
+  button.read();
+  unsigned long now = millis();
+  if (active && now - activeMillis > ACTIVE_DURATION) {
+    active = 0;
+    lcd.noBacklight();
+  }
+  
   switch (screen) {
     case 0: {
       byte x = 0;//x & y determines position of character on screen
@@ -142,6 +182,12 @@ void loop(void)
       break;
     }
   }
+  // Go to sleep to save power
+  esp_sleep_enable_timer_wakeup(100000);
+  esp_sleep_enable_ext0_wakeup(GPIO_NUM_12, 0);    // 0 means wake up on high to low
+  int ret = esp_light_sleep_start();  
+  Serial.printf("light_sleep: %d\n", ret);
+  
 }
 
 // checks to make sure the BME680 Sensor is working correctly.
