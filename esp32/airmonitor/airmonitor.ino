@@ -75,7 +75,7 @@ int activeMillis = millis(); // Millis when we become active
 
 // NTP and time keeping
 WiFiUDP ntpUDP;
-NTPClient timeClient(ntpUDP);
+NTPClient timeClient(ntpUDP, "ntp.aliyun.com");
 int timezone = 8;   // Beijing time
 unsigned long ntpEpoch = 1577808000;    // 2020-1-1 0:0:0 Beijing time
 unsigned long ntpMillis;    // millis() value at NTP sync time
@@ -92,10 +92,11 @@ void onButtonPressed() {
     lcd.clear();
     if (screen == 0) {
       bigNum.begin();
-    } else {
+    } else if (screen == 1) {
       // I wanted some iconography, so this function creates some icons in the LCDs memory. They were created using Maxpromers LCD Character Creator
       createLCDSymbols();
     }
+    lcd.backlight();
   }
   activeMillis = millis();
 }
@@ -167,18 +168,24 @@ void setup(void)
   lcd.setCursor(0, 3);
   lcd.print("  esp32ap/12345678");
   Serial.println("Starting AutoConnect Server");
-  if (portal.begin()) {
-    Serial.println("HTTP server:" + WiFi.localIP().toString());
-    wifiConfigured = true;    
-  } else {
-    Serial.println("Cannot start AutoConnect Server");
+  while (!portal.begin()) {
+    Serial.println("portal.begin() failed, retrying...");
   }
+  Serial.println("HTTP server:" + WiFi.localIP().toString());
+  wifiConfigured = true; 
   lcd.clear();
+  lcd.setCursor(0, 0);
+  lcd.print("Getting time from");
+  lcd.setCursor(0, 1);
+  lcd.print("server...");
 
   timeClient.begin();
-  timeClient.update();
+  while (!timeClient.update())
+    timeClient.forceUpdate();
   ntpEpoch = timeClient.getEpochTime();
   ntpMillis = millis();
+
+  lcd.clear();
 
   activeMillis = millis();
 
@@ -186,7 +193,6 @@ void setup(void)
   connectToNetwork();
   */
 }
-
 
 void clockScreen() {
   unsigned long nowMillis = millis();
@@ -270,9 +276,10 @@ void loop(void)
   broker.loop();
   */
 //  Serial.println(digitalRead(BUTTON_PIN));
-  unsigned long now = millis();
   button.read();
+
   if (screen == 0 || screen == 1) {
+    unsigned long now = millis();
     if (active && now - activeMillis > ACTIVE_DURATION) {
       active = 0;
       lcd.noBacklight();
@@ -295,12 +302,15 @@ void loop(void)
   }
 
   // update NTP every 10 mins
+  unsigned long now = millis();
   if (now - ntpMillis > 600 * 1000) {
     timeClient.update();
     ntpEpoch = timeClient.getEpochTime();
-    ntpMillis = millis();
+    Serial.printf("NTP update: %ul\n", ntpEpoch);
+    ntpMillis = now;
   }
     
+  /*
   if (screen != 2) {
     // Go to sleep to save power, wake up 4 times a second
     esp_sleep_enable_timer_wakeup(250000);
@@ -308,6 +318,7 @@ void loop(void)
     int ret = esp_light_sleep_start();  
     //  Serial.printf("light_sleep: %d\n", ret);
   }
+  */
 }
 
 // checks to make sure the BME680 Sensor is working correctly.

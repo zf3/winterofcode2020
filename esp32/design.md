@@ -28,6 +28,8 @@ Feng Zhou, July-August, 2020
 
 ## Display BigNumber
 
+ * `#include <BigNumbers_I2C.h>`
+
 ## Fancy 2004 LCD demo
 
 ## Power Saving
