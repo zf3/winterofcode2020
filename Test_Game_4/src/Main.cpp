@@ -2,6 +2,44 @@
 #include<vector>
 using namespace std;
 //classes
+//tilemap class
+class TileMap : public sf::Drawable, public sf::Transformable
+{
+public:
+    bool load(const std::string& tileset, sf::Vector2u tileSize, const int* tiles, unsigned int width, unsigned int height)
+    {
+        if (!m_tileset.loadFromFile(tileset))
+            return false;
+        m_vertices.setPrimitiveType(sf::Quads);
+        m_vertices.resize(width * height * 4);
+        for (unsigned int i = 0; i < width; ++i)
+            for (unsigned int j = 0; j < height; ++j)
+            {
+                int tileNumber = tiles[i + j * width];
+                int tu = tileNumber % (m_tileset.getSize().x / tileSize.x);
+                int tv = tileNumber / (m_tileset.getSize().x / tileSize.x);
+                sf::Vertex* quad = &m_vertices[(i + j * width) * 4];
+                quad[0].position = sf::Vector2f(i * tileSize.x, j * tileSize.y);
+                quad[1].position = sf::Vector2f((i + 1) * tileSize.x, j * tileSize.y);
+                quad[2].position = sf::Vector2f((i + 1) * tileSize.x, (j + 1) * tileSize.y);
+                quad[3].position = sf::Vector2f(i * tileSize.x, (j + 1) * tileSize.y);
+                quad[0].texCoords = sf::Vector2f(tu * tileSize.x, tv * tileSize.y);
+                quad[1].texCoords = sf::Vector2f((tu + 1) * tileSize.x, tv * tileSize.y);
+                quad[2].texCoords = sf::Vector2f((tu + 1) * tileSize.x, (tv + 1) * tileSize.y);
+                quad[3].texCoords = sf::Vector2f(tu * tileSize.x, (tv + 1) * tileSize.y);
+            }
+        return true;
+    }
+private:
+    virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const
+    {
+        states.transform *= getTransform();
+        states.texture = &m_tileset;
+        target.draw(m_vertices, states);
+    }
+    sf::VertexArray m_vertices;
+    sf::Texture m_tileset;
+};
 const float PI = 3.1415;
 class basicChar {
     public:
@@ -102,23 +140,21 @@ int main () {
     //fonts
     //texts
     //shapes
-    sf::RectangleShape block(sf::Vector2f(100,100));
-    block.setFillColor(sf::Color(0,0,0));
-    block.setPosition(sf::Vector2f(100,100));
     //clocks
     sf::Clock deltaClock;
     //player presets
     basicChar player("resources/playerTexture.png","resources/weaponTexture.png",0,255,0,400,300);
     vector<basicChar> enemies;
     //enemy spawning (just for tests)
-    // for(int i = 0; i < 10; i++) {
-    //     temp.body.setPosition(i*-25,i*-25);
-    //     temp.weapon.setPosition(i*-25,i*-25);
-    //     temp.hpBar.setPosition(i*-25,i*-25);
-    //     temp.hpBarBack.setPosition(i*-25,i*-25);
-    //     enemies.push_back(temp);
-    //     enemyCount++;
-    // }
+    basicChar temp("resources/enemyTexture.png","resources/enemyWeaponTexture.png",255,0,0,0,0);
+    for(int i = 0; i < 1; i++) {
+        temp.body.setPosition(i*-25,i*-25);
+        temp.weapon.setPosition(i*-25,i*-25);
+        temp.hpBar.setPosition(i*-25,i*-25);
+        temp.hpBarBack.setPosition(i*-25,i*-25);
+        enemies.push_back(temp);
+        enemyCount++;
+    }
     //texture loading
     sf::Texture anims[5];
     anims[0].loadFromFile("resources/weaponTexture2.png");
@@ -131,6 +167,21 @@ int main () {
     enemyAnims[2].loadFromFile("resources/enemyWeaponTexture2.png");
     sf::Vector2f enemyTipPos[3] = {{sf::Vector2f(111,2)},{sf::Vector2f(106,65)},{sf::Vector2f(111,2)}};
     //font loading
+    //map loading
+    const int level[] =
+    {
+        0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+        0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 2, 0, 0, 0, 0,
+        1, 1, 0, 0, 0, 0, 0, 0, 3, 3, 3, 3, 3, 3, 3, 3,
+        0, 1, 0, 0, 2, 0, 3, 3, 3, 0, 1, 1, 1, 0, 0, 0,
+        0, 1, 1, 0, 3, 3, 3, 0, 0, 0, 1, 1, 1, 2, 0, 0,
+        0, 0, 1, 0, 3, 0, 2, 2, 0, 0, 1, 1, 1, 1, 2, 0,
+        2, 0, 1, 0, 3, 0, 2, 2, 2, 0, 1, 1, 1, 1, 1, 1,
+        0, 0, 1, 0, 3, 2, 2, 2, 0, 0, 0, 0, 1, 1, 1, 1,
+    };
+    TileMap map;
+    if (!map.load("resources/Tileset.png", sf::Vector2u(100, 100), level, 16, 8))
+        return -1;
     //main loop
     while (window.isOpen()) {
         sf::Event event;
@@ -233,12 +284,12 @@ int main () {
                 enemies.erase(enemies.begin()+i);
                 enemyCount--;
                 //respawning code (just for tests)
-                // temp.body.setPosition(0,0);
-                // temp.weapon.setPosition(0,0);
-                // temp.hpBar.setPosition(0,0);
-                // temp.hpBarBack.setPosition(0,0);
-                // enemies.push_back(temp);
-                // enemyCount++;
+                temp.body.setPosition(0,0);
+                temp.weapon.setPosition(0,0);
+                temp.hpBar.setPosition(0,0);
+                temp.hpBarBack.setPosition(0,0);
+                enemies.push_back(temp);
+                enemyCount++;
             }
             if(enemies[i].wCooldown >= enemies[i].wCooldownM) {
                 float xD = (enemies[i].body.getPosition().x-player.body.getPosition().x);
@@ -273,6 +324,7 @@ int main () {
         }
         //drawing
         window.clear(sf::Color(255,255,255));
+        window.draw(map);
         for(int i = 0; i < enemyCount; i++) {
             window.draw(enemies[i].body);
             window.draw(enemies[i].weapon);
@@ -283,7 +335,6 @@ int main () {
         window.draw(player.weapon);
         window.draw(player.hpBarBack);
         window.draw(player.hpBar);
-        window.draw(block);
 
         window.display();
     }
