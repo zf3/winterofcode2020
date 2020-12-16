@@ -91,6 +91,24 @@ class basicChar {
             weapon.setOrigin(200,200);
         }
     }
+    bool objCollisions(float xM, float yM, const int *tilemap, int xL, int *objs, int n) {
+        float px = body.getPosition().x+xM, py = body.getPosition().y+yM;
+        int c1x = (px+(hitbox-1))/100, c1y = (py+(hitbox-1))/100;
+        int c2x = (px-(hitbox-1))/100, c2y = (py+(hitbox-1))/100;
+        int c3x = (px+(hitbox-1))/100, c3y = (py-(hitbox-1))/100;
+        int c4x = (px-(hitbox-1))/100, c4y = (py-(hitbox-1))/100;
+        for(int i = 0; i < n; i++) {
+            if(*(tilemap+c1x+c1y*xL) == *(objs+i))
+                return true;
+            if(*(tilemap+c2x+c2y*xL) == *(objs+i))
+                return true;
+            if(*(tilemap+c3x+c3y*xL) == *(objs+i))
+                return true;
+            if(*(tilemap+c4x+c4y*xL) == *(objs+i))
+                return true;
+        }
+        return false;
+    }
     //constructor
     basicChar (string a, string b, int re,int gr,int bl,int x,int y) {
         bTexture.loadFromFile(a);
@@ -137,6 +155,8 @@ int main () {
     }
     bool mouseStatus = false;
     int enemyCount = 0;
+    int objs[1];
+    objs[0] = 3;
     //fonts
     //texts
     //shapes
@@ -168,19 +188,20 @@ int main () {
     sf::Vector2f enemyTipPos[3] = {{sf::Vector2f(111,2)},{sf::Vector2f(106,65)},{sf::Vector2f(111,2)}};
     //font loading
     //map loading
+    int tL = 16, tH = 8;
     const int level[] =
     {
         0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
         0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 2, 0, 0, 0, 0,
         1, 1, 0, 0, 0, 0, 0, 0, 3, 3, 3, 3, 3, 3, 3, 3,
-        0, 1, 0, 0, 2, 0, 3, 3, 3, 0, 1, 1, 1, 0, 0, 0,
-        0, 1, 1, 0, 3, 3, 3, 0, 0, 0, 1, 1, 1, 2, 0, 0,
-        0, 0, 1, 0, 3, 0, 2, 2, 0, 0, 1, 1, 1, 1, 2, 0,
+        0, 1, 0, 0, 2, 0, 0, 3, 3, 0, 1, 1, 1, 0, 0, 0,
+        0, 1, 1, 0, 3, 3, 0, 0, 0, 0, 1, 1, 1, 2, 0, 0,
+        0, 0, 1, 0, 0, 0, 2, 2, 3, 0, 1, 1, 1, 1, 2, 0,
         2, 0, 1, 0, 3, 0, 2, 2, 2, 0, 1, 1, 1, 1, 1, 1,
         0, 0, 1, 0, 3, 2, 2, 2, 0, 0, 0, 0, 1, 1, 1, 1,
     };
     TileMap map;
-    if (!map.load("resources/Tileset.png", sf::Vector2u(100, 100), level, 16, 8))
+    if (!map.load("resources/Tileset.png", sf::Vector2u(100, 100), level, tL, tH))
         return -1;
     //main loop
     while (window.isOpen()) {
@@ -230,7 +251,7 @@ int main () {
         }
         //movement
         deltaClock.restart();
-        if(status[sf::Keyboard::A] == true) {
+        if(status[sf::Keyboard::A] == true && player.objCollisions(deltaTime*-player.spd,0,level,tL,objs,1) == false) {
             player.body.move(sf::Vector2f(deltaTime*-player.spd,0));
             player.weapon.move(sf::Vector2f(deltaTime*-player.spd,0));
             player.hpBar.move(sf::Vector2f(deltaTime*-player.spd,0));
@@ -238,7 +259,7 @@ int main () {
             gameView.move(sf::Vector2f(deltaTime*-player.spd,0));
             window.setView(gameView);
         }
-        if(status[sf::Keyboard::D] == true) {
+        if(status[sf::Keyboard::D] == true && player.objCollisions(deltaTime*player.spd,0,level,tL,objs,1) == false) {
             player.body.move(sf::Vector2f(deltaTime*player.spd,0));
             player.weapon.move(sf::Vector2f(deltaTime*player.spd,0));
             player.hpBar.move(sf::Vector2f(deltaTime*player.spd,0));
@@ -246,7 +267,7 @@ int main () {
             gameView.move(sf::Vector2f(deltaTime*player.spd,0));
             window.setView(gameView);
         }
-        if(status[sf::Keyboard::W] == true) {
+        if(status[sf::Keyboard::W] == true && player.objCollisions(0,deltaTime*-player.spd,level,tL,objs,1) == false) {
             player.body.move(sf::Vector2f(0,deltaTime*-player.spd));
             player.weapon.move(sf::Vector2f(0,deltaTime*-player.spd));
             player.hpBar.move(sf::Vector2f(0,deltaTime*-player.spd));
@@ -254,21 +275,13 @@ int main () {
             gameView.move(sf::Vector2f(0,deltaTime*-player.spd));
             window.setView(gameView);
         }
-        if(status[sf::Keyboard::S] == true) {
+        if(status[sf::Keyboard::S] == true && player.objCollisions(0,deltaTime*player.spd,level,tL,objs,1) == false) {
             player.body.move(sf::Vector2f(0,deltaTime*player.spd));
             player.weapon.move(sf::Vector2f(0,deltaTime*player.spd));
             player.hpBar.move(sf::Vector2f(0,deltaTime*player.spd));
             player.hpBarBack.move(sf::Vector2f(0,deltaTime*player.spd));
             gameView.move(sf::Vector2f(0,deltaTime*player.spd));
             window.setView(gameView);
-        }
-        for(int i = 0; i < enemyCount; i++) {
-            float xM = deltaTime*enemies[i].spd*cos(enemies[i].body.getRotation()/180*PI);
-            float yM = deltaTime*enemies[i].spd*sin(enemies[i].body.getRotation()/180*PI);
-            enemies[i].body.move(xM,yM);
-            enemies[i].weapon.move(xM,yM);
-            enemies[i].hpBar.move(xM,yM);
-            enemies[i].hpBarBack.move(xM,yM);
         }
         //attacks
         if(mouseStatus == true && player.wCooldown >= player.wCooldownM) {
@@ -280,6 +293,20 @@ int main () {
         }
         //enemy management
         for(int i = 0; i < enemyCount; i++) {
+            float xM = deltaTime*enemies[i].spd*cos(enemies[i].body.getRotation()/180*PI);
+            float yM = deltaTime*enemies[i].spd*sin(enemies[i].body.getRotation()/180*PI);
+            if(enemies[i].objCollisions(xM,0,level,tL,objs,1) == false) {
+                enemies[i].body.move(xM,0);
+                enemies[i].weapon.move(xM,0);
+                enemies[i].hpBar.move(xM,0);
+                enemies[i].hpBarBack.move(xM,0);
+            }
+            if(enemies[i].objCollisions(0,yM,level,tL,objs,1) == false) {
+                enemies[i].body.move(0,yM);
+                enemies[i].weapon.move(0,yM);
+                enemies[i].hpBar.move(0,yM);
+                enemies[i].hpBarBack.move(0,yM);
+            }
             if(enemies[i].hp <= 0) {
                 enemies.erase(enemies.begin()+i);
                 enemyCount--;
