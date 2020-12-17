@@ -56,7 +56,9 @@ class basicChar {
     float hp;
     float dmg;
     float atkD;
-    float atkS;
+    sf::Texture atkAnims[3];
+    sf::Vector2f tipPos[3] = {{sf::Vector2f(111,2)},{sf::Vector2f(106,65)},{sf::Vector2f(111,2)}};
+    int totalCycles;
     sf::Sprite body;
     sf::Sprite weapon;
     sf::RectangleShape hpBar;
@@ -64,7 +66,7 @@ class basicChar {
     sf::Texture bTexture;
     sf::Texture wTexture;
     //animation cycles; work in progress
-    void basicCollisionDetection (basicChar *target, sf::Vector2f *tipPos) {
+    void basicCollisionDetection (basicChar *target) {
         float bx = body.getPosition().x, by = body.getPosition().y;
         float br = body.getRotation()/180*PI;
         float tx = target->body.getPosition().x, ty = target->body.getPosition().y;
@@ -73,18 +75,17 @@ class basicChar {
             target->hp-=dmg;
         }
     }
-    void loadAnim(sf::Texture *atkTextures, int n, int enemyCount, vector<basicChar> &enemies, sf::Vector2f *tipPos) {
+    void loadAnim(int enemyCount, vector<basicChar> &enemies) {
         animTime = animClock.getElapsedTime();
-        //printf("1\n");
-        if(animTime.asSeconds() >= atkD/n && atkAnimStage < n) {
+        if(animTime.asSeconds() >= atkD/totalCycles && atkAnimStage < totalCycles) {
             animClock.restart();
-            weapon.setTexture(*(atkTextures+atkAnimStage));
+            weapon.setTexture(atkAnims[atkAnimStage]);
             atkAnimStage++;
             for(int i = 0; i < enemyCount; i++) {
-                basicCollisionDetection(&enemies[i], tipPos);
+                basicCollisionDetection(&enemies[i]);
             }
         }
-        else if(animTime.asSeconds() >= atkD/n && atkAnimStage >= n) {
+        else if(animTime.asSeconds() >= atkD/totalCycles && atkAnimStage >= totalCycles) {
             weapon.setTexture(wTexture);
             atkAnimStage = 0;
             atkActive = false;
@@ -110,25 +111,18 @@ class basicChar {
         return false;
     }
     //constructor
-    basicChar (string a, string b, int re,int gr,int bl,int x,int y) {
+    basicChar (string a, int re,int gr,int bl,int x,int y) {
         bTexture.loadFromFile(a);
         bTexture.setSmooth(true);
-        wTexture.loadFromFile(b);
-        wTexture.setSmooth(true);
         body.setOrigin(sf::Vector2f(200,200));
         body.setPosition(sf::Vector2f(x,y));
         body.setTexture(bTexture);
         weapon.setOrigin(sf::Vector2f(200,200));
         weapon.setPosition(sf::Vector2f(x,y));
-        weapon.setTexture(wTexture);
         hitbox = 50;
-        spd = 100;
-        wCooldownM = 0.5;
         hp = 100;
-        dmg = 10;
         atkActive = false;
         atkAnimStage = 0;
-        atkD = 0.5;
         hpBar.setSize(sf::Vector2f(5,hp/2));
         hpBar.setFillColor(sf::Color(re,gr,bl));
         hpBar.setOrigin(sf::Vector2f(25,25));
@@ -139,6 +133,43 @@ class basicChar {
         hpBarBack.setOutlineColor(sf::Color(0,0,0));
         hpBarBack.setOrigin(sf::Vector2f(25,25));
         hpBarBack.setPosition(x,y);
+    }
+};
+class weapon {
+    public:
+    int spd;
+    float wCooldownM;
+    float dmg;
+    float atkD;
+    sf::Texture atkAnims[3];
+    sf::Vector2f tipPos[3] = {{sf::Vector2f(111,2)},{sf::Vector2f(106,65)},{sf::Vector2f(111,2)}};
+    int totalCycles;
+    sf::Texture wTexture;
+    void apply(basicChar *target) {
+        target->spd = spd;
+        target->wCooldownM = wCooldownM;
+        target->dmg = dmg;
+        target->atkD = atkD;
+        target->totalCycles = totalCycles;
+        target->weapon.setTexture(wTexture);
+        target->wTexture = wTexture;
+        for(int i = 0; i < totalCycles; i++) {
+            target->atkAnims[i] = atkAnims[i];
+            target->tipPos[i] = tipPos[i];
+        }
+    }
+    weapon(string a, string *textures, sf::Vector2f *tPos, int n, int sp, float cM, float dm, float aD) {
+        for(int i = 0; i < n; i++) {
+            atkAnims[i].loadFromFile(*(textures+i));
+            tipPos[i] = *(tPos+i);
+        }
+        spd = sp;
+        wTexture.loadFromFile(a);
+        wTexture.setSmooth(true);
+        totalCycles = n;
+        wCooldownM = cM;
+        dmg = dm;
+        atkD = aD;
     }
 };
 //functions
@@ -163,10 +194,15 @@ int main () {
     //clocks
     sf::Clock deltaClock;
     //player presets
-    basicChar player("resources/playerTexture.png","resources/weaponTexture.png",0,255,0,400,300);
+    string arr[3] = {"resources/weaponTexture2.png","resources/weaponTexture3.png","resources/weaponTexture2.png"};
+    sf::Vector2f tipPos[3] = {{sf::Vector2f(111,2)},{sf::Vector2f(106,65)},{sf::Vector2f(111,2)}};
+    weapon a("resources/weaponTexture.png",arr,tipPos,3,100,0.5,10,0.5);
+    basicChar player("resources/playerTexture.png",0,255,0,400,300);
     vector<basicChar> enemies;
     //enemy spawning (just for tests)
-    basicChar temp("resources/enemyTexture.png","resources/enemyWeaponTexture.png",255,0,0,0,0);
+    basicChar temp("resources/enemyTexture.png",255,0,0,0,0);
+    a.apply(&player);
+    a.apply(&temp);
     for(int i = 0; i < 1; i++) {
         temp.body.setPosition(i*-25,i*-25);
         temp.weapon.setPosition(i*-25,i*-25);
@@ -176,16 +212,6 @@ int main () {
         enemyCount++;
     }
     //texture loading
-    sf::Texture anims[5];
-    anims[0].loadFromFile("resources/weaponTexture2.png");
-    anims[1].loadFromFile("resources/weaponTexture3.png");
-    anims[2].loadFromFile("resources/weaponTexture2.png");
-    sf::Vector2f tipPos[3] = {{sf::Vector2f(111,2)},{sf::Vector2f(106,65)},{sf::Vector2f(111,2)}};
-    sf::Texture enemyAnims[3];
-    enemyAnims[0].loadFromFile("resources/enemyWeaponTexture2.png");
-    enemyAnims[1].loadFromFile("resources/enemyWeaponTexture3.png");
-    enemyAnims[2].loadFromFile("resources/enemyWeaponTexture2.png");
-    sf::Vector2f enemyTipPos[3] = {{sf::Vector2f(111,2)},{sf::Vector2f(106,65)},{sf::Vector2f(111,2)}};
     //font loading
     //map loading
     int tL = 16, tH = 8;
@@ -289,7 +315,7 @@ int main () {
             player.wCooldownClock.restart();
         }
         if(player.atkActive) {
-            player.loadAnim(anims,3, enemyCount, enemies, tipPos);
+            player.loadAnim(enemyCount, enemies);
         }
         //enemy management
         for(int i = 0; i < enemyCount; i++) {
@@ -329,7 +355,7 @@ int main () {
             if(enemies[i].atkActive) {
                 vector<basicChar> temp2;
                 temp2.push_back(player);
-                enemies[i].loadAnim(enemyAnims,3,1,temp2,enemyTipPos);
+                enemies[i].loadAnim(1,temp2);
                 player.hp = temp2[0].hp;
             }
         }
