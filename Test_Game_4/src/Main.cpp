@@ -54,6 +54,7 @@ class basicChar {
     float wCooldownM;
     float wCooldown;
     float hp;
+    float maxHP;
     float dmg;
     float atkD;
     sf::Texture atkAnims[3];
@@ -111,7 +112,7 @@ class basicChar {
         return false;
     }
     //constructor
-    basicChar (string a, int re,int gr,int bl,int x,int y) {
+    basicChar (string a, int re,int gr,int bl,int x,int y, int hb, float h) {
         bTexture.loadFromFile(a);
         bTexture.setSmooth(true);
         body.setOrigin(sf::Vector2f(200,200));
@@ -119,8 +120,9 @@ class basicChar {
         body.setTexture(bTexture);
         weapon.setOrigin(sf::Vector2f(200,200));
         weapon.setPosition(sf::Vector2f(x,y));
-        hitbox = 50;
-        hp = 100;
+        hitbox = hb;
+        hp = h;
+        maxHP = h;
         atkActive = false;
         atkAnimStage = 0;
         hpBar.setSize(sf::Vector2f(5,hp/2));
@@ -197,10 +199,10 @@ int main () {
     string arr[3] = {"resources/weaponTexture2.png","resources/weaponTexture3.png","resources/weaponTexture2.png"};
     sf::Vector2f tipPos[3] = {{sf::Vector2f(111,2)},{sf::Vector2f(106,65)},{sf::Vector2f(111,2)}};
     weapon a("resources/weaponTexture.png",arr,tipPos,3,100,0.5,10,0.5);
-    basicChar player("resources/playerTexture.png",0,255,0,400,300);
+    basicChar player("resources/playerTexture.png",0,255,0,400,300,50,100);
     vector<basicChar> enemies;
     //enemy spawning (just for tests)
-    basicChar temp("resources/enemyTexture.png",255,0,0,0,0);
+    basicChar temp("resources/enemyTexture.png",255,0,0,0,0,50,100);
     a.apply(&player);
     a.apply(&temp);
     for(int i = 0; i < 1; i++) {
@@ -371,9 +373,9 @@ int main () {
             gameView.setCenter(400,300);
         }
         //hp bar setting
-        player.hpBar.setSize(sf::Vector2f(5,player.hp/2));
+        player.hpBar.setSize(sf::Vector2f(5,50*player.hp/player.maxHP));
         for(int i = 0; i < enemyCount; i++) {
-            enemies[i].hpBar.setSize(sf::Vector2f(5,enemies[i].hp/2));
+            enemies[i].hpBar.setSize(sf::Vector2f(5,50*enemies[i].hp/enemies[i].maxHP));
         }
         //drawing
         window.clear(sf::Color(255,255,255));
