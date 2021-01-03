@@ -47,6 +47,7 @@ class basicChar {
     int atkAnimStage;
     int hitbox;
     bool atkActive;
+    bool damaged;
     sf::Clock wCooldownClock;
     sf::Clock animClock;
     sf::Time wCooldownT;
@@ -58,13 +59,14 @@ class basicChar {
     float dmg;
     float atkD;
     sf::Texture atkAnims[3];
-    sf::Vector2f tipPos[3] = {{sf::Vector2f(111,2)},{sf::Vector2f(106,65)},{sf::Vector2f(111,2)}};
+    sf::Vector2f tipPos[3];
     int totalCycles;
     sf::Sprite body;
     sf::Sprite weapon;
     sf::RectangleShape hpBar;
     sf::RectangleShape hpBarBack;
     sf::Texture bTexture;
+    sf::Texture bTexture2;
     sf::Texture wTexture;
     //animation cycles; work in progress
     void basicCollisionDetection (basicChar *target) {
@@ -72,8 +74,10 @@ class basicChar {
         float br = body.getRotation()/180*PI;
         float tx = target->body.getPosition().x, ty = target->body.getPosition().y;
         float wx = bx+cos(br)*tipPos[atkAnimStage].x, wy = by+sin(br)*tipPos[atkAnimStage].y;
-        if(sqrtf((wx-tx)*(wx-tx)+(wy-ty)*(wy-ty)) <= hitbox) {
+        if(sqrtf((wx-tx)*(wx-tx)+(wy-ty)*(wy-ty)) <= hitbox && target->damaged == false) {
             target->hp-=dmg;
+            target->damaged = true;
+            target->body.setTexture(target->bTexture2);
         }
     }
     void loadAnim(int enemyCount, vector<basicChar> &enemies) {
@@ -91,6 +95,10 @@ class basicChar {
             atkAnimStage = 0;
             atkActive = false;
             weapon.setOrigin(200,200);
+            for(int i = 0; i < enemyCount; i++) {
+                enemies[i].damaged = false;
+                enemies[i].body.setTexture(enemies[i].bTexture);
+            }
         }
     }
     bool objCollisions(float xM, float yM, const int *tilemap, int xL, int *objs, int n) {
@@ -112,9 +120,11 @@ class basicChar {
         return false;
     }
     //constructor
-    basicChar (string a, int re,int gr,int bl,int x,int y, int hb, float h) {
+    basicChar (string a, string b, int re,int gr,int bl,int x,int y, int hb, float h) {
         bTexture.loadFromFile(a);
         bTexture.setSmooth(true);
+        bTexture2.loadFromFile(b);
+        bTexture2.setSmooth(true);
         body.setOrigin(sf::Vector2f(200,200));
         body.setPosition(sf::Vector2f(x,y));
         body.setTexture(bTexture);
@@ -125,6 +135,7 @@ class basicChar {
         maxHP = h;
         atkActive = false;
         atkAnimStage = 0;
+        damaged = false;
         hpBar.setSize(sf::Vector2f(5,hp/2));
         hpBar.setFillColor(sf::Color(re,gr,bl));
         hpBar.setOrigin(sf::Vector2f(25,25));
@@ -187,6 +198,7 @@ int main () {
         status[i] = false;
     }
     bool mouseStatus = false;
+    bool mouseStatus2 = false;
     int enemyCount = 0;
     int objs[1];
     objs[0] = 3;
@@ -199,10 +211,10 @@ int main () {
     string arr[3] = {"resources/weaponTexture2.png","resources/weaponTexture3.png","resources/weaponTexture2.png"};
     sf::Vector2f tipPos[3] = {{sf::Vector2f(111,2)},{sf::Vector2f(106,65)},{sf::Vector2f(111,2)}};
     weapon a("resources/weaponTexture.png",arr,tipPos,3,100,0.5,10,0.5);
-    basicChar player("resources/playerTexture.png",0,255,0,400,300,50,100);
+    basicChar player("resources/playerTexture.png","resources/playerInjuredTexture.png",0,255,0,400,300,50,100);
     vector<basicChar> enemies;
     //enemy spawning (just for tests)
-    basicChar temp("resources/enemyTexture.png",255,0,0,0,0,50,100);
+    basicChar temp("resources/enemyTexture.png","resources/enemyInjuredTexture.png",255,0,0,0,0,50,100);
     a.apply(&player);
     a.apply(&temp);
     for(int i = 0; i < 1; i++) {
@@ -239,11 +251,17 @@ int main () {
             if (event.type == sf::Event::Closed) {
                 window.close();
             }
-            if (event.type == sf::Event::MouseButtonPressed) {
+            if (event.type == sf::Event::MouseButtonPressed && event.mouseButton.button == sf::Mouse::Button::Left) {
                 mouseStatus = true;
             }
-            if (event.type == sf::Event::MouseButtonReleased) {
+            if (event.type == sf::Event::MouseButtonReleased && event.mouseButton.button == sf::Mouse::Button::Left) {
                 mouseStatus = false;
+            }
+            if (event.type == sf::Event::MouseButtonPressed && event.mouseButton.button == sf::Mouse::Button::Right) {
+                mouseStatus2 = true;
+            }
+            if (event.type == sf::Event::MouseButtonReleased && event.mouseButton.button == sf::Mouse::Button::Right) {
+                mouseStatus2 = false;
             }
             if (event.type == sf::Event::KeyPressed) {
                 status[event.key.code] = true;
@@ -359,6 +377,13 @@ int main () {
                 temp2.push_back(player);
                 enemies[i].loadAnim(1,temp2);
                 player.hp = temp2[0].hp;
+                player.damaged = temp2[0].damaged;
+                if(temp2[0].damaged == true) {
+                    player.body.setTexture(player.bTexture2);
+                }
+                else {
+                    player.body.setTexture(player.bTexture);
+                }
             }
         }
         //player respawning
