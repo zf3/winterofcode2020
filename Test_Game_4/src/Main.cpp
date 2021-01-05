@@ -7,7 +7,7 @@ const float PI = 3.1415;
 //tilemap class
 class TileMap : public sf::Drawable, public sf::Transformable
 {
-public:
+    public:
     bool load(const std::string& tileset, sf::Vector2u tileSize, const int* tiles, unsigned int width, unsigned int height)
     {
         if (!m_tileset.loadFromFile(tileset))
@@ -32,7 +32,7 @@ public:
             }
         return true;
     }
-private:
+    private:
     virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const
     {
         states.transform *= getTransform();
@@ -44,7 +44,6 @@ private:
 };
 class basicChar {
     public:
-    int spd;
     int atkAnimStage;
     int atkAnimStage2;
     int hitbox;
@@ -59,6 +58,7 @@ class basicChar {
     sf::Time animTime;
     sf::Time wCooldownT2;
     sf::Time animTime2;
+    float spd;
     float wCooldownM;
     float wCooldown;
     float wCooldownM2;
@@ -186,19 +186,11 @@ class basicChar {
         }
     }
     //constructor
-    basicChar (string a, string b, int sp, int re,int gr,int bl,int x,int y, int hb, float h) {
-        bTexture.loadFromFile(a);
-        bTexture.setSmooth(true);
-        bTexture2.loadFromFile(b);
-        bTexture2.setSmooth(true);
+    basicChar (int sp, int re,int gr,int bl,int x,int y) {
         body.setOrigin(sf::Vector2f(200,200));
         body.setPosition(sf::Vector2f(x,y));
-        body.setTexture(bTexture);
         weapon.setOrigin(sf::Vector2f(200,200));
         weapon.setPosition(sf::Vector2f(x,y));
-        hitbox = hb;
-        hp = h;
-        maxHP = h;
         atkActive = false;
         atkActive2 = false;
         atkAnimStage = 0;
@@ -221,7 +213,7 @@ class basicChar {
 };
 class weapon {
     public:
-    int spdM;
+    float spdM;
     float wCooldownM;
     float wCooldownM2;
     float dmg;
@@ -258,7 +250,7 @@ class weapon {
             target->tipPos2[i] = tipPos2[i];
         }
     }
-    weapon(string a, string *textures, string *textures2, sf::Vector2f *tPos, sf::Vector2f *tPos2, int n, int n2, int sp, float cM, float cM2, float dm, float dm2, float aD, float aD2, float a2S) {
+    weapon(string a, string *textures, string *textures2, sf::Vector2f *tPos, sf::Vector2f *tPos2, int n, int n2, float sp, float cM, float cM2, float dm, float dm2, float aD, float aD2, float a2S) {
         for(int i = 0; i < n; i++) {
             atkAnims[i].loadFromFile(*(textures+i));
             tipPos[i] = *(tPos+i);
@@ -279,6 +271,33 @@ class weapon {
         atkD = aD;
         atkD2 = aD2;
         atk2Spd = a2S;
+    }
+};
+class armor {
+    public:
+    float spdM;
+    int hitbox;
+    float maxHP;
+    sf::Texture bTexture;
+    sf::Texture iTexture;
+    void apply(basicChar *target) {
+        target->hp = maxHP;
+        target->maxHP = maxHP;
+        target->hitbox = hitbox;
+        target->spd = target->spd*spdM;
+        target->atk2Spd = target->atk2Spd*spdM;
+        target->body.setTexture(bTexture);
+        target->bTexture = bTexture;
+        target->bTexture2 = iTexture;
+    }
+    armor(string a, string b, float sp, float hp, float hb) {
+        bTexture.loadFromFile(a);
+        bTexture.setSmooth(true);
+        iTexture.loadFromFile(b);
+        iTexture.setSmooth(true);
+        spdM = sp;
+        maxHP = hp;
+        hitbox = hb;
     }
 };
 //functions
@@ -312,12 +331,16 @@ int main () {
     sf::Vector2f tipPos2[10] = {{sf::Vector2f(150,35)},{sf::Vector2f(150,35)},{sf::Vector2f(150,35)},{sf::Vector2f(150,35)},{sf::Vector2f(150,35)}
     ,{sf::Vector2f(150,35)},{sf::Vector2f(150,35)},{sf::Vector2f(150,35)},{sf::Vector2f(150,35)},{sf::Vector2f(150,35)}};
     weapon a("resources/weaponTexture.png",arr,arr2,tipPos,tipPos2,3,10,1,0.5,5,10,50,0.5,1,500);
-    basicChar player("resources/playerTexture.png","resources/playerInjuredTexture.png",100,0,255,0,400,300,50,100);
+    armor b("resources/playerTexture.png","resources/playerInjuredTexture.png",1,100,50);
+    armor c("resources/enemyTexture.png","resources/enemyInjuredTexture.png",1,100,50);
+    basicChar player(100,0,255,0,400,300);
     vector<basicChar> enemies;
     //enemy spawning (just for tests)
-    basicChar temp("resources/enemyTexture.png","resources/enemyInjuredTexture.png",100,255,0,0,0,0,50,100);
+    basicChar temp(100,255,0,0,0,0);
     a.apply(&player);
+    b.apply(&player);
     a.apply(&temp);
+    c.apply(&temp);
     for(int i = 0; i < 1; i++) {
         temp.body.setPosition(i*-25,i*-25);
         temp.weapon.setPosition(i*-25,i*-25);
