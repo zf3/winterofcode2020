@@ -42,6 +42,80 @@ class TileMap : public sf::Drawable, public sf::Transformable
     sf::VertexArray m_vertices;
     sf::Texture m_tileset;
 };
+class display {
+    public:
+    sf::Texture texture1;
+    sf::Texture texture2;
+    sf::Texture texture3;
+    sf::Texture texture4;
+    sf::Sprite display1;
+    sf::Sprite display2;
+    sf::Sprite display3;
+    sf::Sprite display4;
+    sf::RectangleShape block1;
+    sf::RectangleShape block2;
+    sf::RectangleShape block3;
+    float scale;
+    void renew(float wC, float wCM, float wC2, float wCM2, float hp, float mHP) {
+        float e,f;
+        if((1-wC2/wCM2) > 0) {
+            e = 1-wC2/wCM2;
+        }
+        else {
+            e = 0;
+        }
+        if((1-wC/wCM) > 0) {
+            f = 1-wC/wCM;
+        }
+        else {
+            f = 0;
+        }
+        block1.setSize(sf::Vector2f(593*f*scale,200*scale));
+        block2.setSize(sf::Vector2f(-(593*e*scale),200*scale));
+        block3.setSize(sf::Vector2f(462*scale,462*(1-hp/mHP)*scale));
+    }
+    void move(float x, float y) {
+        display1.move(x,y);
+        display2.move(x,y);
+        display3.move(x,y);
+        display4.move(x,y);
+        block1.move(x,y);
+        block2.move(x,y);
+        block3.move(x,y);
+    }
+    display(string a, string b, string c, string d, int re, int gr, int bl, int x, int y, float scl) {
+        scale = scl;
+        texture1.loadFromFile(a);
+        texture1.setSmooth(true);
+        texture2.loadFromFile(b);
+        texture2.setSmooth(true);
+        texture3.loadFromFile(c);
+        texture3.setSmooth(true);
+        texture4.loadFromFile(d);
+        texture4.setSmooth(true);
+        display1.setTexture(texture1);
+        display1.setPosition(x,y);
+        display1.setScale(sf::Vector2f(scl,scl));
+        display2.setTexture(texture2);
+        display2.setPosition(x,y);
+        display2.setScale(sf::Vector2f(scl,scl));
+        display3.setTexture(texture3);
+        display3.setPosition(x,y);
+        display3.setScale(sf::Vector2f(scl,scl));
+        display4.setTexture(texture4);
+        display4.setPosition(x,y);
+        display4.setScale(sf::Vector2f(scl,scl));
+        block1.setFillColor(sf::Color(re,gr,bl));
+        block1.setSize(sf::Vector2f(593*scl,200*scl));
+        block1.setPosition(sf::Vector2f(x+375*scl,y+250*scl));
+        block2.setFillColor(sf::Color(re,gr,bl));
+        block2.setSize(sf::Vector2f(-593*scl,200*scl));
+        block2.setPosition(sf::Vector2f(x+2050*scl,y+250*scl));
+        block3.setFillColor(sf::Color(re,gr,bl));
+        block3.setSize(sf::Vector2f(462*scl,462*scl));
+        block3.setPosition(sf::Vector2f(x+981*scl,y+81*scl));
+    }
+};
 class basicChar {
     public:
     int atkAnimStage;
@@ -146,7 +220,7 @@ class basicChar {
             target->body.setTexture(target->bTexture2);
         }
     }
-    void loadAnim2(int enemyCount, vector<basicChar> &enemies, float deltaTime, sf::View *gameView, sf::RenderWindow *window, const int *tilemap,int xL,int *objs, int n) {
+    void loadAnim2(int enemyCount, vector<basicChar> &enemies, float deltaTime, sf::View *gameView, sf::RenderWindow *window, const int *tilemap,int xL,int *objs, int n, display *playerHUD) {
         animTime2 = animClock2.getElapsedTime();
         float xM = deltaTime*atk2Spd*cos(body.getRotation()/180*PI);
         float yM = deltaTime*atk2Spd*sin(body.getRotation()/180*PI);
@@ -155,6 +229,7 @@ class basicChar {
             weapon.move(xM,0);
             hpBar.move(xM,0);
             hpBarBack.move(xM,0);
+            playerHUD->move(xM,0);
             gameView->move(xM,0);
             window->setView(*gameView);
         }
@@ -163,6 +238,7 @@ class basicChar {
             weapon.move(0,yM);
             hpBar.move(0,yM);
             hpBarBack.move(0,yM);
+            playerHUD->move(0,yM);
             gameView->move(0,yM);
             window->setView(*gameView);
         }
@@ -184,6 +260,12 @@ class basicChar {
                 enemies[i].body.setTexture(enemies[i].bTexture);
             }
         }
+    }
+    void move(float x, float y) {
+        body.move(x,y);
+        weapon.move(x,y);
+        hpBar.move(x,y);
+        hpBarBack.move(x,y);
     }
     //constructor
     basicChar (int sp, int re,int gr,int bl,int x,int y) {
@@ -303,9 +385,11 @@ class armor {
 //functions
 int main () {
     //window
-    sf::RenderWindow window(sf::VideoMode(800,600),"game window",sf::Style::Default);
+    int w = 2000, h = 1236, sx = 600, sy = 600;
+    sf::RenderWindow window(sf::VideoMode(w,h),"game window",sf::Style::Default);
     //views
-    sf::View gameView(sf::FloatRect(0,0,800,600));
+    sf::View gameView(sf::FloatRect(0,0,w,h));
+    gameView.setCenter(sx,sy);
     window.setView(gameView);
     //variables
     bool status[256];
@@ -333,7 +417,8 @@ int main () {
     weapon a("resources/weaponTexture.png",arr,arr2,tipPos,tipPos2,3,10,1,0.5,5,10,50,0.5,1,500);
     armor b("resources/playerTexture.png","resources/playerInjuredTexture.png",1,100,50);
     armor c("resources/enemyTexture.png","resources/enemyInjuredTexture.png",1,100,50);
-    basicChar player(100,0,255,0,400,300);
+    display playerHUD("resources/Display1.png","resources/Display2.png","resources/Display3.png","resources/Display4.png",192,192,192,0,927,0.5);
+    basicChar player(100,0,255,0,sx,sy);
     vector<basicChar> enemies;
     //enemy spawning (just for tests)
     basicChar temp(100,255,0,0,0,0);
@@ -413,7 +498,7 @@ int main () {
         {
         if(player.atkActive2 == false) {
             sf::Vector2i mP = sf::Mouse::getPosition(window);
-            float ang = atan2(mP.y-300.0,mP.x-400.0)*180/PI;
+            float ang = atan2(mP.y-h/2.0,mP.x-w/2.0)*180/PI;
             player.body.setRotation(ang);
             player.weapon.setRotation(ang);
             player.hpBar.setRotation(ang);
@@ -434,34 +519,26 @@ int main () {
         deltaClock.restart();
         if(player.atkActive2 == false) {
             if(status[sf::Keyboard::A] == true && player.objCollisions(deltaTime*-player.spd,0,level,tL,objs,1) == false) {
-                player.body.move(sf::Vector2f(deltaTime*-player.spd,0));
-                player.weapon.move(sf::Vector2f(deltaTime*-player.spd,0));
-                player.hpBar.move(sf::Vector2f(deltaTime*-player.spd,0));
-                player.hpBarBack.move(sf::Vector2f(deltaTime*-player.spd,0));
+                player.move(deltaTime*-player.spd,0);
+                playerHUD.move(deltaTime*-player.spd,0);
                 gameView.move(sf::Vector2f(deltaTime*-player.spd,0));
                 window.setView(gameView);
             }
             if(status[sf::Keyboard::D] == true && player.objCollisions(deltaTime*player.spd,0,level,tL,objs,1) == false) {
-                player.body.move(sf::Vector2f(deltaTime*player.spd,0));
-                player.weapon.move(sf::Vector2f(deltaTime*player.spd,0));
-                player.hpBar.move(sf::Vector2f(deltaTime*player.spd,0));
-                player.hpBarBack.move(sf::Vector2f(deltaTime*player.spd,0));
+                player.move(deltaTime*player.spd,0);
+                playerHUD.move(deltaTime*player.spd,0);
                 gameView.move(sf::Vector2f(deltaTime*player.spd,0));
                 window.setView(gameView);
             }
             if(status[sf::Keyboard::W] == true && player.objCollisions(0,deltaTime*-player.spd,level,tL,objs,1) == false) {
-                player.body.move(sf::Vector2f(0,deltaTime*-player.spd));
-                player.weapon.move(sf::Vector2f(0,deltaTime*-player.spd));
-                player.hpBar.move(sf::Vector2f(0,deltaTime*-player.spd));
-                player.hpBarBack.move(sf::Vector2f(0,deltaTime*-player.spd));
+                player.move(0,deltaTime*-player.spd);
+                playerHUD.move(0,deltaTime*-player.spd);
                 gameView.move(sf::Vector2f(0,deltaTime*-player.spd));
                 window.setView(gameView);
             }
             if(status[sf::Keyboard::S] == true && player.objCollisions(0,deltaTime*player.spd,level,tL,objs,1) == false) {
-                player.body.move(sf::Vector2f(0,deltaTime*player.spd));
-                player.weapon.move(sf::Vector2f(0,deltaTime*player.spd));
-                player.hpBar.move(sf::Vector2f(0,deltaTime*player.spd));
-                player.hpBarBack.move(sf::Vector2f(0,deltaTime*player.spd));
+                player.move(0,deltaTime*player.spd);
+                playerHUD.move(0,deltaTime*player.spd);
                 gameView.move(sf::Vector2f(0,deltaTime*player.spd));
                 window.setView(gameView);
             }
@@ -481,7 +558,7 @@ int main () {
             player.loadAnim(enemyCount, enemies);
         }
         if(player.atkActive2) {
-            player.loadAnim2(enemyCount, enemies,deltaTime,&gameView,&window,level,tL,objs,1);
+            player.loadAnim2(enemyCount, enemies,deltaTime,&gameView,&window,level,tL,objs,1,&playerHUD);
         }
         }
         //enemy management
@@ -538,27 +615,35 @@ int main () {
         //player respawning
         {
         if(player.hp <= 0) {
-            player.body.setPosition(400,300);
-            player.weapon.setPosition(400,300);
+            player.body.setPosition(sx,sy);
+            player.weapon.setPosition(sx,sy);
             player.hp = player.maxHP;
             player.atkActive = false;
             player.atkAnimStage = 0;
             player.atkAnimStage2 = 0;
-            player.hpBar.setPosition(400,300);
-            player.hpBarBack.setPosition(400,300);
-            gameView.setCenter(400,300);
+            player.hpBar.setPosition(sx,sy);
+            player.hpBarBack.setPosition(sx,sy);
+            playerHUD.display1.setPosition(sx,sy+927);
+            playerHUD.display2.setPosition(sx,sy+927);
+            playerHUD.display3.setPosition(sx,sy+927);
+            playerHUD.display4.setPosition(sx,sy+927);
+            playerHUD.block1.setPosition(sx,sy+927);
+            playerHUD.block2.setPosition(sx,sy+927);
+            playerHUD.block3.setPosition(sx,sy+927);
+            gameView.setCenter(sx,sy);
         }
         }
         //hp bar setting
         {
-        player.hpBar.setSize(sf::Vector2f(5,50*player.hp/player.maxHP));
         for(int i = 0; i < enemyCount; i++) {
             enemies[i].hpBar.setSize(sf::Vector2f(5,50*enemies[i].hp/enemies[i].maxHP));
         }
+        playerHUD.renew(player.wCooldown,player.wCooldownM,player.wCooldown2,player.wCooldownM2,player.hp,player.maxHP);
         }
         //drawing
         {
         window.clear(sf::Color(255,255,255));
+
         window.draw(map);
         for(int i = 0; i < enemyCount; i++) {
             window.draw(enemies[i].body);
@@ -568,8 +653,13 @@ int main () {
         }
         window.draw(player.body);
         window.draw(player.weapon);
-        window.draw(player.hpBarBack);
-        window.draw(player.hpBar);
+        window.draw(playerHUD.display2);
+        window.draw(playerHUD.display3);
+        window.draw(playerHUD.display4);
+        window.draw(playerHUD.block1);
+        window.draw(playerHUD.block2);
+        window.draw(playerHUD.block3);
+        window.draw(playerHUD.display1);
 
         window.display();
         }
