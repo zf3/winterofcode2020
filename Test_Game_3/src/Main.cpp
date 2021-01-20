@@ -3,6 +3,7 @@
 #include<cmath>
 using namespace std;
 int wallmap[1000][1000];
+double deltaTime;
 struct basicChar {
     sf::Sprite body;
     sf::Sprite weapon;
@@ -12,6 +13,7 @@ struct basicChar {
     float attCooldownMax;
     float hp;
     float sightRange;
+    float speed;
 };
 bool isSeen(basicChar *target, basicChar *spotter) {
     float sX = spotter->body.getPosition().x;
@@ -44,25 +46,44 @@ void enemyAI(basicChar *target, basicChar *enemy) {
     float tX = target->body.getPosition().x;
     float tY = target->body.getPosition().y;
     if(isSeen(target,enemy) == true && ((sX-tX)*(sX-tX)+(sY-tY)*(sY-tY)) >= 10) {
-        enemy->body.setRotation(atan((sY-tY)/(sX-tX))/3.1415*180);
-        int xM = 10*(cos(enemy->body.getRotation()));
-        int yM = 10*(sin(enemy->body.getRotation()));
+        enemy->body.setRotation(atan((sY-tY)/(sX-tX))/3.1415*180+90);
+        enemy->weapon.setRotation(atan((sY-tY)/(sX-tX))/3.1415*180+90);
+        float xM = deltaTime*enemy->speed*cos(enemy->body.getRotation()-90);
+        float yM = deltaTime*enemy->speed*sin(enemy->body.getRotation()-90);
         enemy->body.move(xM,yM);
+        enemy->weapon.move(xM,yM);
     }
 }
 int main () {
     //definitions
-    double speed = 100, deltaTime, playerAngle;
+    int enemyCount = 0;
+    basicChar player, temp2;
+    vector<basicChar> enemies;
     sf::Time temp;
     sf::Clock clock;
     sf::RenderWindow window(sf::VideoMode(800,600), "Game window");
     sf::View gameView;
-    sf::Sprite player;
     sf::Texture playerTexture;
+    sf::Texture weaponTexture;
     //setup
     playerTexture.loadFromFile("resources/playerTexture.png");
-    player.setTexture(playerTexture);
+    weaponTexture.loadFromFile("resources/weaponTexture.png");
+    player.speed = 100;
+    player.body.setTexture(playerTexture);
+    player.weapon.setTexture(weaponTexture);
+    player.body.setOrigin(100,100);
+    player.weapon.setOrigin(100,100);
+    player.body.setPosition(400,300);
+    player.weapon.setPosition(400,300);
     gameView.reset(sf::FloatRect(0.f, 0.f, 800.f, 600.f));
+    temp2.speed = 100;
+    temp2.body.setTexture(playerTexture);
+    temp2.weapon.setTexture(weaponTexture);
+    temp2.body.setOrigin(100,100);
+    temp2.weapon.setOrigin(100,100);
+    temp2.sightRange = 1000;
+    enemies.push_back(temp2);
+    enemyCount++;
     while(window.isOpen()) {
         //special events
         sf::Event event;
@@ -76,23 +97,37 @@ int main () {
         clock.restart();
         deltaTime = temp.asSeconds();
         if(sf::Keyboard::isKeyPressed(sf::Keyboard::W)) {
-            player.move(0,-deltaTime*speed);
+            player.body.move(0,-deltaTime*player.speed);
+            player.weapon.move(0,-deltaTime*player.speed);
+            gameView.move(0,-deltaTime*player.speed);
         }
         if(sf::Keyboard::isKeyPressed(sf::Keyboard::S)) {
-            player.move(0,deltaTime*speed);
+            player.body.move(0,deltaTime*player.speed);
+            player.weapon.move(0,deltaTime*player.speed);
+            gameView.move(0,deltaTime*player.speed);
         }
         if(sf::Keyboard::isKeyPressed(sf::Keyboard::A)) {
-            player.move(-deltaTime*speed,0);
+            player.body.move(-deltaTime*player.speed,0);
+            player.weapon.move(-deltaTime*player.speed,0);
+            gameView.move(-deltaTime*player.speed,0);
         }
         if(sf::Keyboard::isKeyPressed(sf::Keyboard::D)) {
-            player.move(deltaTime*speed,0);
+            player.body.move(deltaTime*player.speed,0);
+            player.weapon.move(deltaTime*player.speed,0);
+            gameView.move(deltaTime*player.speed,0);
         }
         sf::Vector2i mousePos = sf::Mouse::getPosition(window);
-        playerAngle = atan2(mousePos.y-player.getPosition().y,mousePos.x-player.getPosition().x)/3.1415*180;
-        player.setRotation(playerAngle+90);
+        player.body.setRotation(atan2(mousePos.y-player.body.getPosition().y,mousePos.x-player.body.getPosition().x)/3.1415*180+90);
+        player.weapon.setRotation(atan2(mousePos.y-player.body.getPosition().y,mousePos.x-player.body.getPosition().x)/3.1415*180+90);
         //rendering
         window.clear(sf::Color::White);
-        window.draw(player);
+        for(int i = 0; i < enemyCount; i++) {
+            enemyAI(&player,&enemies[i]);
+            window.draw(enemies[i].body);
+            window.draw(enemies[i].weapon);
+        }
+        window.draw(player.body);
+        window.draw(player.weapon);
         window.display();
     }
     return 0;

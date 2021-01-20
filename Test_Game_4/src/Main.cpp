@@ -94,26 +94,26 @@ class display {
         texture4.loadFromFile(d);
         texture4.setSmooth(true);
         display1.setTexture(texture1);
-        display1.setPosition(x,y);
         display1.setScale(sf::Vector2f(scl,scl));
         display2.setTexture(texture2);
-        display2.setPosition(x,y);
         display2.setScale(sf::Vector2f(scl,scl));
         display3.setTexture(texture3);
-        display3.setPosition(x,y);
         display3.setScale(sf::Vector2f(scl,scl));
         display4.setTexture(texture4);
-        display4.setPosition(x,y);
         display4.setScale(sf::Vector2f(scl,scl));
         block1.setFillColor(sf::Color(re,gr,bl));
         block1.setSize(sf::Vector2f(593*scl,200*scl));
-        block1.setPosition(sf::Vector2f(x+375*scl,y+250*scl));
         block2.setFillColor(sf::Color(re,gr,bl));
         block2.setSize(sf::Vector2f(-593*scl,200*scl));
-        block2.setPosition(sf::Vector2f(x+2050*scl,y+250*scl));
         block3.setFillColor(sf::Color(re,gr,bl));
         block3.setSize(sf::Vector2f(462*scl,462*scl));
-        block3.setPosition(sf::Vector2f(x+981*scl,y+81*scl));
+        display1.setPosition(x-608,y+309);
+        display2.setPosition(x-608,y+309);
+        display3.setPosition(x-608,y+309);
+        display4.setPosition(x-608,y+309);
+        block1.setPosition(x-608+373/2,y+309+264/2);
+        block2.setPosition(x-608+2048/2,y+309+253/2);
+        block3.setPosition(x-608+983/2,y+309+84/2);
     }
 };
 class basicChar {
@@ -121,6 +121,7 @@ class basicChar {
     int atkAnimStage;
     int atkAnimStage2;
     int hitbox;
+    float atkDist;
     bool atkActive;
     bool atkActive2;
     bool damaged;
@@ -144,10 +145,11 @@ class basicChar {
     float atkD;
     float atkD2;
     float atk2Spd;
-    sf::Texture atkAnims[3];
-    sf::Texture atkAnims2[10];
-    sf::Vector2f tipPos[3];
-    sf::Vector2f tipPos2[10];
+    float atk2Rot;
+    sf::Texture atkAnims[7];
+    sf::Texture atkAnims2[20];
+    sf::Vector2f tipPos[7];
+    sf::Vector2f tipPos2[20];
     int totalCycles;
     int totalCycles2;
     sf::Sprite body;
@@ -160,10 +162,10 @@ class basicChar {
     //wall collision detection
     bool objCollisions(float xM, float yM, const int *tilemap, int xL, int *objs, int n) {
         float px = body.getPosition().x+xM, py = body.getPosition().y+yM;
-        int c1x = (px+(hitbox-1))/100, c1y = (py+(hitbox-1))/100;
-        int c2x = (px-(hitbox-1))/100, c2y = (py+(hitbox-1))/100;
-        int c3x = (px+(hitbox-1))/100, c3y = (py-(hitbox-1))/100;
-        int c4x = (px-(hitbox-1))/100, c4y = (py-(hitbox-1))/100;
+        int c1x = (px+(hitbox-1))/hitbox/2, c1y = (py+(hitbox-1))/hitbox/2;
+        int c2x = (px-(hitbox-1))/hitbox/2, c2y = (py+(hitbox-1))/hitbox/2;
+        int c3x = (px+(hitbox-1))/hitbox/2, c3y = (py-(hitbox-1))/hitbox/2;
+        int c4x = (px-(hitbox-1))/hitbox/2, c4y = (py-(hitbox-1))/hitbox/2;
         for(int i = 0; i < n; i++) {
             if(*(tilemap+c1x+c1y*xL) == *(objs+i))
                 return true;
@@ -181,8 +183,9 @@ class basicChar {
         float bx = body.getPosition().x, by = body.getPosition().y;
         float br = body.getRotation()/180*PI;
         float tx = target->body.getPosition().x, ty = target->body.getPosition().y;
-        float wx = bx+cos(br)*tipPos[atkAnimStage].x, wy = by+sin(br)*tipPos[atkAnimStage].y;
-        if(sqrtf((wx-tx)*(wx-tx)+(wy-ty)*(wy-ty)) <= hitbox && target->damaged == false) {
+        float wx = bx+cos(br)*tipPos[atkAnimStage].x+cos(br-PI/2)*tipPos[atkAnimStage].y
+        , wy = by+sin(br)*tipPos[atkAnimStage].x+sin(br-PI/2)*tipPos[atkAnimStage].y;
+        if(sqrtf((wx-tx)*(wx-tx)+(wy-ty)*(wy-ty)) <= target->hitbox && target->damaged == false) {
             target->hp-=dmg;
             target->damaged = true;
             target->body.setTexture(target->bTexture2);
@@ -202,7 +205,7 @@ class basicChar {
             weapon.setTexture(wTexture);
             atkAnimStage = 0;
             atkActive = false;
-            weapon.setOrigin(200,200);
+            weapon.setOrigin(312,312);
             for(int i = 0; i < enemyCount; i++) {
                 enemies[i].damaged = false;
                 enemies[i].body.setTexture(enemies[i].bTexture);
@@ -213,7 +216,8 @@ class basicChar {
         float bx = body.getPosition().x, by = body.getPosition().y;
         float br = body.getRotation()/180*PI;
         float tx = target->body.getPosition().x, ty = target->body.getPosition().y;
-        float wx = bx+cos(br)*tipPos2[atkAnimStage2].x, wy = by+sin(br)*tipPos2[atkAnimStage2].y;
+        float wx = wx = bx+cos(br)*tipPos2[atkAnimStage].x+cos(br-PI/2)*tipPos[atkAnimStage].y
+        , wy = by+sin(br)*tipPos2[atkAnimStage].x+sin(br-PI/2)*tipPos[atkAnimStage].y;
         if(sqrtf((wx-tx)*(wx-tx)+(wy-ty)*(wy-ty)) <= hitbox && target->damaged == false) {
             target->hp-=dmg2;
             target->damaged = true;
@@ -242,6 +246,10 @@ class basicChar {
             gameView->move(0,yM);
             window->setView(*gameView);
         }
+        body.rotate(deltaTime*atk2Rot);
+        weapon.rotate(deltaTime*atk2Rot);
+        hpBar.rotate(deltaTime*atk2Rot);
+        hpBarBack.rotate(deltaTime*atk2Rot);
         if(animTime2.asSeconds() >= atkD2/totalCycles2 && atkAnimStage2 < totalCycles2) {
             animClock2.restart();
             weapon.setTexture(atkAnims2[atkAnimStage2]);
@@ -254,7 +262,7 @@ class basicChar {
             weapon.setTexture(wTexture);
             atkAnimStage2 = 0;
             atkActive2 = false;
-            weapon.setOrigin(200,200);
+            weapon.setOrigin(312,312);
             for(int i = 0; i < enemyCount; i++) {
                 enemies[i].damaged = false;
                 enemies[i].body.setTexture(enemies[i].bTexture);
@@ -269,14 +277,15 @@ class basicChar {
     }
     //constructor
     basicChar (int sp, int re,int gr,int bl,int x,int y) {
-        body.setOrigin(sf::Vector2f(200,200));
+        body.setOrigin(sf::Vector2f(312,312));
         body.setPosition(sf::Vector2f(x,y));
-        weapon.setOrigin(sf::Vector2f(200,200));
+        weapon.setOrigin(sf::Vector2f(312,312));
         weapon.setPosition(sf::Vector2f(x,y));
         atkActive = false;
         atkActive2 = false;
         atkAnimStage = 0;
         atkAnimStage2 = 0;
+        atkDist = 0;
         wCooldown = 0;
         wCooldown2 = 0;
         damaged = false;
@@ -303,14 +312,17 @@ class weapon {
     float atkD;
     float atkD2;
     float atk2Spd;
-    sf::Texture atkAnims[3];
-    sf::Texture atkAnims2[10];
-    sf::Vector2f tipPos[3];
-    sf::Vector2f tipPos2[10];
+    float atk2Rot;
+    sf::Texture atkAnims[7];
+    sf::Texture atkAnims2[20];
+    sf::Vector2f tipPos[7];
+    sf::Vector2f tipPos2[20];
     int totalCycles;
     int totalCycles2;
+    float atkDist;
     sf::Texture wTexture;
     void apply(basicChar *target) {
+        target->atkDist = atkDist;
         target->spd = target->spd*spdM;
         target->wCooldownM = wCooldownM;
         target->wCooldownM2 = wCooldownM2;
@@ -319,6 +331,7 @@ class weapon {
         target->atkD = atkD;
         target->atkD2 = atkD2;
         target->atk2Spd = atk2Spd;
+        target->atk2Rot = atk2Rot;
         target->totalCycles = totalCycles;
         target->totalCycles2 = totalCycles2;
         target->weapon.setTexture(wTexture);
@@ -332,7 +345,7 @@ class weapon {
             target->tipPos2[i] = tipPos2[i];
         }
     }
-    weapon(string a, string *textures, string *textures2, sf::Vector2f *tPos, sf::Vector2f *tPos2, int n, int n2, float sp, float cM, float cM2, float dm, float dm2, float aD, float aD2, float a2S) {
+    weapon(string a, string *textures, string *textures2, sf::Vector2f *tPos, sf::Vector2f *tPos2, int n, int n2, float sp, float cM, float cM2, float dm, float dm2, float aD, float aD2, float a2S, float a2R, float atkDi) {
         for(int i = 0; i < n; i++) {
             atkAnims[i].loadFromFile(*(textures+i));
             tipPos[i] = *(tPos+i);
@@ -353,6 +366,8 @@ class weapon {
         atkD = aD;
         atkD2 = aD2;
         atk2Spd = a2S;
+        atk2Rot = a2R;
+        atkDist = atkDi;
     }
 };
 class armor {
@@ -383,9 +398,21 @@ class armor {
     }
 };
 //functions
+float speedCalc1(int armo) {
+    if(armo == 1) {return 0.75;}
+    if(armo == 2) {return 1;}
+    if(armo == 3) {return 1.25;}
+    return 1;
+}
+float speedCalc2(int weap) {
+    if(weap == 3) {return 0.75;}
+    if(weap == 1) {return 1;}
+    if(weap == 2) {return 1.25;}
+    return 1;
+}
 int main () {
     //window
-    int w = 2000, h = 1236, sx = 600, sy = 600;
+    int w = 2000, h = 1236, sx = 600, sy = 500;
     sf::RenderWindow window(sf::VideoMode(w,h),"game window",sf::Style::Default);
     //views
     sf::View gameView(sf::FloatRect(0,0,w,h));
@@ -400,7 +427,9 @@ int main () {
     bool mouseStatus2 = false;
     int enemyCount = 0;
     int objs[1];
+    int armo, weap;
     float deltaTime;
+    float prevSpd1 = 1, prevSpd2 = 1;
     objs[0] = 3;
     //fonts
     //texts
@@ -408,24 +437,53 @@ int main () {
     //clocks
     sf::Clock deltaClock;
     //player presets
-    string arr[3] = {"resources/weaponTexture2.png","resources/weaponTexture3.png","resources/weaponTexture2.png"};
-    sf::Vector2f tipPos[3] = {{sf::Vector2f(111,2)},{sf::Vector2f(106,65)},{sf::Vector2f(111,2)}};
-    string arr2[10] = {"resources/weaponTexture4.png","resources/weaponTexture4.png","resources/weaponTexture4.png","resources/weaponTexture4.png","resources/weaponTexture4.png"
-    ,"resources/weaponTexture4.png","resources/weaponTexture4.png","resources/weaponTexture4.png","resources/weaponTexture4.png","resources/weaponTexture4.png"};
-    sf::Vector2f tipPos2[10] = {{sf::Vector2f(150,35)},{sf::Vector2f(150,35)},{sf::Vector2f(150,35)},{sf::Vector2f(150,35)},{sf::Vector2f(150,35)}
-    ,{sf::Vector2f(150,35)},{sf::Vector2f(150,35)},{sf::Vector2f(150,35)},{sf::Vector2f(150,35)},{sf::Vector2f(150,35)}};
-    weapon a("resources/weaponTexture.png",arr,arr2,tipPos,tipPos2,3,10,1,0.5,5,10,50,0.5,1,500);
-    armor b("resources/playerTexture.png","resources/playerInjuredTexture.png",1,100,50);
-    armor c("resources/enemyTexture.png","resources/enemyInjuredTexture.png",1,100,50);
-    display playerHUD("resources/Display1.png","resources/Display2.png","resources/Display3.png","resources/Display4.png",192,192,192,0,927,0.5);
+    string arr[7] = {"resources/Weapon1/1b.png","resources/Weapon1/1c.png","resources/Weapon1/1d.png","resources/Weapon1/1e.png","resources/Weapon1/1d.png","resources/Weapon1/1c.png","resources/Weapon1/1b.png"};
+    string arr2[20] = {"resources/Weapon1/1Sa.png","resources/Weapon1/1Sa.png","resources/Weapon1/1Sa.png","resources/Weapon1/1Sa.png","resources/Weapon1/1Sa.png"
+    ,"resources/Weapon1/1Sa.png","resources/Weapon1/1Sa.png","resources/Weapon1/1Sa.png","resources/Weapon1/1Sa.png","resources/Weapon1/1Sa.png"
+    ,"resources/Weapon1/1Sa.png","resources/Weapon1/1Sa.png","resources/Weapon1/1Sa.png","resources/Weapon1/1Sa.png","resources/Weapon1/1Sa.png"
+    ,"resources/Weapon1/1Sa.png","resources/Weapon1/1Sa.png","resources/Weapon1/1Sa.png","resources/Weapon1/1Sa.png","resources/Weapon1/1Sa.png"};
+    string arr3[3] = {"resources/Weapon2/2b.png","resources/Weapon2/2c.png","resources/Weapon2/2b.png"};
+    string arr4[20] = {"resources/Weapon2/2Sa.png","resources/Weapon2/2Sa.png","resources/Weapon2/2Sa.png","resources/Weapon2/2Sa.png","resources/Weapon2/2Sa.png"
+    ,"resources/Weapon2/2Sa.png","resources/Weapon2/2Sa.png","resources/Weapon2/2Sa.png","resources/Weapon2/2Sa.png","resources/Weapon2/2Sa.png"
+    ,"resources/Weapon2/2Sa.png","resources/Weapon2/2Sa.png","resources/Weapon2/2Sa.png","resources/Weapon2/2Sa.png","resources/Weapon2/2Sa.png"
+    ,"resources/Weapon2/2Sa.png","resources/Weapon2/2Sa.png","resources/Weapon2/2Sa.png","resources/Weapon2/2Sa.png","resources/Weapon2/2Sa.png"};
+    string arr5[7] = {"resources/Weapon3/3b.png","resources/Weapon3/3c.png","resources/Weapon3/3d.png","resources/Weapon3/3e.png","resources/Weapon3/3d.png","resources/Weapon3/3c.png","resources/Weapon3/3b.png"};
+    string arr6[20] = {"resources/Weapon3/3Sa.png","resources/Weapon3/3Sa.png","resources/Weapon3/3Sa.png","resources/Weapon3/3Sa.png","resources/Weapon3/3Sa.png"
+    ,"resources/Weapon3/3Sa.png","resources/Weapon3/3Sa.png","resources/Weapon3/3Sa.png","resources/Weapon3/3Sa.png","resources/Weapon3/3Sa.png"
+    ,"resources/Weapon3/3Sa.png","resources/Weapon3/3Sa.png","resources/Weapon3/3Sa.png","resources/Weapon3/3Sa.png","resources/Weapon3/3Sa.png"
+    ,"resources/Weapon3/3Sa.png","resources/Weapon3/3Sa.png","resources/Weapon3/3Sa.png","resources/Weapon3/3Sa.png","resources/Weapon3/3Sa.png"};
+    sf::Vector2f tipPos[7] = {{sf::Vector2f(263,44)},{sf::Vector2f(284,-11)},{sf::Vector2f(281,-52)},{sf::Vector2f(268,-105)},{sf::Vector2f(281,-52)},{sf::Vector2f(284,-11)},{sf::Vector2f(263,44)}};
+    sf::Vector2f tipPos2[20] = {{sf::Vector2f(300,12)},{sf::Vector2f(300,12)},{sf::Vector2f(300,12)},{sf::Vector2f(300,12)},{sf::Vector2f(300,12)}
+    ,{sf::Vector2f(300,12)},{sf::Vector2f(300,12)},{sf::Vector2f(300,12)},{sf::Vector2f(300,12)},{sf::Vector2f(300,12)}
+    ,{sf::Vector2f(300,12)},{sf::Vector2f(300,12)},{sf::Vector2f(300,12)},{sf::Vector2f(300,12)},{sf::Vector2f(300,12)}
+    ,{sf::Vector2f(300,12)},{sf::Vector2f(300,12)},{sf::Vector2f(300,12)},{sf::Vector2f(300,12)},{sf::Vector2f(300,12)}};
+    sf::Vector2f tipPos3[3] = {{sf::Vector2f(149,-75)},{sf::Vector2f(193,-62)},{sf::Vector2f(149,-75)}};
+    sf::Vector2f tipPos4[20] = {{sf::Vector2f(-5,215)},{sf::Vector2f(-5,215)},{sf::Vector2f(-5,-215)},{sf::Vector2f(-5,215)},{sf::Vector2f(-5,215)}
+    ,{sf::Vector2f(-5,215)},{sf::Vector2f(-5,215)},{sf::Vector2f(-5,215)},{sf::Vector2f(-5,215)},{sf::Vector2f(-5,215)}
+    ,{sf::Vector2f(-5,215)},{sf::Vector2f(-5,215)},{sf::Vector2f(-5,-215)},{sf::Vector2f(-5,215)},{sf::Vector2f(-5,215)}
+    ,{sf::Vector2f(-5,215)},{sf::Vector2f(-5,215)},{sf::Vector2f(-5,215)},{sf::Vector2f(-5,215)},{sf::Vector2f(-5,215)}};
+    sf::Vector2f tipPos5[7] = {{sf::Vector2f(184,28)},{sf::Vector2f(200,65)},{sf::Vector2f(200,98)},{sf::Vector2f(192,140)},{sf::Vector2f(200,98)},{sf::Vector2f(200,65)},{sf::Vector2f(184,28)}};
+    sf::Vector2f tipPos6[20] = {{sf::Vector2f(187,104)},{sf::Vector2f(187,104)},{sf::Vector2f(187,104)},{sf::Vector2f(187,104)},{sf::Vector2f(187,104)}
+    ,{sf::Vector2f(187,104)},{sf::Vector2f(187,104)},{sf::Vector2f(187,104)},{sf::Vector2f(187,104)},{sf::Vector2f(187,104)}
+    ,{sf::Vector2f(187,104)},{sf::Vector2f(187,104)},{sf::Vector2f(187,104)},{sf::Vector2f(187,104)},{sf::Vector2f(187,104)}
+    ,{sf::Vector2f(187,104)},{sf::Vector2f(187,104)},{sf::Vector2f(187,104)},{sf::Vector2f(187,104)},{sf::Vector2f(187,104)}};
+    weapon sword("resources/Weapon1/1a.png",arr,arr2,tipPos,tipPos2,7,20,1,0.5,5,10,50,0.5,1,500,0,275);
+    weapon dagger("resources/Weapon2/2a.png",arr3,arr4,tipPos3,tipPos4,3,20,1.25,0.25,2.5,2.5,25,0.25,1,750,-90,190);
+    weapon axe("resources/Weapon3/3a.png",arr5,arr6,tipPos5,tipPos6,7,20,0.75,0.75,7.5,25,75,0.75,1,0,-360,200);
+    armor plate("resources/Armor1/1a.png","resources/Armor1/1b.png",0.75,125,75);
+    armor chain("resources/Armor2/2a.png","resources/Armor2/2b.png",1,100,75);
+    armor leather("resources/Armor3/3a.png","resources/Armor3/3b.png",1.25,75,75);
+    display playerHUD("resources/Display1.png","resources/Display2.png","resources/Display3.png","resources/Display4.png",192,192,192,sx,sy,0.5);
     basicChar player(100,0,255,0,sx,sy);
     vector<basicChar> enemies;
     //enemy spawning (just for tests)
     basicChar temp(100,255,0,0,0,0);
-    a.apply(&player);
-    b.apply(&player);
-    a.apply(&temp);
-    c.apply(&temp);
+    sword.apply(&player);
+    chain.apply(&player);
+    armo = 2;
+    weap = 1;
+    axe.apply(&temp);
+    plate.apply(&temp);
     for(int i = 0; i < 1; i++) {
         temp.body.setPosition(i*-25,i*-25);
         temp.weapon.setPosition(i*-25,i*-25);
@@ -450,7 +508,7 @@ int main () {
         0, 0, 1, 0, 3, 2, 2, 2, 0, 0, 0, 0, 1, 1, 1, 1,
     };
     TileMap map;
-    if (!map.load("resources/Tileset.png", sf::Vector2u(100, 100), level, tL, tH))
+    if (!map.load("resources/Tileset/Tileset.png", sf::Vector2u(150, 150), level, tL, tH))
         return -1;
     //main loop
     while (window.isOpen()) {
@@ -473,7 +531,68 @@ int main () {
             if (event.type == sf::Event::MouseButtonReleased && event.mouseButton.button == sf::Mouse::Button::Right) {
                 mouseStatus2 = false;
             }
+            //armor swapping (temporary, will be swapped for inventory system later)
             if (event.type == sf::Event::KeyPressed) {
+                if(event.key.code == sf::Keyboard::Num1) {
+                    sword.apply(&player);
+                    weap = 1;
+                    player.spd/=prevSpd1*prevSpd2;
+                    player.atk2Spd/=prevSpd1;
+                    prevSpd1=speedCalc1(armo);
+                    prevSpd2=speedCalc2(weap);
+                    player.spd*=prevSpd1;
+                    player.atk2Spd*=prevSpd1;
+                }
+                if(event.key.code == sf::Keyboard::Num2) {
+                    dagger.apply(&player);
+                    weap = 2;
+                    player.spd/=prevSpd1*prevSpd2;
+                    player.atk2Spd/=prevSpd1;
+                    prevSpd1=speedCalc1(armo);
+                    prevSpd2=speedCalc2(weap);
+                    player.spd*=prevSpd1;
+                    player.atk2Spd*=prevSpd1;
+                }
+                if(event.key.code == sf::Keyboard::Num3) {
+                    axe.apply(&player);
+                    weap = 3;
+                    player.spd/=prevSpd1*prevSpd2;
+                    player.atk2Spd/=prevSpd1;
+                    prevSpd1=speedCalc1(armo);
+                    prevSpd2=speedCalc2(weap);
+                    player.spd*=prevSpd1;
+                    player.atk2Spd*=prevSpd1;
+                }
+                if(event.key.code == sf::Keyboard::Num4) {
+                    plate.apply(&player);
+                    armo = 1;
+                    player.spd/=prevSpd1*prevSpd2;
+                    player.atk2Spd/=prevSpd1;
+                    prevSpd1=speedCalc1(armo);
+                    prevSpd2=speedCalc2(weap);
+                    player.spd*=prevSpd2;
+                    player.atk2Spd*=prevSpd1;
+                }
+                if(event.key.code == sf::Keyboard::Num5) {
+                    chain.apply(&player);
+                    armo = 2;
+                    player.spd/=prevSpd1*prevSpd2;
+                    player.atk2Spd/=prevSpd1;
+                    prevSpd1=speedCalc1(armo);
+                    prevSpd2=speedCalc2(weap);
+                    player.spd*=prevSpd2;
+                    player.atk2Spd*=prevSpd1;
+                }
+                if(event.key.code == sf::Keyboard::Num6) {
+                    leather.apply(&player);
+                    armo = 3;
+                    player.spd/=prevSpd1*prevSpd2;
+                    player.atk2Spd/=prevSpd1;
+                    prevSpd1=speedCalc1(armo);
+                    prevSpd2=speedCalc2(weap);
+                    player.spd*=prevSpd2;
+                    player.atk2Spd*=prevSpd1;
+                }
                 status[event.key.code] = true;
             }
             if (event.type == sf::Event::KeyReleased) {
@@ -592,7 +711,7 @@ int main () {
             if(enemies[i].wCooldown >= enemies[i].wCooldownM) {
                 float xD = (enemies[i].body.getPosition().x-player.body.getPosition().x);
                 float yD = (enemies[i].body.getPosition().y-player.body.getPosition().y);
-                if(sqrtf(xD*xD+yD*yD) <= 125) {
+                if(sqrtf(xD*xD+yD*yD) <= enemies[i].atkDist) {
                     enemies[i].atkActive = true;
                     enemies[i].wCooldownClock.restart();
                 }
@@ -621,15 +740,13 @@ int main () {
             player.atkActive = false;
             player.atkAnimStage = 0;
             player.atkAnimStage2 = 0;
-            player.hpBar.setPosition(sx,sy);
-            player.hpBarBack.setPosition(sx,sy);
-            playerHUD.display1.setPosition(sx,sy+927);
-            playerHUD.display2.setPosition(sx,sy+927);
-            playerHUD.display3.setPosition(sx,sy+927);
-            playerHUD.display4.setPosition(sx,sy+927);
-            playerHUD.block1.setPosition(sx,sy+927);
-            playerHUD.block2.setPosition(sx,sy+927);
-            playerHUD.block3.setPosition(sx,sy+927);
+            playerHUD.display1.setPosition(sx-608,sy+309);
+            playerHUD.display2.setPosition(sx-608,sy+309);
+            playerHUD.display3.setPosition(sx-608,sy+309);
+            playerHUD.display4.setPosition(sx-608,sy+309);
+            playerHUD.block1.setPosition(sx-608+373/2,sy+309+264/2);
+            playerHUD.block2.setPosition(sx-608+2048/2,sy+309+253/2);
+            playerHUD.block3.setPosition(sx-608+983/2,sy+309+84/2);
             gameView.setCenter(sx,sy);
         }
         }
@@ -646,13 +763,13 @@ int main () {
 
         window.draw(map);
         for(int i = 0; i < enemyCount; i++) {
-            window.draw(enemies[i].body);
             window.draw(enemies[i].weapon);
+            window.draw(enemies[i].body);
             window.draw(enemies[i].hpBarBack);
             window.draw(enemies[i].hpBar);
         }
-        window.draw(player.body);
         window.draw(player.weapon);
+        window.draw(player.body);
         window.draw(playerHUD.display2);
         window.draw(playerHUD.display3);
         window.draw(playerHUD.display4);
