@@ -398,18 +398,6 @@ class armor {
     }
 };
 //functions
-float speedCalc1(int armo) {
-    if(armo == 1) {return 0.75;}
-    if(armo == 2) {return 1;}
-    if(armo == 3) {return 1.25;}
-    return 1;
-}
-float speedCalc2(int weap) {
-    if(weap == 3) {return 0.75;}
-    if(weap == 1) {return 1;}
-    if(weap == 2) {return 1.25;}
-    return 1;
-}
 int main () {
     //window
     int w = 2000, h = 1236, sx = 600, sy = 500;
@@ -427,9 +415,7 @@ int main () {
     bool mouseStatus2 = false;
     int enemyCount = 0;
     int objs[1];
-    int armo, weap;
     float deltaTime;
-    float prevSpd1 = 1, prevSpd2 = 1;
     objs[0] = 3;
     //fonts
     //texts
@@ -480,8 +466,6 @@ int main () {
     basicChar temp(100,255,0,0,0,0);
     sword.apply(&player);
     chain.apply(&player);
-    armo = 2;
-    weap = 1;
     axe.apply(&temp);
     plate.apply(&temp);
     for(int i = 0; i < 1; i++) {
@@ -533,66 +517,6 @@ int main () {
             }
             //armor swapping (temporary, will be swapped for inventory system later)
             if (event.type == sf::Event::KeyPressed) {
-                if(event.key.code == sf::Keyboard::Num1) {
-                    sword.apply(&player);
-                    weap = 1;
-                    player.spd/=prevSpd1*prevSpd2;
-                    player.atk2Spd/=prevSpd1;
-                    prevSpd1=speedCalc1(armo);
-                    prevSpd2=speedCalc2(weap);
-                    player.spd*=prevSpd1;
-                    player.atk2Spd*=prevSpd1;
-                }
-                if(event.key.code == sf::Keyboard::Num2) {
-                    dagger.apply(&player);
-                    weap = 2;
-                    player.spd/=prevSpd1*prevSpd2;
-                    player.atk2Spd/=prevSpd1;
-                    prevSpd1=speedCalc1(armo);
-                    prevSpd2=speedCalc2(weap);
-                    player.spd*=prevSpd1;
-                    player.atk2Spd*=prevSpd1;
-                }
-                if(event.key.code == sf::Keyboard::Num3) {
-                    axe.apply(&player);
-                    weap = 3;
-                    player.spd/=prevSpd1*prevSpd2;
-                    player.atk2Spd/=prevSpd1;
-                    prevSpd1=speedCalc1(armo);
-                    prevSpd2=speedCalc2(weap);
-                    player.spd*=prevSpd1;
-                    player.atk2Spd*=prevSpd1;
-                }
-                if(event.key.code == sf::Keyboard::Num4) {
-                    plate.apply(&player);
-                    armo = 1;
-                    player.spd/=prevSpd1*prevSpd2;
-                    player.atk2Spd/=prevSpd1;
-                    prevSpd1=speedCalc1(armo);
-                    prevSpd2=speedCalc2(weap);
-                    player.spd*=prevSpd2;
-                    player.atk2Spd*=prevSpd1;
-                }
-                if(event.key.code == sf::Keyboard::Num5) {
-                    chain.apply(&player);
-                    armo = 2;
-                    player.spd/=prevSpd1*prevSpd2;
-                    player.atk2Spd/=prevSpd1;
-                    prevSpd1=speedCalc1(armo);
-                    prevSpd2=speedCalc2(weap);
-                    player.spd*=prevSpd2;
-                    player.atk2Spd*=prevSpd1;
-                }
-                if(event.key.code == sf::Keyboard::Num6) {
-                    leather.apply(&player);
-                    armo = 3;
-                    player.spd/=prevSpd1*prevSpd2;
-                    player.atk2Spd/=prevSpd1;
-                    prevSpd1=speedCalc1(armo);
-                    prevSpd2=speedCalc2(weap);
-                    player.spd*=prevSpd2;
-                    player.atk2Spd*=prevSpd1;
-                }
                 status[event.key.code] = true;
             }
             if (event.type == sf::Event::KeyReleased) {
