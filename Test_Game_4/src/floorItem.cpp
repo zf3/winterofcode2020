@@ -1,27 +1,23 @@
 #include<floorItem.hpp>
-void floorItem::include(basicChar obj, float xP, float yP) {
-	type = 1;
+
+#include "inventorySlot.hpp"
+#include "basicChar.hpp"
+
+void floorItem::include(basicChar *obj, float xP, float yP) {
+	type = abs(rand()%2)+1;
+	a = obj->eqpArmor;
+	w = obj->eqpWeapon;
+	w.icon = obj->eqpWeapon.icon;
 	active = true;
-	fIcon = obj.fIcon;
+	fIcon = obj->fIcon;
 	x = xP;
 	y = yP;
 }
-void floorItem::apply(basicChar *target) {
-	if(active) {
-		if(type == 1) {
-			target->spd/=target->weaponM;
-			target->atk2Spd/=target->weaponM;
-			w.apply(target);
-		}
-		if(type == 2) {
-			target->spd/=target->armorM;
-			target->atk2Spd/=target->armorM;
-			float tHP = target->hp;
-			if(tHP == 0) tHP = a.maxHP;
-			a.apply(target);
-			target->hp = min(tHP, a.maxHP);
-		}
-	}
+void floorItem::apply(inventorySlot *target) {
+	target->a = a;
+	target->w = w;
+	target->active = active;
+	target->type = type;
 }
 floorItem::floorItem() {
 	active = false;

@@ -40,17 +40,17 @@ void basicChar::loadAnim(int enemyCount, vector<basicChar> &enemies) {
 	animTime = animClock.getElapsedTime();
 	if(animTime.asSeconds() >= atkD/totalCycles && atkAnimStage < totalCycles) {
 		animClock.restart();
-		weapon.setTexture(atkAnims[atkAnimStage]);
+		heldWeapon.setTexture(atkAnims[atkAnimStage]);
 		atkAnimStage++;
 		for(int i = 0; i < enemyCount; i++) {
 			basicCollisionDetection(&enemies[i]);
 		}
 	}
 	else if(animTime.asSeconds() >= atkD/totalCycles && atkAnimStage >= totalCycles) {
-		weapon.setTexture(wTexture);
+		heldWeapon.setTexture(wTexture);
 		atkAnimStage = 0;
 		atkActive = false;
-		weapon.setOrigin(312,312);
+		heldWeapon.setOrigin(312,312);
 		for(int i = 0; i < enemyCount; i++) {
 			enemies[i].damaged = false;
 			enemies[i].body.setTexture(enemies[i].bTexture);
@@ -75,7 +75,7 @@ void basicChar::loadAnim2(int enemyCount, vector<basicChar> &enemies, float delt
 	float yM = deltaTime*atk2Spd*sin(body.getRotation()/180*PI);
 	if(objCollisions(xM,0,tilemap,xL,objs,n) == false) {
 		body.move(xM,0);
-		weapon.move(xM,0);
+		heldWeapon.move(xM,0);
 		hpBar.move(xM,0);
 		hpBarBack.move(xM,0);
 		playerHUD->move(xM,0);
@@ -84,7 +84,7 @@ void basicChar::loadAnim2(int enemyCount, vector<basicChar> &enemies, float delt
 	}
 	if(objCollisions(0,yM,tilemap,xL,objs,n) == false) {
 		body.move(0,yM);
-		weapon.move(0,yM);
+		heldWeapon.move(0,yM);
 		hpBar.move(0,yM);
 		hpBarBack.move(0,yM);
 		playerHUD->move(0,yM);
@@ -92,22 +92,22 @@ void basicChar::loadAnim2(int enemyCount, vector<basicChar> &enemies, float delt
 		window->setView(*gameView);
 	}
 	body.rotate(deltaTime*atk2Rot);
-	weapon.rotate(deltaTime*atk2Rot);
+	heldWeapon.rotate(deltaTime*atk2Rot);
 	hpBar.rotate(deltaTime*atk2Rot);
 	hpBarBack.rotate(deltaTime*atk2Rot);
 	if(animTime2.asSeconds() >= atkD2/totalCycles2 && atkAnimStage2 < totalCycles2) {
 		animClock2.restart();
-		weapon.setTexture(atkAnims2[atkAnimStage2]);
+		heldWeapon.setTexture(atkAnims2[atkAnimStage2]);
 		atkAnimStage2++;
 		for(int i = 0; i < enemyCount; i++) {
 			basicCollisionDetection2(&enemies[i]);
 		}
 	}
 	else if(animTime2.asSeconds() >= atkD2/totalCycles2 && atkAnimStage2 >= totalCycles2) {
-		weapon.setTexture(wTexture);
+		heldWeapon.setTexture(wTexture);
 		atkAnimStage2 = 0;
 		atkActive2 = false;
-		weapon.setOrigin(312,312);
+		heldWeapon.setOrigin(312,312);
 		for(int i = 0; i < enemyCount; i++) {
 			enemies[i].damaged = false;
 			enemies[i].body.setTexture(enemies[i].bTexture);
@@ -116,7 +116,7 @@ void basicChar::loadAnim2(int enemyCount, vector<basicChar> &enemies, float delt
 }
 void basicChar::move(float x, float y) {
 	body.move(x,y);
-	weapon.move(x,y);
+	heldWeapon.move(x,y);
 	hpBar.move(x,y);
 	hpBarBack.move(x,y);
 }
@@ -124,8 +124,8 @@ void basicChar::move(float x, float y) {
 basicChar::basicChar (int sp, int re,int gr,int bl,int x,int y) {
 	body.setOrigin(sf::Vector2f(312,312));
 	body.setPosition(sf::Vector2f(x,y));
-	weapon.setOrigin(sf::Vector2f(312,312));
-	weapon.setPosition(sf::Vector2f(x,y));
+	heldWeapon.setOrigin(sf::Vector2f(312,312));
+	heldWeapon.setPosition(sf::Vector2f(x,y));
 	atkActive = false;
 	atkActive2 = false;
 	atkAnimStage = 0;

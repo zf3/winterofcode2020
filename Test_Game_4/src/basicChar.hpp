@@ -5,6 +5,7 @@
 
 #include "display.hpp"
 #include "armor.hpp"
+#include "weapon.hpp"
 
 class basicChar {
     public:
@@ -45,13 +46,15 @@ class basicChar {
     int totalCycles;
     int totalCycles2;
     sf::Sprite body;
-    sf::Sprite weapon;
+    sf::Sprite heldWeapon;
     sf::RectangleShape hpBar;
     sf::RectangleShape hpBarBack;
     sf::Texture bTexture;
     sf::Texture bTexture2;
     sf::Texture wTexture;
     sf::Texture fIcon;
+    weapon eqpWeapon;
+    armor eqpArmor;
     //wall collision detection
     bool objCollisions(float xM, float yM, const int *tilemap, int xL, int *objs, int n);
     //animation cycles

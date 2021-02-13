@@ -1,7 +1,8 @@
 #pragma once
 
-#include<basicChar.hpp>
 using namespace std;
+
+class basicChar;
 
 class weapon {
     public:

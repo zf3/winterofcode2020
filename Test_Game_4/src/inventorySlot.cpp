@@ -1,4 +1,7 @@
 #include "inventorySlot.hpp"
+
+#include "basicChar.hpp"
+
 //type = 1 - weapon, type = 2 - armor
 void inventorySlot::include(weapon obj) {
 	w = obj;
@@ -16,6 +19,7 @@ void inventorySlot::apply(basicChar *target) {
 			target->spd/=target->weaponM;
 			target->atk2Spd/=target->weaponM;
 			w.apply(target);
+			target->eqpWeapon = w;
 		}
 		if(type == 2) {
 			target->spd/=target->armorM;
@@ -23,6 +27,7 @@ void inventorySlot::apply(basicChar *target) {
 			float tHP = target->hp;
 			if(tHP == 0) tHP = a.maxHP;
 			a.apply(target);
+			target->eqpArmor = a;
 			target->hp = min(tHP, a.maxHP);
 		}
 	}

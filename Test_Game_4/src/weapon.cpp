@@ -1,4 +1,7 @@
 #include<weapon.hpp>
+
+#include "basicChar.hpp"
+
 void weapon::apply(basicChar *target) {
 	target->atkDist = atkDist;
 	target->spd = target->spd*spdM;
@@ -13,7 +16,7 @@ void weapon::apply(basicChar *target) {
 	target->atk2Rot = atk2Rot;
 	target->totalCycles = totalCycles;
 	target->totalCycles2 = totalCycles2;
-	target->weapon.setTexture(wTexture);
+	target->heldWeapon.setTexture(wTexture);
 	target->wTexture = wTexture;
 	target->fIcon = fIcon;
 	for(int i = 0; i < totalCycles; i++) {

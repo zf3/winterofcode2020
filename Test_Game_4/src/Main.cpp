@@ -30,6 +30,9 @@ int main () {
     int enemyCount = 0;
     int objs[1];
     float deltaTime;
+    float pickupRange = 100;
+    int lootChanceNumer = 1;
+    int lootChanceDenom = 2;
     objs[0] = 3;
     //fonts
     //texts
@@ -80,6 +83,7 @@ int main () {
     int droppedSize = 0;
     sf::Sprite iconRenders[4][4];
     sf::Sprite inventoryBackground;
+    sf::Sprite temp1;
     sf::Texture inventoryBackgroundT;
     inventoryBackgroundT.loadFromFile("resources/Icons/InventoryScreen.png");
     inventoryBackgroundT.setSmooth(true);
@@ -93,27 +97,25 @@ int main () {
     sf::Texture temp10;
     inventory[0][0].include(sword);
     iconRenders[0][0].setTexture(inventory[0][0].w.icon);
-    inventory[0][1].include(dagger);
-    iconRenders[0][1].setTexture(inventory[0][1].w.icon);
     inventory[0][2].include(axe);
     iconRenders[0][2].setTexture(inventory[0][2].w.icon);
     inventory[0][3].include(plate);
     iconRenders[0][3].setTexture(inventory[0][3].a.icon);
-    inventory[1][0].include(chain);
-    iconRenders[1][0].setTexture(inventory[1][0].a.icon);
-    inventory[1][1].include(leather);
-    iconRenders[1][1].setTexture(inventory[1][1].a.icon);
+    inventory[0][1].include(leather);
+    iconRenders[0][1].setTexture(inventory[0][1].a.icon);
     basicChar player(100,0,255,0,sx,sy);
     vector<basicChar> enemies;
     //enemy spawning (just for tests)
     basicChar temp(100,255,0,0,0,0);
     inventory[0][0].apply(&player);
-    inventory[1][0].apply(&player);
+    inventory[0][1].apply(&player);
     inventory[0][2].apply(&temp);
     inventory[0][3].apply(&temp);
+    inventory[0][2].active = false;
+    inventory[0][3].active = false;
     for(int i = 0; i < 1; i++) {
         temp.body.setPosition(i*-25,i*-25);
-        temp.weapon.setPosition(i*-25,i*-25);
+        temp.heldWeapon.setPosition(i*-25,i*-25);
         temp.hpBar.setPosition(i*-25,i*-25);
         temp.hpBarBack.setPosition(i*-25,i*-25);
         enemies.push_back(temp);
@@ -199,7 +201,7 @@ int main () {
             sf::Vector2i mP = sf::Mouse::getPosition(window);
             float ang = atan2(mP.y-h/2.0,mP.x-w/2.0)*180/PI;
             player.body.setRotation(ang);
-            player.weapon.setRotation(ang);
+            player.heldWeapon.setRotation(ang);
             player.hpBar.setRotation(ang);
             player.hpBarBack.setRotation(ang);
             for(int i = 0; i < enemyCount; i++) {
@@ -207,13 +209,13 @@ int main () {
                 float yD = player.body.getPosition().y-enemies[i].body.getPosition().y;
                 ang = atan2(yD,xD)*180/PI;
                 enemies[i].body.setRotation(ang);
-                enemies[i].weapon.setRotation(ang);
+                enemies[i].heldWeapon.setRotation(ang);
                 enemies[i].hpBar.setRotation(ang);
                 enemies[i].hpBarBack.setRotation(ang);
             }
         }
         }
-        //movement
+        //keypress reactions
         {
         deltaClock.restart();
         if(player.atkActive2 == false) {
@@ -242,6 +244,41 @@ int main () {
                 window.setView(gameView);
             }
         }
+        if(status[sf::Keyboard::F] == true) {
+            for(int i = 0; i < droppedSize; i++) {
+                float pX = player.body.getPosition().x;
+                float pY = player.body.getPosition().y;
+                if(sqrtf((pX-dropped[i].x)*(pX-dropped[i].x)+(pY-dropped[i].y)*(pY-dropped[i].y)) <= pickupRange) {
+                    bool found = false;
+                    for(int j = 0; j < 4; j++) {
+                        for(int l = 0; l < 4; l++) {
+                            if(inventory[j][l].active == false && found == false) {
+                                dropped[i].apply(&inventory[j][l]);
+                                sf::Texture temp2;
+                                int used = inventory[j][l].type;
+                                if(used == 1) {
+                                    iconRenders[j][l].setTexture(dropped[i].w.icon);
+                                }
+                                else {
+                                    iconRenders[j][l].setTexture(dropped[i].a.icon);
+                                }
+                                dropped.erase(dropped.begin()+i);
+                                droppedObjs.erase(droppedObjs.begin()+i);
+                                droppedSize--;
+                                found = true;
+                                break;
+                            }
+                        }
+                        if(found) {
+                            break;
+                        }
+                    }
+                    if(found) {
+                        break;
+                    }
+                }
+            }
+        }
         }
         //attacks
         {
@@ -267,28 +304,24 @@ int main () {
             float yM = deltaTime*enemies[i].spd*sin(enemies[i].body.getRotation()/180*PI);
             if(enemies[i].objCollisions(xM,0,level,tL,objs,1) == false) {
                 enemies[i].body.move(xM,0);
-                enemies[i].weapon.move(xM,0);
+                enemies[i].heldWeapon.move(xM,0);
                 enemies[i].hpBar.move(xM,0);
                 enemies[i].hpBarBack.move(xM,0);
             }
             if(enemies[i].objCollisions(0,yM,level,tL,objs,1) == false) {
                 enemies[i].body.move(0,yM);
-                enemies[i].weapon.move(0,yM);
+                enemies[i].heldWeapon.move(0,yM);
                 enemies[i].hpBar.move(0,yM);
                 enemies[i].hpBarBack.move(0,yM);
             }
             if(enemies[i].hp <= 0) {
                 //checking if is miniboss/boss via hp bar
                 if(enemies[i].maxHP > 50) {
-                    int included = rand()%2;
-                    if(included <= 1) {
+                    int included = rand()%lootChanceDenom;
+                    if(included <= lootChanceNumer-1) {
                         floorItem temp;
-                        if(included == 0) {
-                            temp.include(enemies[i],enemies[i].body.getPosition().x,enemies[i].body.getPosition().y);
-                        }
-                        if(included == 1) {
-                            temp.include(enemies[i],enemies[i].body.getPosition().x,enemies[i].body.getPosition().y);
-                        }
+                        //basicChar *obj = &enemies[i];
+                        temp.include(&enemies[i], enemies[i].body.getPosition().x, enemies[i].body.getPosition().y);
                         dropped.push_back(temp);
                         sf::Sprite temp2;
                         droppedObjs.push_back(temp2);
@@ -302,7 +335,7 @@ int main () {
                 enemyCount--;
                 //respawning code (just for tests)
                 temp.body.setPosition(0,0);
-                temp.weapon.setPosition(0,0);
+                temp.heldWeapon.setPosition(0,0);
                 temp.hpBar.setPosition(0,0);
                 temp.hpBarBack.setPosition(0,0);
                 enemies.push_back(temp);
@@ -335,7 +368,7 @@ int main () {
         {
         if(player.hp <= 0) {
             player.body.setPosition(sx,sy);
-            player.weapon.setPosition(sx,sy);
+            player.heldWeapon.setPosition(sx,sy);
             player.hp = player.maxHP;
             player.atkActive = false;
             player.atkAnimStage = 0;
@@ -363,15 +396,17 @@ int main () {
             window.clear(sf::Color(255,255,255));
             window.draw(map);
             for(int i = 0; i < droppedSize; i++) {
-                window.draw(droppedObjs[i]);
+                if(dropped[i].active == true) {
+                    window.draw(droppedObjs[i]);
+                }
             }
             for(int i = 0; i < enemyCount; i++) {
-                window.draw(enemies[i].weapon);
+                window.draw(enemies[i].heldWeapon);
                 window.draw(enemies[i].body);
                 window.draw(enemies[i].hpBarBack);
                 window.draw(enemies[i].hpBar);
             }
-            window.draw(player.weapon);
+            window.draw(player.heldWeapon);
             window.draw(player.body);
             window.draw(playerHUD.display2);
             window.draw(playerHUD.display3);
@@ -380,6 +415,8 @@ int main () {
             window.draw(playerHUD.block2);
             window.draw(playerHUD.block3);
             window.draw(playerHUD.display1);
+            temp1.setTexture(inventory[1][2].a.icon);
+            window.draw(temp1);
         }
         if(inventoryOn == true) {
             window.clear(sf::Color(128,128,128));
@@ -388,7 +425,15 @@ int main () {
             for(int i = 0; i < 4; i++) {
                 for(int j = 0; j < 4; j++) {
                     iconRenders[i][j].setPosition(sf::Vector2f(player.body.getPosition().x+77/2.0+j*310-w/2,player.body.getPosition().y+77/2.0+i*310-h/2));
-                    window.draw(iconRenders[i][j]);
+                    if(inventory[i][j].type == 1) {
+                        iconRenders[i][j].setTexture(inventory[i][j].w.icon);
+                    }
+                    if(inventory[i][j].type == 2) {
+                        iconRenders[i][j].setTexture(inventory[i][j].a.icon);
+                    }
+                    if(inventory[i][j].active) {
+                        window.draw(iconRenders[i][j]);
+                    }
                 }
             }
         }
