@@ -31,7 +31,7 @@ int main () {
     int objs[1];
     float deltaTime;
     float pickupRange = 100;
-    int lootChanceNumer = 1;
+    int lootChanceNumer = 2;
     int lootChanceDenom = 2;
     objs[0] = 3;
     //fonts
@@ -70,12 +70,12 @@ int main () {
     ,{sf::Vector2f(187,104)},{sf::Vector2f(187,104)},{sf::Vector2f(187,104)},{sf::Vector2f(187,104)},{sf::Vector2f(187,104)}
     ,{sf::Vector2f(187,104)},{sf::Vector2f(187,104)},{sf::Vector2f(187,104)},{sf::Vector2f(187,104)},{sf::Vector2f(187,104)}
     ,{sf::Vector2f(187,104)},{sf::Vector2f(187,104)},{sf::Vector2f(187,104)},{sf::Vector2f(187,104)},{sf::Vector2f(187,104)}};
-    weapon sword("resources/Weapon1/1a.png","resources/Icons/W1.png","resources/FloorIcons/FloorIconTemplate.png",arr,arr2,tipPos,tipPos2,7,20,1,0.5,5,10,50,0.5,1,500,0,275);
-    weapon dagger("resources/Weapon2/2a.png","resources/Icons/W2.png","resources/FloorIcons/FloorIconTemplate.png",arr3,arr4,tipPos3,tipPos4,3,20,1.25,0.25,2.5,2.5,25,0.25,1,750,0,190);
-    weapon axe("resources/Weapon3/3a.png","resources/Icons/W3.png","resources/FloorIcons/FloorIconTemplate.png",arr5,arr6,tipPos5,tipPos6,7,20,0.75,0.75,7.5,25,75,0.75,1,0,-360,200);
-    armor plate("resources/Armor1/1a.png","resources/Armor1/1b.png","resources/Icons/A1.png","resources/FloorIcons/FloorIconTemplate.png",0.75,125,75);
-    armor chain("resources/Armor2/2a.png","resources/Armor2/2b.png","resources/Icons/A2.png","resources/FloorIcons/FloorIconTemplate.png",1,100,75);
-    armor leather("resources/Armor3/3a.png","resources/Armor3/3b.png","resources/Icons/A3.png","resources/FloorIcons/FloorIconTemplate.png",1.25,75,75);
+    weapon sword("resources/Weapon1/1a.png","resources/Icons/W1.png","resources/FloorIcons/W1.png",arr,arr2,tipPos,tipPos2,7,20,1,0.5,5,10,50,0.5,1,500,0,275);
+    weapon dagger("resources/Weapon2/2a.png","resources/Icons/W2.png","resources/FloorIcons/W2.png",arr3,arr4,tipPos3,tipPos4,3,20,1.25,0.25,2.5,2.5,25,0.25,1,750,0,190);
+    weapon axe("resources/Weapon3/3a.png","resources/Icons/W3.png","resources/FloorIcons/W3.png",arr5,arr6,tipPos5,tipPos6,7,20,0.75,0.75,7.5,25,75,0.75,1,0,-360,200);
+    armor plate("resources/Armor1/1a.png","resources/Armor1/1b.png","resources/Icons/A1.png","resources/FloorIcons/A1.png",0.75,125,75);
+    armor chain("resources/Armor2/2a.png","resources/Armor2/2b.png","resources/Icons/A2.png","resources/FloorIcons/A2.png",1,100,75);
+    armor leather("resources/Armor3/3a.png","resources/Armor3/3b.png","resources/Icons/A3.png","resources/FloorIcons/A3.png",1.25,75,75);
     display playerHUD("resources/Display/Display1.png","resources/Display/Display2.png","resources/Display/Display3.png","resources/Display/Display4.png",192,192,192,sx,sy,0.5);
     inventorySlot inventory[4][4];
     vector<floorItem> dropped;
@@ -320,12 +320,18 @@ int main () {
                     int included = rand()%lootChanceDenom;
                     if(included <= lootChanceNumer-1) {
                         floorItem temp;
-                        //basicChar *obj = &enemies[i];
                         temp.include(&enemies[i], enemies[i].body.getPosition().x, enemies[i].body.getPosition().y);
                         dropped.push_back(temp);
                         sf::Sprite temp2;
                         droppedObjs.push_back(temp2);
-                        droppedObjs[droppedSize].setTexture(enemies[i].fIcon);
+                        if(temp.type == 1) {
+                            droppedObjs[droppedSize].setTexture(enemies[i].fIconW);
+                        }
+                        if(temp.type == 2) {
+                            droppedObjs[droppedSize].setTexture(enemies[i].fIconA);
+                        }
+                        droppedObjs[droppedSize].setScale(100/314.0,100/314.0);
+                        droppedObjs[droppedSize].setOrigin(25,25);
                         droppedObjs[droppedSize].setPosition(sf::Vector2f(temp.x,temp.y));
                         droppedObjs[droppedSize].setRotation(rand()%360);
                         droppedSize++;

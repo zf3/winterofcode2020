@@ -18,7 +18,7 @@ void weapon::apply(basicChar *target) {
 	target->totalCycles2 = totalCycles2;
 	target->heldWeapon.setTexture(wTexture);
 	target->wTexture = wTexture;
-	target->fIcon = fIcon;
+	target->fIconW = fIcon;
 	for(int i = 0; i < totalCycles; i++) {
 		target->atkAnims[i] = atkAnims[i];
 		target->tipPos[i] = tipPos[i];

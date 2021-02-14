@@ -52,7 +52,8 @@ class basicChar {
     sf::Texture bTexture;
     sf::Texture bTexture2;
     sf::Texture wTexture;
-    sf::Texture fIcon;
+    sf::Texture fIconA;
+    sf::Texture fIconW;
     weapon eqpWeapon;
     armor eqpArmor;
     //wall collision detection

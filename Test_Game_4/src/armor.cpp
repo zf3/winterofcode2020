@@ -11,7 +11,7 @@ void armor::apply(basicChar *target) {
 	target->body.setTexture(bTexture);
 	target->bTexture = bTexture;
 	target->bTexture2 = iTexture;
-	target->fIcon = fIcon;
+	target->fIconA = fIcon;
 }
 armor::armor(string a, string b, string ic, string fic, float sp, float hp, float hb) {
 	icon.loadFromFile(ic);

@@ -9,7 +9,12 @@ void floorItem::include(basicChar *obj, float xP, float yP) {
 	w = obj->eqpWeapon;
 	w.icon = obj->eqpWeapon.icon;
 	active = true;
-	fIcon = obj->fIcon;
+	if(type == 1) {
+		fIcon = obj->fIconW;
+	}
+	else {
+		fIcon = obj->fIconA;
+	}
 	x = xP;
 	y = yP;
 }
