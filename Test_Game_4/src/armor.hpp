@@ -10,10 +10,11 @@ class armor {
     float maxHP;
     sf::Texture icon;
     sf::Texture fIcon;
+    sf::Texture description;
     sf::Texture bTexture;
     sf::Texture iTexture;
     void apply(basicChar *target);
-    armor(std::string a, std::string b, std::string ic, std::string fic, float sp, float hp, float hb);
+    armor(std::string a, std::string b, std::string ic, std::string fic, std::string desc, float sp, float hp, float hb);
     armor();
 };
 

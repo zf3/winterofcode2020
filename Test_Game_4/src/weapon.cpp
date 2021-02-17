@@ -28,7 +28,7 @@ void weapon::apply(basicChar *target) {
 		target->tipPos2[i] = tipPos2[i];
 	}
 }
-weapon::weapon(string a, string ic, string fic, string *textures, string *textures2, sf::Vector2f *tPos, sf::Vector2f *tPos2, int n, int n2, float sp, float cM, float cM2, float dm, float dm2, float aD, float aD2, float a2S, float a2R, float atkDi) {
+weapon::weapon(string a, string ic, string fic, string desc, string *textures, string *textures2, sf::Vector2f *tPos, sf::Vector2f *tPos2, int n, int n2, float sp, float cM, float cM2, float dm, float dm2, float aD, float aD2, float a2S, float a2R, float atkDi) {
 	for(int i = 0; i < n; i++) {
 		atkAnims[i].loadFromFile(*(textures+i));
 		tipPos[i] = *(tPos+i);
@@ -44,6 +44,8 @@ weapon::weapon(string a, string ic, string fic, string *textures, string *textur
 	icon.setSmooth(true);
 	fIcon.loadFromFile(fic);
 	fIcon.setSmooth(true);
+	description.loadFromFile(desc);
+	description.setSmooth(true);
 	totalCycles = n;
 	totalCycles2 = n2;
 	wCooldownM = cM;

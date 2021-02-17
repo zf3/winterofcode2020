@@ -13,11 +13,13 @@ void armor::apply(basicChar *target) {
 	target->bTexture2 = iTexture;
 	target->fIconA = fIcon;
 }
-armor::armor(string a, string b, string ic, string fic, float sp, float hp, float hb) {
+armor::armor(string a, string b, string ic, string fic, string desc, float sp, float hp, float hb) {
 	icon.loadFromFile(ic);
 	icon.setSmooth(true);
 	fIcon.loadFromFile(fic);
 	fIcon.setSmooth(true);
+	description.loadFromFile(desc);
+	description.setSmooth(true);
 	bTexture.loadFromFile(a);
 	bTexture.setSmooth(true);
 	iTexture.loadFromFile(b);

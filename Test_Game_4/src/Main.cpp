@@ -33,6 +33,8 @@ int main () {
     float pickupRange = 100;
     int lootChanceNumer = 2;
     int lootChanceDenom = 2;
+    int currDescX = -1;
+    int currDescY = -1;
     objs[0] = 3;
     //fonts
     //texts
@@ -70,12 +72,12 @@ int main () {
     ,{sf::Vector2f(187,104)},{sf::Vector2f(187,104)},{sf::Vector2f(187,104)},{sf::Vector2f(187,104)},{sf::Vector2f(187,104)}
     ,{sf::Vector2f(187,104)},{sf::Vector2f(187,104)},{sf::Vector2f(187,104)},{sf::Vector2f(187,104)},{sf::Vector2f(187,104)}
     ,{sf::Vector2f(187,104)},{sf::Vector2f(187,104)},{sf::Vector2f(187,104)},{sf::Vector2f(187,104)},{sf::Vector2f(187,104)}};
-    weapon sword("resources/Weapon1/1a.png","resources/Icons/W1.png","resources/FloorIcons/W1.png",arr,arr2,tipPos,tipPos2,7,20,1,0.5,5,10,50,0.5,1,500,0,275);
-    weapon dagger("resources/Weapon2/2a.png","resources/Icons/W2.png","resources/FloorIcons/W2.png",arr3,arr4,tipPos3,tipPos4,3,20,1.25,0.25,2.5,2.5,25,0.25,1,750,0,190);
-    weapon axe("resources/Weapon3/3a.png","resources/Icons/W3.png","resources/FloorIcons/W3.png",arr5,arr6,tipPos5,tipPos6,7,20,0.75,0.75,7.5,25,75,0.75,1,0,-360,200);
-    armor plate("resources/Armor1/1a.png","resources/Armor1/1b.png","resources/Icons/A1.png","resources/FloorIcons/A1.png",0.75,125,75);
-    armor chain("resources/Armor2/2a.png","resources/Armor2/2b.png","resources/Icons/A2.png","resources/FloorIcons/A2.png",1,100,75);
-    armor leather("resources/Armor3/3a.png","resources/Armor3/3b.png","resources/Icons/A3.png","resources/FloorIcons/A3.png",1.25,75,75);
+    weapon sword("resources/Weapon1/1a.png","resources/Icons/W1.png","resources/FloorIcons/W1.png","resources/Descriptions/W1.png",arr,arr2,tipPos,tipPos2,7,20,1,0.5,5,10,50,0.5,1,500,0,275);
+    weapon dagger("resources/Weapon2/2a.png","resources/Icons/W2.png","resources/FloorIcons/W2.png","resources/Descriptions/W2.png",arr3,arr4,tipPos3,tipPos4,3,20,1.25,0.25,2.5,2.5,25,0.25,1,750,0,190);
+    weapon axe("resources/Weapon3/3a.png","resources/Icons/W3.png","resources/FloorIcons/W3.png","resources/Descriptions/W3.png",arr5,arr6,tipPos5,tipPos6,7,20,0.75,0.75,7.5,25,75,0.75,1,0,-360,200);
+    armor plate("resources/Armor1/1a.png","resources/Armor1/1b.png","resources/Icons/A1.png","resources/FloorIcons/A1.png","resources/Descriptions/A1.png",0.75,125,75);
+    armor chain("resources/Armor2/2a.png","resources/Armor2/2b.png","resources/Icons/A2.png","resources/FloorIcons/A2.png","resources/Descriptions/A2.png",1,100,75);
+    armor leather("resources/Armor3/3a.png","resources/Armor3/3b.png","resources/Icons/A3.png","resources/FloorIcons/A3.png","resources/Descriptions/A3.png",1.25,75,75);
     display playerHUD("resources/Display/Display1.png","resources/Display/Display2.png","resources/Display/Display3.png","resources/Display/Display4.png",192,192,192,sx,sy,0.5);
     inventorySlot inventory[4][4];
     vector<floorItem> dropped;
@@ -85,6 +87,7 @@ int main () {
     sf::Sprite inventoryBackground;
     sf::Sprite temp1;
     sf::Texture inventoryBackgroundT;
+    sf::Sprite shownDesc;
     inventoryBackgroundT.loadFromFile("resources/Icons/InventoryScreen.png");
     inventoryBackgroundT.setSmooth(true);
     inventoryBackground.setTexture(inventoryBackgroundT);
@@ -95,7 +98,7 @@ int main () {
         }
     }
     sf::Texture temp10;
-    inventory[0][0].include(sword);
+    inventory[0][0].include(dagger);
     iconRenders[0][0].setTexture(inventory[0][0].w.icon);
     inventory[0][2].include(axe);
     iconRenders[0][2].setTexture(inventory[0][2].w.icon);
@@ -170,10 +173,21 @@ int main () {
                         inventory[mY/310][mX/310].apply(&player);
                     }
                 }
+                if (event.type == sf::Event::MouseButtonPressed && event.mouseButton.button == sf::Mouse::Button::Left) {
+                    int mX = sf::Mouse::getPosition(window).x;
+                    int mY = sf::Mouse::getPosition(window).y;
+                    if(mX%310 >= 77/2.0 && mY%310 >= 77/2.0 && mX/310 < 4 && mY/310 < 4) {
+                        //I flipped the directions here because the array storage has directions changed
+                        currDescX = mY/310;
+                        currDescY = mX/310;
+                    }
+                }
             }
             if (event.type == sf::Event::KeyPressed) {
                 if(event.key.code == sf::Keyboard::I) {
                     inventoryOn = !inventoryOn;
+                    currDescX = -1;
+                    currDescY = -1;
                 }
                 status[event.key.code] = true;
             }
@@ -331,7 +345,7 @@ int main () {
                             droppedObjs[droppedSize].setTexture(enemies[i].fIconA);
                         }
                         droppedObjs[droppedSize].setScale(100/314.0,100/314.0);
-                        droppedObjs[droppedSize].setOrigin(25,25);
+                        droppedObjs[droppedSize].setOrigin(50,50);
                         droppedObjs[droppedSize].setPosition(sf::Vector2f(temp.x,temp.y));
                         droppedObjs[droppedSize].setRotation(rand()%360);
                         droppedSize++;
@@ -428,6 +442,16 @@ int main () {
             window.clear(sf::Color(128,128,128));
             inventoryBackground.setPosition(sf::Vector2f(player.body.getPosition().x-w/2,player.body.getPosition().y-h/2));
             window.draw(inventoryBackground);
+            if(currDescX > -1 && currDescY > -1) {
+                shownDesc.setPosition(sf::Vector2f(player.body.getPosition().x-w/2+1276,player.body.getPosition().y-h/2+39));
+                if(inventory[currDescX][currDescY].type == 1) {
+                    shownDesc.setTexture(inventory[currDescX][currDescY].w.description);
+                }
+                else {
+                    shownDesc.setTexture(inventory[currDescX][currDescY].a.description);
+                }
+                window.draw(shownDesc);
+            }
             for(int i = 0; i < 4; i++) {
                 for(int j = 0; j < 4; j++) {
                     iconRenders[i][j].setPosition(sf::Vector2f(player.body.getPosition().x+77/2.0+j*310-w/2,player.body.getPosition().y+77/2.0+i*310-h/2));
