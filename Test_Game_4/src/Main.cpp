@@ -88,6 +88,8 @@ int main () {
     sf::Sprite temp1;
     sf::Texture inventoryBackgroundT;
     sf::Sprite shownDesc;
+    sf::Font descriptionFont;
+    descriptionFont.loadFromFile("resources/Fonts/Apple Chancery.ttf");
     inventoryBackgroundT.loadFromFile("resources/Icons/InventoryScreen.png");
     inventoryBackgroundT.setSmooth(true);
     inventoryBackground.setTexture(inventoryBackgroundT);
@@ -111,7 +113,9 @@ int main () {
     //enemy spawning (just for tests)
     basicChar temp(100,255,0,0,0,0);
     inventory[0][0].apply(&player);
+    inventory[0][0].used = true;
     inventory[0][1].apply(&player);
+    inventory[0][1].used = true;
     inventory[0][2].apply(&temp);
     inventory[0][3].apply(&temp);
     inventory[0][2].active = false;
@@ -170,16 +174,56 @@ int main () {
                     int mX = sf::Mouse::getPosition(window).x;
                     int mY = sf::Mouse::getPosition(window).y;
                     if(mX%310 >= 77/2.0 && mY%310 >= 77/2.0 && mX/310 < 4 && mY/310 < 4) {
+                        for(int i = 0; i < 4; i++) {
+                            for(int j = 0; j < 4; j++) {
+                                if(inventory[i][j].type == inventory[mY/310][mX/310].type) {
+                                    inventory[i][j].used = false;
+                                }
+                            }
+                        }
+                        inventory[mY/310][mX/310].used = true;
                         inventory[mY/310][mX/310].apply(&player);
                     }
                 }
                 if (event.type == sf::Event::MouseButtonPressed && event.mouseButton.button == sf::Mouse::Button::Left) {
                     int mX = sf::Mouse::getPosition(window).x;
                     int mY = sf::Mouse::getPosition(window).y;
-                    if(mX%310 >= 77/2.0 && mY%310 >= 77/2.0 && mX/310 < 4 && mY/310 < 4) {
+                    if(mX%310 >= 77/2.0 && mY%310 >= 77/2.0 && mX/310 < 4 && mY/310 < 4 && inventory[mY/310][mX/310].active == true) {
                         //I flipped the directions here because the array storage has directions changed
                         currDescX = mY/310;
                         currDescY = mX/310;
+                    }
+                    if(currDescX != -1 && currDescY != -1 && mX >= 1276+66 && mY >= 39+162 && mX <= 1276+284 && mY <= 39+273) {
+                        for(int i = 0; i < 4; i++) {
+                            for(int j = 0; j < 4; j++) {
+                                if(inventory[i][j].type == inventory[currDescX][currDescY].type) {
+                                    inventory[i][j].used = false;
+                                }
+                            }
+                        }
+                        inventory[currDescX][currDescY].used = true;
+                        inventory[currDescX][currDescY].apply(&player);
+                    }
+                    if(currDescX != -1 && currDescY != -1 && mX >= 1276+403 && mY >= 39+162 && mX <= 1276+623 && mY <= 39+273 && inventory[currDescX][currDescY].used == false) {
+                        floorItem temp;
+                        temp.include(&inventory[currDescX][currDescY]);
+                        temp.x = player.body.getPosition().x;
+                        temp.y = player.body.getPosition().y;
+                        dropped.push_back(temp);
+                        sf::Sprite temp2;
+                        droppedObjs.push_back(temp2);
+                        if(temp.type == 1) {
+                            droppedObjs[droppedSize].setTexture(inventory[currDescX][currDescY].w.fIcon);
+                        }
+                        if(temp.type == 2) {
+                            droppedObjs[droppedSize].setTexture(inventory[currDescX][currDescY].a.fIcon);
+                        }
+                        droppedObjs[droppedSize].setScale(100/314.0,100/314.0);
+                        droppedObjs[droppedSize].setOrigin(50,50);
+                        droppedObjs[droppedSize].setPosition(sf::Vector2f(temp.x,temp.y));
+                        droppedObjs[droppedSize].setRotation(rand()%360);
+                        droppedSize++;
+                        inventory[currDescX][currDescY].active = false;
                     }
                 }
             }
@@ -451,6 +495,51 @@ int main () {
                     shownDesc.setTexture(inventory[currDescX][currDescY].a.description);
                 }
                 window.draw(shownDesc);
+                if(inventory[currDescX][currDescY].type == 1) {
+                    sf::Text words[5];
+                    for(int i = 0; i < 5; i++) {
+                        words[i].setFont(descriptionFont);
+                        words[i].setFillColor(sf::Color::Black);
+                        words[i].setCharacterSize(30);
+                    }
+                    ostringstream descData[5];
+                    descData[0] << inventory[currDescX][currDescY].w.atkD;
+                    words[0].setString(descData[0].str());
+                    words[0].setPosition(sf::Vector2f(player.body.getPosition().x-w/2+1276+182,player.body.getPosition().y-h/2+39+736));
+                    descData[1] << inventory[currDescX][currDescY].w.atkD2;
+                    words[1].setString(descData[1].str());
+                    words[1].setPosition(sf::Vector2f(player.body.getPosition().x-w/2+1276+413,player.body.getPosition().y-h/2+39+789));
+                    descData[2] << inventory[currDescX][currDescY].w.wCooldownM;
+                    words[2].setString(descData[2].str());
+                    words[2].setPosition(sf::Vector2f(player.body.getPosition().x-w/2+1276+324,player.body.getPosition().y-h/2+39+849));
+                    descData[3] << inventory[currDescX][currDescY].w.wCooldownM2;
+                    words[3].setString(descData[3].str());
+                    words[3].setPosition(sf::Vector2f(player.body.getPosition().x-w/2+1276+445,player.body.getPosition().y-h/2+39+908));
+                    descData[4] << inventory[currDescX][currDescY].w.atkDist;
+                    words[4].setString(descData[4].str());
+                    words[4].setPosition(sf::Vector2f(player.body.getPosition().x-w/2+1276+150,player.body.getPosition().y-h/2+39+976));
+                    for(int i = 0; i < 5; i++) {
+                        window.draw(words[i]);
+                    }
+                }
+                else {
+                    sf::Text words[2];
+                    for(int i = 0; i < 2; i++) {
+                        words[i].setFont(descriptionFont);
+                        words[i].setFillColor(sf::Color::Black);
+                        words[i].setCharacterSize(30);
+                    }
+                    ostringstream descData[2];
+                    descData[0] << inventory[currDescX][currDescY].a.maxHP;
+                    words[0].setString(descData[0].str());
+                    words[0].setPosition(sf::Vector2f(player.body.getPosition().x-w/2+1276+105,player.body.getPosition().y-h/2+39+730));
+                    descData[1] << inventory[currDescX][currDescY].a.spdM;
+                    words[1].setString(descData[1].str());
+                    words[1].setPosition(sf::Vector2f(player.body.getPosition().x-w/2+1276+308,player.body.getPosition().y-h/2+39+792));
+                    for(int i = 0; i < 2; i++) {
+                        window.draw(words[i]);
+                    }
+                }
             }
             for(int i = 0; i < 4; i++) {
                 for(int j = 0; j < 4; j++) {

@@ -11,6 +11,7 @@ class floorItem {
     sf::Texture fIcon;
     //type = 1 - weapon, type = 2 - armor
     void include(basicChar *obj, float xP, float yP);
+    void include(inventorySlot *target);
     void apply(inventorySlot *target);
     floorItem();
 };

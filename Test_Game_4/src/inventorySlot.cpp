@@ -34,4 +34,5 @@ void inventorySlot::apply(basicChar *target) {
 }
 inventorySlot::inventorySlot() {
 	active = false;
+	used = false;
 }

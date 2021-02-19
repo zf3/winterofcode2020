@@ -6,6 +6,7 @@ class inventorySlot {
     armor a;
     int type;
     bool active;
+    bool used;
     //type = 1 - weapon, type = 2 - armor
     void include(weapon obj);
     void include(armor obj);

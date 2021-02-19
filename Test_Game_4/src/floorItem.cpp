@@ -18,6 +18,16 @@ void floorItem::include(basicChar *obj, float xP, float yP) {
 	x = xP;
 	y = yP;
 }
+void floorItem::include(inventorySlot *target) {
+	type = target->type;
+	active = target->active;
+	if(type == 1) {
+		w = target->w;
+	}
+	else {
+		a = target->a;
+	}
+}
 void floorItem::apply(inventorySlot *target) {
 	target->a = a;
 	target->w = w;
