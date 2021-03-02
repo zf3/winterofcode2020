@@ -28,12 +28,16 @@ void basicChar::basicCollisionDetection (basicChar *target) {
 	float bx = body.getPosition().x, by = body.getPosition().y;
 	float br = body.getRotation()/180*PI;
 	float tx = target->body.getPosition().x, ty = target->body.getPosition().y;
-	float wx = bx+cos(br)*tipPos[atkAnimStage].x+cos(br-PI/2)*tipPos[atkAnimStage].y
-	, wy = by+sin(br)*tipPos[atkAnimStage].x+sin(br-PI/2)*tipPos[atkAnimStage].y;
-	if(sqrtf((wx-tx)*(wx-tx)+(wy-ty)*(wy-ty)) <= target->hitbox && target->damaged == false) {
-		target->hp-=dmg;
-		target->damaged = true;
-		target->body.setTexture(target->bTexture2);
+	for(int i = 0; i <= 10; i++) {
+		float rawWX = tipPosA[atkAnimStage].x+i*(float)(tipPosB[atkAnimStage].x-tipPosA[atkAnimStage].x)/10.;
+		float rawWY = tipPosA[atkAnimStage].y+i*(float)(tipPosB[atkAnimStage].y-tipPosA[atkAnimStage].y)/10;
+		float wx = bx+cos(br)*rawWX+cos(br-PI/2)*rawWY;
+		float wy = by+sin(br)*rawWX+sin(br-PI/2)*rawWY;
+		if(sqrtf((wx-tx)*(wx-tx)+(wy-ty)*(wy-ty)) <= target->hitbox && target->damaged == false) {
+			target->hp-=dmg;
+			target->damaged = true;
+			target->body.setTexture(target->bTexture2);
+		}
 	}
 }
 void basicChar::loadAnim(int enemyCount, vector<basicChar> &enemies) {
@@ -61,12 +65,16 @@ void basicChar::basicCollisionDetection2 (basicChar *target) {
 	float bx = body.getPosition().x, by = body.getPosition().y;
 	float br = body.getRotation()/180*PI;
 	float tx = target->body.getPosition().x, ty = target->body.getPosition().y;
-	float wx = wx = bx+cos(br)*tipPos2[atkAnimStage].x+cos(br-PI/2)*tipPos[atkAnimStage].y
-	, wy = by+sin(br)*tipPos2[atkAnimStage].x+sin(br-PI/2)*tipPos[atkAnimStage].y;
-	if(sqrtf((wx-tx)*(wx-tx)+(wy-ty)*(wy-ty)) <= hitbox && target->damaged == false) {
-		target->hp-=dmg2;
-		target->damaged = true;
-		target->body.setTexture(target->bTexture2);
+	for(int i = 0; i <= 10; i++) {
+		float rawWX = tipPos2A[atkAnimStage].x+i*(tipPos2B[atkAnimStage].x-tipPos2A[atkAnimStage].x)/10.0;
+		float rawWY = tipPos2A[atkAnimStage].y+i*(tipPos2B[atkAnimStage].y-tipPos2A[atkAnimStage].y)/10.0;
+		float wx = bx+cos(br)*rawWX+cos(br-PI/2)*rawWY;
+		float wy = by+sin(br)*rawWX+sin(br-PI/2)*rawWY;
+		if(sqrtf((wx-tx)*(wx-tx)+(wy-ty)*(wy-ty)) <= target->hitbox && target->damaged == false) {
+			target->hp-=dmg2;
+			target->damaged = true;
+			target->body.setTexture(target->bTexture2);
+		}
 	}
 }
 void basicChar::loadAnim2(int enemyCount, vector<basicChar> &enemies, float deltaTime, sf::View *gameView, sf::RenderWindow *window, const int *tilemap,int xL,int *objs, int n, display *playerHUD) {

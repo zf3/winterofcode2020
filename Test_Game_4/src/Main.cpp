@@ -57,24 +57,39 @@ int main () {
     ,"resources/Weapon3/3Sa.png","resources/Weapon3/3Sa.png","resources/Weapon3/3Sa.png","resources/Weapon3/3Sa.png","resources/Weapon3/3Sa.png"
     ,"resources/Weapon3/3Sa.png","resources/Weapon3/3Sa.png","resources/Weapon3/3Sa.png","resources/Weapon3/3Sa.png","resources/Weapon3/3Sa.png"
     ,"resources/Weapon3/3Sa.png","resources/Weapon3/3Sa.png","resources/Weapon3/3Sa.png","resources/Weapon3/3Sa.png","resources/Weapon3/3Sa.png"};
-    sf::Vector2f tipPos[7] = {{sf::Vector2f(263,44)},{sf::Vector2f(284,-11)},{sf::Vector2f(281,-52)},{sf::Vector2f(268,-105)},{sf::Vector2f(281,-52)},{sf::Vector2f(284,-11)},{sf::Vector2f(263,44)}};
-    sf::Vector2f tipPos2[20] = {{sf::Vector2f(300,12)},{sf::Vector2f(300,12)},{sf::Vector2f(300,12)},{sf::Vector2f(300,12)},{sf::Vector2f(300,12)}
-    ,{sf::Vector2f(300,12)},{sf::Vector2f(300,12)},{sf::Vector2f(300,12)},{sf::Vector2f(300,12)},{sf::Vector2f(300,12)}
-    ,{sf::Vector2f(300,12)},{sf::Vector2f(300,12)},{sf::Vector2f(300,12)},{sf::Vector2f(300,12)},{sf::Vector2f(300,12)}
-    ,{sf::Vector2f(300,12)},{sf::Vector2f(300,12)},{sf::Vector2f(300,12)},{sf::Vector2f(300,12)},{sf::Vector2f(300,12)}};
-    sf::Vector2f tipPos3[3] = {{sf::Vector2f(149,-75)},{sf::Vector2f(193,-62)},{sf::Vector2f(149,-75)}};
-    sf::Vector2f tipPos4[20] = {{sf::Vector2f(-5,215)},{sf::Vector2f(-5,215)},{sf::Vector2f(-5,-215)},{sf::Vector2f(-5,215)},{sf::Vector2f(-5,215)}
-    ,{sf::Vector2f(-5,215)},{sf::Vector2f(-5,215)},{sf::Vector2f(-5,215)},{sf::Vector2f(-5,215)},{sf::Vector2f(-5,215)}
-    ,{sf::Vector2f(-5,215)},{sf::Vector2f(-5,215)},{sf::Vector2f(-5,-215)},{sf::Vector2f(-5,215)},{sf::Vector2f(-5,215)}
-    ,{sf::Vector2f(-5,215)},{sf::Vector2f(-5,215)},{sf::Vector2f(-5,215)},{sf::Vector2f(-5,215)},{sf::Vector2f(-5,215)}};
-    sf::Vector2f tipPos5[7] = {{sf::Vector2f(184,28)},{sf::Vector2f(200,65)},{sf::Vector2f(200,98)},{sf::Vector2f(192,140)},{sf::Vector2f(200,98)},{sf::Vector2f(200,65)},{sf::Vector2f(184,28)}};
-    sf::Vector2f tipPos6[20] = {{sf::Vector2f(187,104)},{sf::Vector2f(187,104)},{sf::Vector2f(187,104)},{sf::Vector2f(187,104)},{sf::Vector2f(187,104)}
-    ,{sf::Vector2f(187,104)},{sf::Vector2f(187,104)},{sf::Vector2f(187,104)},{sf::Vector2f(187,104)},{sf::Vector2f(187,104)}
-    ,{sf::Vector2f(187,104)},{sf::Vector2f(187,104)},{sf::Vector2f(187,104)},{sf::Vector2f(187,104)},{sf::Vector2f(187,104)}
-    ,{sf::Vector2f(187,104)},{sf::Vector2f(187,104)},{sf::Vector2f(187,104)},{sf::Vector2f(187,104)},{sf::Vector2f(187,104)}};
-    weapon sword("resources/Weapon1/1a.png","resources/Icons/W1.png","resources/FloorIcons/W1.png","resources/Descriptions/W1.png",arr,arr2,tipPos,tipPos2,7,20,1,0.5,5,10,50,0.5,1,500,0,275);
-    weapon dagger("resources/Weapon2/2a.png","resources/Icons/W2.png","resources/FloorIcons/W2.png","resources/Descriptions/W2.png",arr3,arr4,tipPos3,tipPos4,3,20,1.25,0.25,2.5,2.5,25,0.25,1,750,0,190);
-    weapon axe("resources/Weapon3/3a.png","resources/Icons/W3.png","resources/FloorIcons/W3.png","resources/Descriptions/W3.png",arr5,arr6,tipPos5,tipPos6,7,20,0.75,0.75,7.5,25,75,0.75,1,0,-360,200);
+    sf::Vector2f tipPosA[7] = {{sf::Vector2f(263,44)},{sf::Vector2f(284,-11)},{sf::Vector2f(281,-52)},{sf::Vector2f(268,-105)},{sf::Vector2f(281,-52)},{sf::Vector2f(284,-11)},{sf::Vector2f(263,44)}};
+    sf::Vector2f tipPos2A[20] = {{sf::Vector2f(300,-12)},{sf::Vector2f(300,-12)},{sf::Vector2f(300,-12)},{sf::Vector2f(300,-12)},{sf::Vector2f(300,-12)},
+    {sf::Vector2f(300,-12)},{sf::Vector2f(300,-12)},{sf::Vector2f(300,-12)},{sf::Vector2f(300,-12)},{sf::Vector2f(300,-12)},
+    {sf::Vector2f(300,-12)},{sf::Vector2f(300,-12)},{sf::Vector2f(300,-12)},{sf::Vector2f(300,-12)},{sf::Vector2f(300,-12)},
+    {sf::Vector2f(300,-12)},{sf::Vector2f(300,-12)},{sf::Vector2f(300,-12)},{sf::Vector2f(300,-12)},{sf::Vector2f(300,-12)}};
+    sf::Vector2f tipPos3A[3] = {{sf::Vector2f(149,-75)},{sf::Vector2f(193,-62)},{sf::Vector2f(149,-75)}};
+    sf::Vector2f tipPos4A[20] = {{sf::Vector2f(-5,-215)},{sf::Vector2f(-5,-215)},{sf::Vector2f(-5,-215)},{sf::Vector2f(-5,-215)},{sf::Vector2f(-5,-215)},
+    {sf::Vector2f(-5,-215)},{sf::Vector2f(-5,-215)},{sf::Vector2f(-5,-215)},{sf::Vector2f(-5,-215)},{sf::Vector2f(-5,-215)},
+    {sf::Vector2f(-5,-215)},{sf::Vector2f(-5,-215)},{sf::Vector2f(-5,-215)},{sf::Vector2f(-5,-215)},{sf::Vector2f(-5,-215)},
+    {sf::Vector2f(-5,-215)},{sf::Vector2f(-5,-215)},{sf::Vector2f(-5,-215)},{sf::Vector2f(-5,-215)},{sf::Vector2f(-5,-215)}};
+    sf::Vector2f tipPos5A[7] = {{sf::Vector2f(184,28)},{sf::Vector2f(200,65)},{sf::Vector2f(200,98)},{sf::Vector2f(192,140)},{sf::Vector2f(200,98)},{sf::Vector2f(200,65)},{sf::Vector2f(184,28)}};
+    sf::Vector2f tipPos6A[20] = {{sf::Vector2f(187,-104)},{sf::Vector2f(187,-104)},{sf::Vector2f(187,-104)},{sf::Vector2f(187,-104)},{sf::Vector2f(187,-104)},
+    {sf::Vector2f(187,-104)},{sf::Vector2f(187,-104)},{sf::Vector2f(187,-104)},{sf::Vector2f(187,-104)},{sf::Vector2f(187,-104)},
+    {sf::Vector2f(187,-104)},{sf::Vector2f(187,-104)},{sf::Vector2f(187,-104)},{sf::Vector2f(187,-104)},{sf::Vector2f(187,-104)},
+    {sf::Vector2f(187,-104)},{sf::Vector2f(187,-104)},{sf::Vector2f(187,-104)},{sf::Vector2f(187,-104)},{sf::Vector2f(187,-104)}};
+    sf::Vector2f tipPosB[7] = {{sf::Vector2f(80,-75)},{sf::Vector2f(109,-53)},{sf::Vector2f(125,-34)},{sf::Vector2f(125,-8)},{sf::Vector2f(125,-34)},{sf::Vector2f(109,-53)},{sf::Vector2f(80,-75)}};
+    sf::Vector2f tipPos2B[20] = {{sf::Vector2f(94,-4)},{sf::Vector2f(94,-4)},{sf::Vector2f(94,-4)},{sf::Vector2f(94,-4)},{sf::Vector2f(94,-4)},
+    {sf::Vector2f(94,-4)},{sf::Vector2f(94,-4)},{sf::Vector2f(94,-4)},{sf::Vector2f(94,-4)},{sf::Vector2f(94,-4)},
+    {sf::Vector2f(94,-4)},{sf::Vector2f(94,-4)},{sf::Vector2f(94,-4)},{sf::Vector2f(94,-4)},{sf::Vector2f(94,-4)},
+    {sf::Vector2f(94,-4)},{sf::Vector2f(94,-4)},{sf::Vector2f(94,-4)},{sf::Vector2f(94,-4)},{sf::Vector2f(94,-4)}};
+    sf::Vector2f tipPos3B[3] = {{sf::Vector2f(70,-80)},{sf::Vector2f(100,-72)},{sf::Vector2f(70,-80)}};
+    sf::Vector2f tipPos4B[20] = {{sf::Vector2f(-25,-143)},{sf::Vector2f(-25,-143)},{sf::Vector2f(-25,-143)},{sf::Vector2f(-25,-143)},{sf::Vector2f(-25,-143)},
+    {sf::Vector2f(-25,-143)},{sf::Vector2f(-25,-143)},{sf::Vector2f(-25,-143)},{sf::Vector2f(-25,-143)},{sf::Vector2f(-25,-143)},
+    {sf::Vector2f(-25,-143)},{sf::Vector2f(-25,-143)},{sf::Vector2f(-25,-143)},{sf::Vector2f(-25,-143)},{sf::Vector2f(-25,-143)},
+    {sf::Vector2f(-25,-143)},{sf::Vector2f(-25,-143)},{sf::Vector2f(-25,-143)},{sf::Vector2f(-25,-143)},{sf::Vector2f(-25,-143)}};
+    sf::Vector2f tipPos5B[7] = {{sf::Vector2f(62,-75)},{sf::Vector2f(92,-59)},{sf::Vector2f(124,-37)},{sf::Vector2f(151,-5)},{sf::Vector2f(124,-37)},{sf::Vector2f(92,-59)},{sf::Vector2f(62,-75)}};
+    sf::Vector2f tipPos6B[20] = {{sf::Vector2f(64,-111)},{sf::Vector2f(64,-111)},{sf::Vector2f(64,-111)},{sf::Vector2f(64,-111)},{sf::Vector2f(64,-111)},
+    {sf::Vector2f(64,-111)},{sf::Vector2f(64,-111)},{sf::Vector2f(64,-111)},{sf::Vector2f(64,-111)},{sf::Vector2f(64,-111)},
+    {sf::Vector2f(64,-111)},{sf::Vector2f(64,-111)},{sf::Vector2f(64,-111)},{sf::Vector2f(64,-111)},{sf::Vector2f(64,-111)},
+    {sf::Vector2f(64,-111)},{sf::Vector2f(64,-111)},{sf::Vector2f(64,-111)},{sf::Vector2f(64,-111)},{sf::Vector2f(64,-111)}};
+    weapon sword("resources/Weapon1/1a.png","resources/Icons/W1.png","resources/FloorIcons/W1.png","resources/Descriptions/W1.png",arr,arr2,tipPosA,tipPos2A,tipPosB,tipPos2B,7,20,1,0.5,5,10,50,0.5,1,500,0,275);
+    weapon dagger("resources/Weapon2/2a.png","resources/Icons/W2.png","resources/FloorIcons/W2.png","resources/Descriptions/W2.png",arr3,arr4,tipPos3A,tipPos4A,tipPos3B,tipPos4B,3,20,1.25,0.25,2.5,2.5,25,0.25,1,750,0,190);
+    weapon axe("resources/Weapon3/3a.png","resources/Icons/W3.png","resources/FloorIcons/W3.png","resources/Descriptions/W3.png",arr5,arr6,tipPos5A,tipPos6A,tipPos5B,tipPos6B,7,20,0.75,0.75,7.5,25,75,0.75,1,0,-360,200);
     armor plate("resources/Armor1/1a.png","resources/Armor1/1b.png","resources/Icons/A1.png","resources/FloorIcons/A1.png","resources/Descriptions/A1.png",0.75,125,75);
     armor chain("resources/Armor2/2a.png","resources/Armor2/2b.png","resources/Icons/A2.png","resources/FloorIcons/A2.png","resources/Descriptions/A2.png",1,100,75);
     armor leather("resources/Armor3/3a.png","resources/Armor3/3b.png","resources/Icons/A3.png","resources/FloorIcons/A3.png","resources/Descriptions/A3.png",1.25,75,75);

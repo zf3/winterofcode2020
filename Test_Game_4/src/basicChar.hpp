@@ -41,8 +41,10 @@ class basicChar {
     float atk2Rot;
     sf::Texture atkAnims[7];
     sf::Texture atkAnims2[20];
-    sf::Vector2f tipPos[7];
-    sf::Vector2f tipPos2[20];
+    sf::Vector2f tipPosA[7];
+    sf::Vector2f tipPos2A[20];
+    sf::Vector2f tipPosB[7];
+    sf::Vector2f tipPos2B[20];
     int totalCycles;
     int totalCycles2;
     sf::Sprite body;
