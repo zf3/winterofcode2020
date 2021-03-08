@@ -89,7 +89,7 @@ int main () {
     {sf::Vector2f(64,-111)},{sf::Vector2f(64,-111)},{sf::Vector2f(64,-111)},{sf::Vector2f(64,-111)},{sf::Vector2f(64,-111)},
     {sf::Vector2f(64,-111)},{sf::Vector2f(64,-111)},{sf::Vector2f(64,-111)},{sf::Vector2f(64,-111)},{sf::Vector2f(64,-111)}};
     weapon sword("resources/Weapon1/1a.png","resources/Icons/W1.png","resources/FloorIcons/W1.png","resources/Descriptions/W1.png",arr,arr2,tipPosA,tipPos2A,tipPosB,tipPos2B,7,20,1,0.5,5,10,50,0.5,1,500,0,275);
-    weapon dagger("resources/Weapon2/2a.png","resources/Icons/W2.png","resources/FloorIcons/W2.png","resources/Descriptions/W2.png",arr3,arr4,tipPos3A,tipPos4A,tipPos3B,tipPos4B,3,20,1.25,0.25,2.5,2.5,25,0.25,1,750,0,190);
+    weapon dagger("resources/Weapon2/2a.png","resources/Icons/W2.png","resources/FloorIcons/W2.png","resources/Descriptions/W2.png",arr3,arr4,tipPos3A,tipPos4A,tipPos3B,tipPos4B,3,20,1.25,0.25,2.5,5,25,0.25,1,750,0,190);
     weapon axe("resources/Weapon3/3a.png","resources/Icons/W3.png","resources/FloorIcons/W3.png","resources/Descriptions/W3.png",arr5,arr6,tipPos5A,tipPos6A,tipPos5B,tipPos6B,7,20,0.75,0.75,7.5,25,75,0.75,1,0,-360,200);
     armor plate("resources/Armor1/1a.png","resources/Armor1/1b.png","resources/Icons/A1.png","resources/FloorIcons/A1.png","resources/Descriptions/A1.png",0.75,125,75);
     armor chain("resources/Armor2/2a.png","resources/Armor2/2b.png","resources/Icons/A2.png","resources/FloorIcons/A2.png","resources/Descriptions/A2.png",1,100,75);
@@ -126,6 +126,7 @@ int main () {
     iconRenders[0][1].setTexture(inventory[0][1].a.icon);
     basicChar player(100,1000,0,255,0,sx,sy);
     vector<basicChar> enemies;
+    vector<bool> dets;
     //enemy spawning (just for tests)
     basicChar temp(100,1000,255,0,0,0,0);
     inventory[0][0].apply(&player);
@@ -142,6 +143,7 @@ int main () {
         temp.hpBar.setPosition(i*-25,i*-25);
         temp.hpBarBack.setPosition(i*-25,i*-25);
         enemies.push_back(temp);
+        dets.push_back(false);
         enemyCount++;
     }
     //texture loading
@@ -367,13 +369,12 @@ int main () {
         for(int i = 0; i < enemyCount; i++) {
             vector<int> walls;
             walls.push_back(3);
-            bool det = enemies[i].detectTarget(&player,walls,1,level,tL);
             sf::Time lineOfSightT = lineOfSightClock.getElapsedTime();
             if(lineOfSightT.asSeconds() >= 1.0) {
-                det = enemies[i].detectTarget(&player,walls,1,level,tL);
+                dets[i] = enemies[i].detectTarget(&player,walls,1,level,tL);
                 lineOfSightClock.restart();
             }
-            if(det == true) {
+            if(dets[i] == true) {
                 float xD = player.body.getPosition().x-enemies[i].body.getPosition().x;
                 float yD = player.body.getPosition().y-enemies[i].body.getPosition().y;
                 float ang = atan2(yD,xD)*180/PI;
@@ -420,6 +421,7 @@ int main () {
                     }
                 }
                 enemies.erase(enemies.begin()+i);
+                dets.erase(dets.begin()+i);
                 enemyCount--;
                 //respawning code (just for tests)
                 temp.body.setPosition(0,0);
@@ -427,6 +429,7 @@ int main () {
                 temp.hpBar.setPosition(0,0);
                 temp.hpBarBack.setPosition(0,0);
                 enemies.push_back(temp);
+                dets.push_back(false);
                 enemyCount++;
             }
             if(enemies[i].wCooldown >= enemies[i].wCooldownM) {
@@ -527,10 +530,10 @@ int main () {
                         words[i].setCharacterSize(30);
                     }
                     ostringstream descData[5];
-                    descData[0] << inventory[currDescX][currDescY].w.atkD;
+                    descData[0] << inventory[currDescX][currDescY].w.dmg;
                     words[0].setString(descData[0].str());
                     words[0].setPosition(sf::Vector2f(player.body.getPosition().x-w/2+1276+182,player.body.getPosition().y-h/2+39+736));
-                    descData[1] << inventory[currDescX][currDescY].w.atkD2;
+                    descData[1] << inventory[currDescX][currDescY].w.dmg2;
                     words[1].setString(descData[1].str());
                     words[1].setPosition(sf::Vector2f(player.body.getPosition().x-w/2+1276+413,player.body.getPosition().y-h/2+39+789));
                     descData[2] << inventory[currDescX][currDescY].w.wCooldownM;
@@ -539,9 +542,9 @@ int main () {
                     descData[3] << inventory[currDescX][currDescY].w.wCooldownM2;
                     words[3].setString(descData[3].str());
                     words[3].setPosition(sf::Vector2f(player.body.getPosition().x-w/2+1276+445,player.body.getPosition().y-h/2+39+908));
-                    descData[4] << inventory[currDescX][currDescY].w.atkDist;
+                    descData[4] << inventory[currDescX][currDescY].w.spdM;
                     words[4].setString(descData[4].str());
-                    words[4].setPosition(sf::Vector2f(player.body.getPosition().x-w/2+1276+150,player.body.getPosition().y-h/2+39+976));
+                    words[4].setPosition(sf::Vector2f(player.body.getPosition().x-w/2+1276+308,player.body.getPosition().y-h/2+39+976));
                     for(int i = 0; i < 5; i++) {
                         window.draw(words[i]);
                     }

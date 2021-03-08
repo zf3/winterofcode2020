@@ -5,8 +5,28 @@
 
 void floorItem::include(basicChar *obj, float xP, float yP) {
 	type = abs(rand()%2)+1;
+	float quality = 1.0;
+
 	a = obj->eqpArmor;
+	quality = (rand()%11)/10.0+0.5;
+	a.spdM*=quality;
+	quality = (rand()%11)/10.0+0.5;
+	a.maxHP*=quality;
+
 	w = obj->eqpWeapon;
+	quality = (rand()%11)/10.0+0.5;
+	w.spdM*=quality;
+	quality = (rand()%11)/10.0+0.5;
+	w.dmg*=quality;
+	quality = (rand()%11)/10.0+0.5;
+	w.dmg2*=quality;
+	quality = (rand()%11)/10.0+0.5;
+	w.atkD*=quality;
+	w.wCooldownM*=quality;
+	quality = (rand()%11)/10.0+0.5;
+	w.atkD2*=quality;
+	w.wCooldownM2*=quality;
+
 	w.icon = obj->eqpWeapon.icon;
 	active = true;
 	if(type == 1) {
