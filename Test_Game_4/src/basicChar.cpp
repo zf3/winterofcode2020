@@ -22,7 +22,42 @@ bool basicChar::objCollisions(float xM, float yM, const int *tilemap, int xL, in
 	}
 	return false;
 }
-
+bool basicChar::detectTarget(basicChar *target, vector<int> wallTypes, int n, const int *arr, int l) {
+	int x0 = body.getPosition().x/hitbox/2;
+	int y0 = body.getPosition().y/hitbox/2;
+	int x1 = target->body.getPosition().x/hitbox/2;
+	int y1 = target->body.getPosition().y/hitbox/2;
+	int x2 = body.getPosition().x;
+	int y2 = body.getPosition().y;
+	int x3 = target->body.getPosition().x;
+	int y3 = target->body.getPosition().y;
+	if(sqrt((x2-x3)*(x2-x3)+(y2-y3)*y2-y3) > sightRange) {
+		return false;
+	}
+	float xM = x1-x0;
+    float yM = y1-y0;
+    float slope = yM/xM;
+    float err = 0.0;
+    int y = y0;
+    for(int i = x0; i <= x1; i++) {
+        err+=slope;
+        for(int j = 0; j < n; j++) {
+            if(*(arr+i+y*l)==wallTypes[j]) {
+                return false;
+            }
+        }
+        while(err>=1&&y!=y1) {
+            y++;
+            err--;
+            for(int j = 0; j < n; j++) {
+                if(*(arr+i+y*l)==wallTypes[j]) {
+                    return false;
+                }
+            }
+        }
+    }
+    return true;
+}
 //animation cycles
 void basicChar::basicCollisionDetection (basicChar *target) {
 	float bx = body.getPosition().x, by = body.getPosition().y;
@@ -129,7 +164,7 @@ void basicChar::move(float x, float y) {
 	hpBarBack.move(x,y);
 }
 //constructor
-basicChar::basicChar (int sp, int re,int gr,int bl,int x,int y) {
+basicChar::basicChar (int sp, int sr, int re,int gr,int bl,int x,int y) {
 	body.setOrigin(sf::Vector2f(312,312));
 	body.setPosition(sf::Vector2f(x,y));
 	heldWeapon.setOrigin(sf::Vector2f(312,312));
@@ -145,6 +180,7 @@ basicChar::basicChar (int sp, int re,int gr,int bl,int x,int y) {
 	spd = sp;
 	weaponM = 1;
 	armorM = 1;
+	sightRange = sr;
 	hpBar.setSize(sf::Vector2f(5,hp/2));
 	hpBar.setFillColor(sf::Color(re,gr,bl));
 	hpBar.setOrigin(sf::Vector2f(25,25));

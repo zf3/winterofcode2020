@@ -41,6 +41,7 @@ int main () {
     //shapes
     //clocks
     sf::Clock deltaClock;
+    sf::Clock lineOfSightClock;
     //player presets
     string arr[7] = {"resources/Weapon1/1b.png","resources/Weapon1/1c.png","resources/Weapon1/1d.png","resources/Weapon1/1e.png","resources/Weapon1/1d.png","resources/Weapon1/1c.png","resources/Weapon1/1b.png"};
     string arr2[20] = {"resources/Weapon1/1Sa.png","resources/Weapon1/1Sa.png","resources/Weapon1/1Sa.png","resources/Weapon1/1Sa.png","resources/Weapon1/1Sa.png"
@@ -123,10 +124,10 @@ int main () {
     iconRenders[0][3].setTexture(inventory[0][3].a.icon);
     inventory[0][1].include(leather);
     iconRenders[0][1].setTexture(inventory[0][1].a.icon);
-    basicChar player(100,0,255,0,sx,sy);
+    basicChar player(100,1000,0,255,0,sx,sy);
     vector<basicChar> enemies;
     //enemy spawning (just for tests)
-    basicChar temp(100,255,0,0,0,0);
+    basicChar temp(100,1000,255,0,0,0,0);
     inventory[0][0].apply(&player);
     inventory[0][0].used = true;
     inventory[0][1].apply(&player);
@@ -277,15 +278,6 @@ int main () {
             player.heldWeapon.setRotation(ang);
             player.hpBar.setRotation(ang);
             player.hpBarBack.setRotation(ang);
-            for(int i = 0; i < enemyCount; i++) {
-                float xD = player.body.getPosition().x-enemies[i].body.getPosition().x;
-                float yD = player.body.getPosition().y-enemies[i].body.getPosition().y;
-                ang = atan2(yD,xD)*180/PI;
-                enemies[i].body.setRotation(ang);
-                enemies[i].heldWeapon.setRotation(ang);
-                enemies[i].hpBar.setRotation(ang);
-                enemies[i].hpBarBack.setRotation(ang);
-            }
         }
         }
         //keypress reactions
@@ -373,19 +365,36 @@ int main () {
         //enemy management
         {
         for(int i = 0; i < enemyCount; i++) {
-            float xM = deltaTime*enemies[i].spd*cos(enemies[i].body.getRotation()/180*PI);
-            float yM = deltaTime*enemies[i].spd*sin(enemies[i].body.getRotation()/180*PI);
-            if(enemies[i].objCollisions(xM,0,level,tL,objs,1) == false) {
-                enemies[i].body.move(xM,0);
-                enemies[i].heldWeapon.move(xM,0);
-                enemies[i].hpBar.move(xM,0);
-                enemies[i].hpBarBack.move(xM,0);
+            vector<int> walls;
+            walls.push_back(3);
+            bool det = enemies[i].detectTarget(&player,walls,1,level,tL);
+            sf::Time lineOfSightT = lineOfSightClock.getElapsedTime();
+            if(lineOfSightT.asSeconds() >= 1.0) {
+                det = enemies[i].detectTarget(&player,walls,1,level,tL);
+                lineOfSightClock.restart();
             }
-            if(enemies[i].objCollisions(0,yM,level,tL,objs,1) == false) {
-                enemies[i].body.move(0,yM);
-                enemies[i].heldWeapon.move(0,yM);
-                enemies[i].hpBar.move(0,yM);
-                enemies[i].hpBarBack.move(0,yM);
+            if(det == true) {
+                float xD = player.body.getPosition().x-enemies[i].body.getPosition().x;
+                float yD = player.body.getPosition().y-enemies[i].body.getPosition().y;
+                float ang = atan2(yD,xD)*180/PI;
+                enemies[i].body.setRotation(ang);
+                enemies[i].heldWeapon.setRotation(ang);
+                enemies[i].hpBar.setRotation(ang);
+                enemies[i].hpBarBack.setRotation(ang);
+                float xM = deltaTime*enemies[i].spd*cos(enemies[i].body.getRotation()/180*PI);
+                float yM = deltaTime*enemies[i].spd*sin(enemies[i].body.getRotation()/180*PI);
+                if(enemies[i].objCollisions(xM,0,level,tL,objs,1) == false) {
+                    enemies[i].body.move(xM,0);
+                    enemies[i].heldWeapon.move(xM,0);
+                    enemies[i].hpBar.move(xM,0);
+                    enemies[i].hpBarBack.move(xM,0);
+                }
+                if(enemies[i].objCollisions(0,yM,level,tL,objs,1) == false) {
+                    enemies[i].body.move(0,yM);
+                    enemies[i].heldWeapon.move(0,yM);
+                    enemies[i].hpBar.move(0,yM);
+                    enemies[i].hpBarBack.move(0,yM);
+                }
             }
             if(enemies[i].hp <= 0) {
                 //checking if is miniboss/boss via hp bar

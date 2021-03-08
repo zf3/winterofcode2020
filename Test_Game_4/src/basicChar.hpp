@@ -47,6 +47,7 @@ class basicChar {
     sf::Vector2f tipPos2B[20];
     int totalCycles;
     int totalCycles2;
+    int sightRange;
     sf::Sprite body;
     sf::Sprite heldWeapon;
     sf::RectangleShape hpBar;
@@ -60,6 +61,8 @@ class basicChar {
     armor eqpArmor;
     //wall collision detection
     bool objCollisions(float xM, float yM, const int *tilemap, int xL, int *objs, int n);
+    //line of sight detection
+    bool detectTarget(basicChar *target, vector<int> wallTypes, int n, const int *arr, int l);
     //animation cycles
     void basicCollisionDetection (basicChar *target);
     void loadAnim(int enemyCount, std::vector<basicChar> &enemies);
@@ -67,7 +70,7 @@ class basicChar {
     void loadAnim2(int enemyCount, std::vector<basicChar> &enemies, float deltaTime, sf::View *gameView, sf::RenderWindow *window, const int *tilemap,int xL,int *objs, int n, display *playerHUD);
     void move(float x, float y);
     //constructor
-    basicChar (int sp, int re,int gr,int bl,int x,int y);
+    basicChar (int sp, int sr, int re,int gr,int bl,int x,int y);
 };
 
 #endif
