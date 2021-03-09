@@ -63,9 +63,9 @@ void basicChar::basicCollisionDetection (basicChar *target) {
 	float bx = body.getPosition().x, by = body.getPosition().y;
 	float br = body.getRotation()/180*PI;
 	float tx = target->body.getPosition().x, ty = target->body.getPosition().y;
-	for(int i = 0; i <= 10; i++) {
-		float rawWX = tipPosA[atkAnimStage].x+i*(float)(tipPosB[atkAnimStage].x-tipPosA[atkAnimStage].x)/10.;
-		float rawWY = tipPosA[atkAnimStage].y+i*(float)(tipPosB[atkAnimStage].y-tipPosA[atkAnimStage].y)/10;
+	for(int i = 0; i <= 3; i++) {
+		float rawWX = tipPosA[atkAnimStage].x+i*(float)(tipPosB[atkAnimStage].x-tipPosA[atkAnimStage].x)/3.0;
+		float rawWY = tipPosA[atkAnimStage].y+i*(float)(tipPosB[atkAnimStage].y-tipPosA[atkAnimStage].y)/3.0;
 		float wx = bx+cos(br)*rawWX+cos(br-PI/2)*rawWY;
 		float wy = by+sin(br)*rawWX+sin(br-PI/2)*rawWY;
 		if(sqrtf((wx-tx)*(wx-tx)+(wy-ty)*(wy-ty)) <= target->hitbox && target->damaged == false) {
@@ -100,9 +100,9 @@ void basicChar::basicCollisionDetection2 (basicChar *target) {
 	float bx = body.getPosition().x, by = body.getPosition().y;
 	float br = body.getRotation()/180*PI;
 	float tx = target->body.getPosition().x, ty = target->body.getPosition().y;
-	for(int i = 0; i <= 10; i++) {
-		float rawWX = tipPos2A[atkAnimStage].x+i*(tipPos2B[atkAnimStage].x-tipPos2A[atkAnimStage].x)/10.0;
-		float rawWY = tipPos2A[atkAnimStage].y+i*(tipPos2B[atkAnimStage].y-tipPos2A[atkAnimStage].y)/10.0;
+	for(int i = 0; i <= 3; i++) {
+		float rawWX = tipPos2A[atkAnimStage].x+i*(tipPos2B[atkAnimStage].x-tipPos2A[atkAnimStage].x)/3.0;
+		float rawWY = tipPos2A[atkAnimStage].y+i*(tipPos2B[atkAnimStage].y-tipPos2A[atkAnimStage].y)/3.0;
 		float wx = bx+cos(br)*rawWX+cos(br-PI/2)*rawWY;
 		float wy = by+sin(br)*rawWX+sin(br-PI/2)*rawWY;
 		if(sqrtf((wx-tx)*(wx-tx)+(wy-ty)*(wy-ty)) <= target->hitbox && target->damaged == false) {
