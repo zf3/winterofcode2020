@@ -58,6 +58,11 @@ int main () {
     ,"resources/Weapon3/3Sa.png","resources/Weapon3/3Sa.png","resources/Weapon3/3Sa.png","resources/Weapon3/3Sa.png","resources/Weapon3/3Sa.png"
     ,"resources/Weapon3/3Sa.png","resources/Weapon3/3Sa.png","resources/Weapon3/3Sa.png","resources/Weapon3/3Sa.png","resources/Weapon3/3Sa.png"
     ,"resources/Weapon3/3Sa.png","resources/Weapon3/3Sa.png","resources/Weapon3/3Sa.png","resources/Weapon3/3Sa.png","resources/Weapon3/3Sa.png"};
+    string arr7[3] = {"resources/Weapon4/4b.png","resources/Weapon4/4c.png","resources/Weapon4/4b.png"};
+    string arr8[20] = {"resources/Weapon2/2Sa.png","resources/Weapon2/2Sa.png","resources/Weapon2/2Sa.png","resources/Weapon2/2Sa.png","resources/Weapon2/2Sa.png"
+    ,"resources/Weapon2/2Sa.png","resources/Weapon2/2Sa.png","resources/Weapon2/2Sa.png","resources/Weapon2/2Sa.png","resources/Weapon2/2Sa.png"
+    ,"resources/Weapon2/2Sa.png","resources/Weapon2/2Sa.png","resources/Weapon2/2Sa.png","resources/Weapon2/2Sa.png","resources/Weapon2/2Sa.png"
+    ,"resources/Weapon2/2Sa.png","resources/Weapon2/2Sa.png","resources/Weapon2/2Sa.png","resources/Weapon2/2Sa.png","resources/Weapon2/2Sa.png"};
     sf::Vector2f tipPosA[7] = {{sf::Vector2f(263,44)},{sf::Vector2f(284,-11)},{sf::Vector2f(281,-52)},{sf::Vector2f(268,-105)},{sf::Vector2f(281,-52)},{sf::Vector2f(284,-11)},{sf::Vector2f(263,44)}};
     sf::Vector2f tipPos2A[20] = {{sf::Vector2f(300,-12)},{sf::Vector2f(300,-12)},{sf::Vector2f(300,-12)},{sf::Vector2f(300,-12)},{sf::Vector2f(300,-12)},
     {sf::Vector2f(300,-12)},{sf::Vector2f(300,-12)},{sf::Vector2f(300,-12)},{sf::Vector2f(300,-12)},{sf::Vector2f(300,-12)},
@@ -90,10 +95,12 @@ int main () {
     {sf::Vector2f(64,-111)},{sf::Vector2f(64,-111)},{sf::Vector2f(64,-111)},{sf::Vector2f(64,-111)},{sf::Vector2f(64,-111)}};
     weapon sword("resources/Weapon1/1a.png","resources/Icons/W1.png","resources/FloorIcons/W1.png","resources/Descriptions/W1.png",arr,arr2,tipPosA,tipPos2A,tipPosB,tipPos2B,7,20,1,0.5,5,10,50,0.5,1,500,0,275);
     weapon dagger("resources/Weapon2/2a.png","resources/Icons/W2.png","resources/FloorIcons/W2.png","resources/Descriptions/W2.png",arr3,arr4,tipPos3A,tipPos4A,tipPos3B,tipPos4B,3,20,1.25,0.25,2.5,5,25,0.25,1,750,0,190);
+    weapon badDagger("resources/Weapon4/4a.png","resources/Icons/W2.png","resources/FloorIcons/W2.png","resources/Descriptions/W2.png",arr7,arr8,tipPos3A,tipPos4A,tipPos3B,tipPos4B,3,20,1.5,0.25,2.5,2.5,10,0.25,1,750,0,190);
     weapon axe("resources/Weapon3/3a.png","resources/Icons/W3.png","resources/FloorIcons/W3.png","resources/Descriptions/W3.png",arr5,arr6,tipPos5A,tipPos6A,tipPos5B,tipPos6B,7,20,0.75,0.75,7.5,25,75,0.75,1,0,-360,200);
     armor plate("resources/Armor1/1a.png","resources/Armor1/1b.png","resources/Icons/A1.png","resources/FloorIcons/A1.png","resources/Descriptions/A1.png",0.75,125,75);
     armor chain("resources/Armor2/2a.png","resources/Armor2/2b.png","resources/Icons/A2.png","resources/FloorIcons/A2.png","resources/Descriptions/A2.png",1,100,75);
     armor leather("resources/Armor3/3a.png","resources/Armor3/3b.png","resources/Icons/A3.png","resources/FloorIcons/A3.png","resources/Descriptions/A3.png",1.25,75,75);
+    armor peasant("resources/Armor4/4a.png","resources/Armor4/4b.png","resources/Icons/A3.png","resources/FloorIcons/A3.png","resources/Descriptions/A3.png",2,50,75);
     display playerHUD("resources/Display/Display1.png","resources/Display/Display2.png","resources/Display/Display3.png","resources/Display/Display4.png",192,192,192,sx,sy,0.5);
     inventorySlot inventory[4][4];
     vector<floorItem> dropped;
@@ -122,6 +129,10 @@ int main () {
     iconRenders[0][2].setTexture(inventory[0][2].w.icon);
     inventory[0][3].include(plate);
     iconRenders[0][3].setTexture(inventory[0][3].a.icon);
+    inventory[1][0].include(peasant);
+    iconRenders[1][0].setTexture(inventory[1][0].w.icon);
+    inventory[1][1].include(badDagger);
+    iconRenders[1][1].setTexture(inventory[1][1].a.icon);
     inventory[0][1].include(leather);
     iconRenders[0][1].setTexture(inventory[0][1].a.icon);
     basicChar player(100,1000,0,255,0,sx,sy);
@@ -129,6 +140,7 @@ int main () {
     vector<bool> dets;
     //enemy spawning (just for tests)
     basicChar temp(100,1000,255,0,0,0,0);
+    basicChar temp2(100,1000,255,0,0,0,0);
     inventory[0][0].apply(&player);
     inventory[0][0].used = true;
     inventory[0][1].apply(&player);
@@ -137,12 +149,25 @@ int main () {
     inventory[0][3].apply(&temp);
     inventory[0][2].active = false;
     inventory[0][3].active = false;
+    inventory[1][0].apply(&temp2);
+    inventory[1][1].apply(&temp2);
+    inventory[1][0].active = false;
+    inventory[1][1].active = false;
     for(int i = 0; i < 1; i++) {
         temp.body.setPosition(i*-25,i*-25);
         temp.heldWeapon.setPosition(i*-25,i*-25);
         temp.hpBar.setPosition(i*-25,i*-25);
         temp.hpBarBack.setPosition(i*-25,i*-25);
         enemies.push_back(temp);
+        dets.push_back(false);
+        enemyCount++;
+    }
+    for(int i = 0; i < 5; i++) {
+        temp2.body.setPosition(i*-25,i*-25);
+        temp2.heldWeapon.setPosition(i*-25,i*-25);
+        temp2.hpBar.setPosition(i*-25,i*-25);
+        temp2.hpBarBack.setPosition(i*-25,i*-25);
+        enemies.push_back(temp2);
         dets.push_back(false);
         enemyCount++;
     }
@@ -372,8 +397,14 @@ int main () {
             sf::Time lineOfSightT = lineOfSightClock.getElapsedTime();
             if(lineOfSightT.asSeconds() >= 1.0) {
                 dets[i] = enemies[i].detectTarget(&player,walls,1,level,tL);
-                lineOfSightClock.restart();
+                if(i == enemyCount-1) {
+                    lineOfSightClock.restart();
+                }
             }
+            float x0 = player.body.getPosition().x;
+            float x1 = enemies[i].body.getPosition().x;
+            float y0 = player.body.getPosition().y;
+            float y1 = enemies[i].body.getPosition().y;
             if(dets[i] == true) {
                 float xD = player.body.getPosition().x-enemies[i].body.getPosition().x;
                 float yD = player.body.getPosition().y-enemies[i].body.getPosition().y;
@@ -382,19 +413,21 @@ int main () {
                 enemies[i].heldWeapon.setRotation(ang);
                 enemies[i].hpBar.setRotation(ang);
                 enemies[i].hpBarBack.setRotation(ang);
-                float xM = deltaTime*enemies[i].spd*cos(enemies[i].body.getRotation()/180*PI);
-                float yM = deltaTime*enemies[i].spd*sin(enemies[i].body.getRotation()/180*PI);
-                if(enemies[i].objCollisions(xM,0,level,tL,objs,1) == false) {
-                    enemies[i].body.move(xM,0);
-                    enemies[i].heldWeapon.move(xM,0);
-                    enemies[i].hpBar.move(xM,0);
-                    enemies[i].hpBarBack.move(xM,0);
-                }
-                if(enemies[i].objCollisions(0,yM,level,tL,objs,1) == false) {
-                    enemies[i].body.move(0,yM);
-                    enemies[i].heldWeapon.move(0,yM);
-                    enemies[i].hpBar.move(0,yM);
-                    enemies[i].hpBarBack.move(0,yM);
+                if(sqrtf((x0-x1)*(x0-x1)+(y0-y1)*(y0-y1)) >= enemies[i].eqpWeapon.atkDist) {
+                    float xM = deltaTime*enemies[i].spd*cos(enemies[i].body.getRotation()/180*PI);
+                    float yM = deltaTime*enemies[i].spd*sin(enemies[i].body.getRotation()/180*PI);
+                    if(enemies[i].objCollisions(xM,0,level,tL,objs,1) == false) {
+                        enemies[i].body.move(xM,0);
+                        enemies[i].heldWeapon.move(xM,0);
+                        enemies[i].hpBar.move(xM,0);
+                        enemies[i].hpBarBack.move(xM,0);
+                    }
+                    if(enemies[i].objCollisions(0,yM,level,tL,objs,1) == false) {
+                        enemies[i].body.move(0,yM);
+                        enemies[i].heldWeapon.move(0,yM);
+                        enemies[i].hpBar.move(0,yM);
+                        enemies[i].hpBarBack.move(0,yM);
+                    }
                 }
             }
             if(enemies[i].hp <= 0) {
@@ -424,13 +457,24 @@ int main () {
                 dets.erase(dets.begin()+i);
                 enemyCount--;
                 //respawning code (just for tests)
-                temp.body.setPosition(0,0);
-                temp.heldWeapon.setPosition(0,0);
-                temp.hpBar.setPosition(0,0);
-                temp.hpBarBack.setPosition(0,0);
-                enemies.push_back(temp);
-                dets.push_back(false);
-                enemyCount++;
+                if(enemies[i].maxHP > 50) {
+                    temp.body.setPosition(0,0);
+                    temp.heldWeapon.setPosition(0,0);
+                    temp.hpBar.setPosition(0,0);
+                    temp.hpBarBack.setPosition(0,0);
+                    enemies.push_back(temp);
+                    dets.push_back(false);
+                    enemyCount++;
+                }
+                else {
+                    temp2.body.setPosition(0,0);
+                    temp2.heldWeapon.setPosition(0,0);
+                    temp2.hpBar.setPosition(0,0);
+                    temp2.hpBarBack.setPosition(0,0);
+                    enemies.push_back(temp2);
+                    dets.push_back(false);
+                    enemyCount++;
+                }
             }
             if(enemies[i].wCooldown >= enemies[i].wCooldownM) {
                 float xD = (enemies[i].body.getPosition().x-player.body.getPosition().x);
