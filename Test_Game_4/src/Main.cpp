@@ -95,7 +95,7 @@ int main () {
     {sf::Vector2f(64,-111)},{sf::Vector2f(64,-111)},{sf::Vector2f(64,-111)},{sf::Vector2f(64,-111)},{sf::Vector2f(64,-111)}};
     weapon sword("resources/Weapon1/1a.png","resources/Icons/W1.png","resources/FloorIcons/W1.png","resources/Descriptions/W1.png",arr,arr2,tipPosA,tipPos2A,tipPosB,tipPos2B,7,20,1,0.5,5,10,50,0.5,1,500,0,275);
     weapon dagger("resources/Weapon2/2a.png","resources/Icons/W2.png","resources/FloorIcons/W2.png","resources/Descriptions/W2.png",arr3,arr4,tipPos3A,tipPos4A,tipPos3B,tipPos4B,3,20,1.25,0.25,2.5,1000,25,0.25,1,750,0,190);
-    weapon badDagger("resources/Weapon4/4a.png","resources/Icons/W3.png","resources/FloorIcons/W3.png","resources/Descriptions/W3.png",arr7,arr8,tipPos3A,tipPos4A,tipPos3B,tipPos4B,3,20,1.25,0.25,2.5,2.5,10,0.25,1,750,0,190);
+    weapon badDagger("resources/Weapon4/4a.png","resources/Icons/W2.png","resources/FloorIcons/W2.png","resources/Descriptions/W2.png",arr7,arr8,tipPos3A,tipPos4A,tipPos3B,tipPos4B,3,20,1.25,0.25,2.5,2.5,10,0.25,1,750,0,190);
     weapon axe("resources/Weapon3/3a.png","resources/Icons/W3.png","resources/FloorIcons/W3.png","resources/Descriptions/W3.png",arr5,arr6,tipPos5A,tipPos6A,tipPos5B,tipPos6B,7,20,0.75,0.75,7.5,25,75,0.75,1,0,-360,200);
     armor plate("resources/Armor1/1a.png","resources/Armor1/1b.png","resources/Icons/A1.png","resources/FloorIcons/A1.png","resources/Descriptions/A1.png",0.75,125,75);
     armor chain("resources/Armor2/2a.png","resources/Armor2/2b.png","resources/Icons/A2.png","resources/FloorIcons/A2.png","resources/Descriptions/A2.png",1,100,75);
