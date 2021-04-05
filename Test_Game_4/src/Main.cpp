@@ -94,13 +94,13 @@ int main () {
     {sf::Vector2f(64,-111)},{sf::Vector2f(64,-111)},{sf::Vector2f(64,-111)},{sf::Vector2f(64,-111)},{sf::Vector2f(64,-111)},
     {sf::Vector2f(64,-111)},{sf::Vector2f(64,-111)},{sf::Vector2f(64,-111)},{sf::Vector2f(64,-111)},{sf::Vector2f(64,-111)}};
     weapon sword("resources/Weapon1/1a.png","resources/Icons/W1.png","resources/FloorIcons/W1.png","resources/Descriptions/W1.png",arr,arr2,tipPosA,tipPos2A,tipPosB,tipPos2B,7,20,1,0.5,5,10,50,0.5,1,500,0,275);
-    weapon dagger("resources/Weapon2/2a.png","resources/Icons/W2.png","resources/FloorIcons/W2.png","resources/Descriptions/W2.png",arr3,arr4,tipPos3A,tipPos4A,tipPos3B,tipPos4B,3,20,1.25,0.25,2.5,5,25,0.25,1,750,0,190);
-    weapon badDagger("resources/Weapon4/4a.png","resources/Icons/W2.png","resources/FloorIcons/W2.png","resources/Descriptions/W2.png",arr7,arr8,tipPos3A,tipPos4A,tipPos3B,tipPos4B,3,20,1.5,0.25,2.5,2.5,10,0.25,1,750,0,190);
+    weapon dagger("resources/Weapon2/2a.png","resources/Icons/W2.png","resources/FloorIcons/W2.png","resources/Descriptions/W2.png",arr3,arr4,tipPos3A,tipPos4A,tipPos3B,tipPos4B,3,20,1.25,0.25,2.5,1000,25,0.25,1,750,0,190);
+    weapon badDagger("resources/Weapon4/4a.png","resources/Icons/W2.png","resources/FloorIcons/W2.png","resources/Descriptions/W2.png",arr7,arr8,tipPos3A,tipPos4A,tipPos3B,tipPos4B,3,20,1.25,0.25,2.5,2.5,10,0.25,1,750,0,190);
     weapon axe("resources/Weapon3/3a.png","resources/Icons/W3.png","resources/FloorIcons/W3.png","resources/Descriptions/W3.png",arr5,arr6,tipPos5A,tipPos6A,tipPos5B,tipPos6B,7,20,0.75,0.75,7.5,25,75,0.75,1,0,-360,200);
     armor plate("resources/Armor1/1a.png","resources/Armor1/1b.png","resources/Icons/A1.png","resources/FloorIcons/A1.png","resources/Descriptions/A1.png",0.75,125,75);
     armor chain("resources/Armor2/2a.png","resources/Armor2/2b.png","resources/Icons/A2.png","resources/FloorIcons/A2.png","resources/Descriptions/A2.png",1,100,75);
     armor leather("resources/Armor3/3a.png","resources/Armor3/3b.png","resources/Icons/A3.png","resources/FloorIcons/A3.png","resources/Descriptions/A3.png",1.25,75,75);
-    armor peasant("resources/Armor4/4a.png","resources/Armor4/4b.png","resources/Icons/A3.png","resources/FloorIcons/A3.png","resources/Descriptions/A3.png",2,50,75);
+    armor peasant("resources/Armor4/4a.png","resources/Armor4/4b.png","resources/Icons/A3.png","resources/FloorIcons/A3.png","resources/Descriptions/A3.png",1.25,50,75);
     display playerHUD("resources/Display/Display1.png","resources/Display/Display2.png","resources/Display/Display3.png","resources/Display/Display4.png",192,192,192,sx,sy,0.5);
     inventorySlot inventory[4][4];
     vector<floorItem> dropped;
@@ -112,6 +112,7 @@ int main () {
     sf::Texture inventoryBackgroundT;
     sf::Sprite shownDesc;
     sf::Font descriptionFont;
+    inventorySlot temp4[4];
     descriptionFont.loadFromFile("resources/Fonts/Apple Chancery.ttf");
     inventoryBackgroundT.loadFromFile("resources/Icons/InventoryScreen.png");
     inventoryBackgroundT.setSmooth(true);
@@ -123,36 +124,32 @@ int main () {
         }
     }
     sf::Texture temp10;
-    inventory[0][0].include(dagger);
-    iconRenders[0][0].setTexture(inventory[0][0].w.icon);
-    inventory[0][2].include(axe);
-    iconRenders[0][2].setTexture(inventory[0][2].w.icon);
-    inventory[0][3].include(plate);
-    iconRenders[0][3].setTexture(inventory[0][3].a.icon);
-    inventory[1][0].include(peasant);
-    iconRenders[1][0].setTexture(inventory[1][0].w.icon);
-    inventory[1][1].include(badDagger);
-    iconRenders[1][1].setTexture(inventory[1][1].a.icon);
-    inventory[0][1].include(leather);
-    iconRenders[0][1].setTexture(inventory[0][1].a.icon);
     basicChar player(100,1000,0,255,0,sx,sy);
     vector<basicChar> enemies;
     vector<bool> dets;
     //enemy spawning (just for tests)
-    basicChar temp(100,1000,255,0,0,0,0);
-    basicChar temp2(100,1000,255,0,0,0,0);
+    basicChar temp(200,1000,255,0,0,0,0);
+    basicChar temp3(200,1000,255,0,0,0,0);
+    inventory[0][0].include(dagger);
+    iconRenders[0][0].setTexture(inventory[0][0].w.icon);
+    inventory[0][1].include(leather);
+    iconRenders[0][1].setTexture(inventory[0][1].a.icon);
     inventory[0][0].apply(&player);
     inventory[0][0].used = true;
     inventory[0][1].apply(&player);
     inventory[0][1].used = true;
-    inventory[0][2].apply(&temp);
-    inventory[0][3].apply(&temp);
-    inventory[0][2].active = false;
-    inventory[0][3].active = false;
-    inventory[1][0].apply(&temp2);
-    inventory[1][1].apply(&temp2);
-    inventory[1][0].active = false;
-    inventory[1][1].active = false;
+    temp4[0].include(axe);
+    temp4[0].apply(&temp);
+    temp.eqpWeapon=temp4[0].w;
+    temp4[1].include(plate);
+    temp4[1].apply(&temp);
+    temp.eqpArmor=temp4[1].a;
+    temp4[2].include(badDagger);
+    temp4[2].apply(&temp3);
+    temp3.eqpWeapon=temp4[2].w;
+    temp4[3].include(peasant);
+    temp4[3].apply(&temp3);
+    temp3.eqpArmor=temp4[3].a;
     for(int i = 0; i < 1; i++) {
         temp.body.setPosition(i*-25,i*-25);
         temp.heldWeapon.setPosition(i*-25,i*-25);
@@ -163,11 +160,11 @@ int main () {
         enemyCount++;
     }
     for(int i = 0; i < 5; i++) {
-        temp2.body.setPosition(i*-25,i*-25);
-        temp2.heldWeapon.setPosition(i*-25,i*-25);
-        temp2.hpBar.setPosition(i*-25,i*-25);
-        temp2.hpBarBack.setPosition(i*-25,i*-25);
-        enemies.push_back(temp2);
+        temp3.body.setPosition(i*-25,i*-25);
+        temp3.heldWeapon.setPosition(i*-25,i*-25);
+        temp3.hpBar.setPosition(i*-25,i*-25);
+        temp3.hpBarBack.setPosition(i*-25,i*-25);
+        enemies.push_back(temp3);
         dets.push_back(false);
         enemyCount++;
     }
@@ -435,20 +432,21 @@ int main () {
                 if(enemies[i].maxHP > 50) {
                     int included = rand()%lootChanceDenom;
                     if(included <= lootChanceNumer-1) {
-                        floorItem temp;
-                        temp.include(&enemies[i], enemies[i].body.getPosition().x, enemies[i].body.getPosition().y);
-                        dropped.push_back(temp);
+                        floorItem temp5;
+                        temp5.include(&enemies[i], enemies[i].body.getPosition().x, enemies[i].body.getPosition().y);
+                        dropped.push_back(temp5);
                         sf::Sprite temp2;
                         droppedObjs.push_back(temp2);
-                        if(temp.type == 1) {
-                            droppedObjs[droppedSize].setTexture(enemies[i].fIconW);
+                        printf("%d\n",temp5.type);
+                        if(temp5.type == 1) {
+                            droppedObjs[droppedSize].setTexture(enemies[i].eqpWeapon.fIcon);
                         }
-                        if(temp.type == 2) {
-                            droppedObjs[droppedSize].setTexture(enemies[i].fIconA);
+                        if(temp5.type == 2) {
+                            droppedObjs[droppedSize].setTexture(enemies[i].eqpArmor.fIcon);
                         }
                         droppedObjs[droppedSize].setScale(100/314.0,100/314.0);
                         droppedObjs[droppedSize].setOrigin(50,50);
-                        droppedObjs[droppedSize].setPosition(sf::Vector2f(temp.x,temp.y));
+                        droppedObjs[droppedSize].setPosition(sf::Vector2f(temp5.x,temp5.y));
                         droppedObjs[droppedSize].setRotation(rand()%360);
                         droppedSize++;
                     }
@@ -467,11 +465,11 @@ int main () {
                     enemyCount++;
                 }
                 else {
-                    temp2.body.setPosition(0,0);
-                    temp2.heldWeapon.setPosition(0,0);
-                    temp2.hpBar.setPosition(0,0);
-                    temp2.hpBarBack.setPosition(0,0);
-                    enemies.push_back(temp2);
+                    temp3.body.setPosition(0,0);
+                    temp3.heldWeapon.setPosition(0,0);
+                    temp3.hpBar.setPosition(0,0);
+                    temp3.hpBarBack.setPosition(0,0);
+                    enemies.push_back(temp3);
                     dets.push_back(false);
                     enemyCount++;
                 }
@@ -550,8 +548,6 @@ int main () {
             window.draw(playerHUD.block2);
             window.draw(playerHUD.block3);
             window.draw(playerHUD.display1);
-            temp1.setTexture(inventory[1][2].a.icon);
-            window.draw(temp1);
         }
         if(inventoryOn == true) {
             window.clear(sf::Color(128,128,128));
@@ -618,7 +614,7 @@ int main () {
                     if(inventory[i][j].type == 1) {
                         iconRenders[i][j].setTexture(inventory[i][j].w.icon);
                     }
-                    if(inventory[i][j].type == 2) {
+                    else {
                         iconRenders[i][j].setTexture(inventory[i][j].a.icon);
                     }
                     if(inventory[i][j].active) {

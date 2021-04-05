@@ -26,15 +26,11 @@ void floorItem::include(basicChar *obj, float xP, float yP) {
 	quality = (rand()%11)/10.0+0.5;
 	w.atkD2*=quality;
 	w.wCooldownM2*=quality;
-
+	a.icon = obj->eqpArmor.icon;
 	w.icon = obj->eqpWeapon.icon;
 	active = true;
-	if(type == 1) {
-		fIcon = obj->fIconW;
-	}
-	else {
-		fIcon = obj->fIconA;
-	}
+	fIcon = obj->fIconW;
+	fIcon = obj->fIconA;
 	x = xP;
 	y = yP;
 }
