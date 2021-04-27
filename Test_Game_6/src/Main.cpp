@@ -127,7 +127,6 @@ int main() {
                 enemies[i].move(sf::Vector2f(xVs[i]*deltaTime,yVs[i]*deltaTime));
                 float eX = enemies[i].getPosition().x;
                 float eY = enemies[i].getPosition().y;
-                float eA = (enemies[i].getRotation()+90)/180*pi;
                 if(eX > 1500 || eX < 0 || eY > 1500 || eY < 0) {
                     enemies.erase(enemies.begin()+i);
                     xVs.erase(xVs.begin()+i);
@@ -135,9 +134,13 @@ int main() {
                     enemyAmn--;
                     break;
                 }
-                float cX1 = eX, cY1 = eY;
-                float cX2 = eX, cY2 = eY;
-                float cX3 = eX, cY3 = eY;
+                float upX = cos((enemies[i].getRotation()-90.0)/180.0*pi)*hitboxE/2.0, upY = sin((enemies[i].getRotation()-90.0)/180.0*pi)*hitboxE/2.0;
+                float downX = -upX, downY = -upY;
+                float rightX = upY, rightY = -upX;
+                float leftX = -upY, leftY = upX;
+                float cX1 = eX+upX, cY1 = eY+upY;
+                float cX2 = eX+leftX+downX, cY2 = eY+leftY+downY;
+                float cX3 = eX+rightX+downX, cY3 = eY+rightY+downY;
                 float pX = player.getPosition().x;
                 float pY = player.getPosition().y;
                 if(sqrtf((pX-cX1)*(pX-cX1)+(pY-cY1)*(pY-cY1)) <= hitbox/2
