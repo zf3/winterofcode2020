@@ -12,12 +12,14 @@ const int h = 1500, w = 1500;
 int main() {
     sf::RenderWindow window(sf::VideoMode(h, w), "My window");
     // run the main loop
-    bool mouseButton = false, gameEnd = true;
-    float speed = 1000, eSpeed = 100, xV = 0, yV = 0, deltaTime = 0, enemyTime = 0, enemyAmn = 0, enemyTimeM = 0.5;
-    int hitbox = 100, hitboxE = 100, wordSize = 100;
+    bool mouseButton = false, large = false;
+    float speed = 1000, eSpeed = 100, xV = 0, yV = 0, deltaTime = 0, enemyTime = 0, enemyAmn = 0, enemyTimeM = 0.5, replayTime = 1;
+    int hitbox = 100, hitboxE = 100, wordSize = 100, screen = 1;
     string scoreString = "0";
     vector<float> xVs, yVs;
     vector<sf::Sprite> enemies;
+    sf::Clock replayTimeC;
+    sf::Time replayTimeT;
     sf::Clock pointUpdateC;
     sf::Time pointUpdateT;
     sf::Clock pointScoreC;
@@ -32,10 +34,17 @@ int main() {
     enemyT.loadFromFile("resources/Enemy.png");
     sf::Texture endScreenT;
     endScreenT.loadFromFile("resources/StartScreen.png");
+    sf::Texture buttonT;
+    buttonT.loadFromFile("resources/Button.png");
     sf::Sprite player;
     player.setTexture(playerT);
     player.setOrigin(hitbox/2,hitbox/2);
     player.setPosition(h/2,w/2);
+    sf::Sprite button;
+    button.setTexture(buttonT);
+    button.setOrigin(750,750);
+    button.setPosition(750,750);
+    button.setScale(0.75,0.75);
     sf::Sprite endScreen;
     endScreen.setTexture(endScreenT);
     sf::Font scoreFont;
@@ -47,7 +56,7 @@ int main() {
     score.setFillColor(sf::Color::Black);
     score.setPosition(1500.0-2.0*(wordSize*scoreString.size())/3.0,-20);
     while (window.isOpen()) {
-        if(gameEnd == false) {
+        if(screen == 0) {
             sf::Event event;
             while (window.pollEvent(event)) {
                 if (event.type == sf::Event::Closed) {
@@ -79,7 +88,7 @@ int main() {
                 eSpeed*=1.005;
                 enemyTimeC.restart();
                 int type = rand()%4;
-                float angle = (rand()%180)+type*90;
+                float angle = ((rand()%180)+type*90)%360;
                 sf::Sprite tmp;
                 tmp.setTexture(enemyT);
                 tmp.setOrigin(hitboxE/2,hitboxE/2);
@@ -110,13 +119,15 @@ int main() {
             float pX = player.getPosition().x;
             float pY = player.getPosition().y;
             if(pX > 1500 || pX < 0 || pY > 1500 || pY < 0) {
-                gameEnd = true;
+                screen = 1;
+                replayTimeC.restart();
             }
             //enemy AI
             for(int i = 0; i < enemyAmn; i++) {
                 enemies[i].move(sf::Vector2f(xVs[i]*deltaTime,yVs[i]*deltaTime));
                 float eX = enemies[i].getPosition().x;
                 float eY = enemies[i].getPosition().y;
+                float eA = (enemies[i].getRotation()+90)/180*pi;
                 if(eX > 1500 || eX < 0 || eY > 1500 || eY < 0) {
                     enemies.erase(enemies.begin()+i);
                     xVs.erase(xVs.begin()+i);
@@ -124,9 +135,9 @@ int main() {
                     enemyAmn--;
                     break;
                 }
-                float cX1 = eX, cY1 = eY+hitboxE/2;
-                float cX2 = eX+hitboxE/2, cY2 = eY-hitboxE/2;
-                float cX3 = eX-hitboxE/2, cY3 = eY-hitboxE/2;
+                float cX1 = eX, cY1 = eY;
+                float cX2 = eX, cY2 = eY;
+                float cX3 = eX, cY3 = eY;
                 float pX = player.getPosition().x;
                 float pY = player.getPosition().y;
                 if(sqrtf((pX-cX1)*(pX-cX1)+(pY-cY1)*(pY-cY1)) <= hitbox/2
@@ -136,7 +147,8 @@ int main() {
                     xVs.erase(xVs.begin()+i);
                     yVs.erase(yVs.begin()+i);
                     enemyAmn--;
-                    gameEnd = true;
+                    screen = 1;
+                    replayTimeC.restart();
                     break;
                 }
             }
@@ -160,14 +172,17 @@ int main() {
             window.draw(score);
             window.display();
         }
-        if(gameEnd == true) {
+        if(screen == 1) {
+            replayTimeT = replayTimeC.getElapsedTime();
             sf::Event event;
             while (window.pollEvent(event)) {
                 if (event.type == sf::Event::Closed) {
                     window.close();
                     break;
                 }
-                if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Enter) {
+                float mx = sf::Mouse::getPosition(window).x;
+                float my = sf::Mouse::getPosition(window).y;
+                if (replayTimeT.asSeconds() >= replayTime && event.type == sf::Event::MouseButtonPressed && mx >= 262 && mx <= 1237 && my >= 562 && my <= 937) {
                     while(enemyAmn > 0) {
                         xVs.pop_back();
                         yVs.pop_back();
@@ -183,12 +198,23 @@ int main() {
                     mouseButton = false;
                     speed = 1000, eSpeed = 100, xV = 0, yV = 0, deltaTime = 0, enemyTime = 0, enemyAmn = 0, enemyTimeM = 0.5;
                     hitbox = 100, hitboxE = 100;
-                    gameEnd = false;
+                    screen = 0;
                     break;
                 }
             }
+            float mx = sf::Mouse::getPosition(window).x;
+            float my = sf::Mouse::getPosition(window).y;
+            if(large == false && mx >= 262 && mx <= 1237 && my >= 562 && my <= 937) {
+                button.setScale(0.8,0.8);
+                large = true;
+            }
+            if(large == true && (mx < 262 || mx > 1237 || my < 562 || my > 937)){
+                button.setScale(0.75,0.75);
+                large = false;
+            }
             window.clear(sf::Color(192,192,192));
             window.draw(endScreen);
+            window.draw(button);
             window.draw(score);
             window.display();
         }
