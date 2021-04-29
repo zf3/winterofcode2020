@@ -36,6 +36,8 @@ int main() {
     endScreenT.loadFromFile("resources/StartScreen.png");
     sf::Texture buttonT;
     buttonT.loadFromFile("resources/Button.png");
+    sf::Texture backgroundT;
+    backgroundT.loadFromFile("resources/Background.png");
     sf::Sprite player;
     player.setTexture(playerT);
     player.setOrigin(hitbox/2,hitbox/2);
@@ -47,6 +49,8 @@ int main() {
     button.setScale(0.75,0.75);
     sf::Sprite endScreen;
     endScreen.setTexture(endScreenT);
+    sf::Sprite background;
+    background.setTexture(backgroundT);
     sf::Font scoreFont;
     scoreFont.loadFromFile("resources/sansation.ttf");
     sf::Text score;
@@ -121,6 +125,8 @@ int main() {
             if(pX > 1500 || pX < 0 || pY > 1500 || pY < 0) {
                 screen = 1;
                 replayTimeC.restart();
+                button.setColor(sf::Color(255,255,255,255));
+                endScreen.setColor(sf::Color(255,255,255,255));
             }
             //enemy AI
             for(int i = 0; i < enemyAmn; i++) {
@@ -152,6 +158,8 @@ int main() {
                     enemyAmn--;
                     screen = 1;
                     replayTimeC.restart();
+                    button.setColor(sf::Color(255,255,255,255));
+                    endScreen.setColor(sf::Color(255,255,255,255));
                     break;
                 }
             }
@@ -168,6 +176,7 @@ int main() {
             xV=xV*0.999;
             yV=yV*0.999;
             window.clear(sf::Color(192,192,192));
+            //window.draw(background);
             window.draw(player);
             for(int i = 0; i < enemyAmn; i++) {
                 window.draw(enemies[i]);
@@ -192,16 +201,31 @@ int main() {
                         enemies.pop_back();
                         enemyAmn--;
                     }
-                    enemyTimeC.restart();
-                    deltaTimeC.restart();
-                    pointUpdateC.restart();
-                    pointScoreC.restart();
                     scoreString = "0";
                     player.setPosition(h/2,w/2);
                     mouseButton = false;
                     speed = 1000, eSpeed = 100, xV = 0, yV = 0, deltaTime = 0, enemyTime = 0, enemyAmn = 0, enemyTimeM = 0.5;
                     hitbox = 100, hitboxE = 100;
                     screen = 0;
+                    sf::Clock fadeC;
+                    sf::Time fadeT;
+                    fadeT = fadeC.getElapsedTime();
+                    while(255-fadeT.asSeconds()*255 > 0) {
+                        fadeT = fadeC.getElapsedTime();
+                        endScreen.setColor(sf::Color(255,255,255,255-fadeT.asSeconds()*255));
+                        button.setColor(sf::Color(255,255,255,255-fadeT.asSeconds()*255));
+                        window.clear(sf::Color(192,192,192));
+                        window.draw(background);
+                        window.draw(player);
+                        window.draw(endScreen);
+                        window.draw(button);
+                        window.draw(score);
+                        window.display();
+                    }
+                    enemyTimeC.restart();
+                    deltaTimeC.restart();
+                    pointUpdateC.restart();
+                    pointScoreC.restart();
                     break;
                 }
             }
