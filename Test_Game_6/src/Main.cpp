@@ -11,9 +11,10 @@ const float pi = 3.1415;
 const int h = 1500, w = 1500;
 int main() {
     sf::RenderWindow window(sf::VideoMode(h, w), "My window");
+    window.setFramerateLimit(60);
     // run the main loop
-    bool mouseButton = false, large = false;
-    float speed = 1000, eSpeed = 100, xV = 0, yV = 0, deltaTime = 0, enemyTime = 0, enemyAmn = 0, enemyTimeM = 0.5, replayTime = 1;
+    bool mouseButton = false, large1 = false, large2 = false, large3 = false, large4 = false;
+    float speed = 1000, eSpeed = 100, xV = 0, yV = 0, deltaTime = 0, enemyTime = 0, enemyAmn = 0, enemyTimeM = 0.5, replayTime = 1, frict = 0.15;
     int hitbox = 100, hitboxE = 100, wordSize = 100, screen = 1;
     string scoreString = "0";
     vector<float> xVs, yVs;
@@ -36,8 +37,16 @@ int main() {
     endScreenT.loadFromFile("resources/StartScreen.png");
     sf::Texture buttonT;
     buttonT.loadFromFile("resources/Button.png");
+    sf::Texture statsT;
+    statsT.loadFromFile("resources/StatsSkins.png");
+    sf::Texture infoT;
+    infoT.loadFromFile("resources/Instructions.png");
     sf::Texture backgroundT;
     backgroundT.loadFromFile("resources/Background.png");
+    sf::Texture infoScreenT;
+    infoScreenT.loadFromFile("resources/InstructionsScreen.png");
+    sf::Texture backButtonT;
+    backButtonT.loadFromFile("resources/BackButton.png");
     sf::Sprite player;
     player.setTexture(playerT);
     player.setOrigin(hitbox/2,hitbox/2);
@@ -46,7 +55,20 @@ int main() {
     button.setTexture(buttonT);
     button.setOrigin(750,750);
     button.setPosition(750,750);
-    button.setScale(0.75,0.75);
+    sf::Sprite stats;
+    stats.setTexture(statsT);
+    stats.setOrigin(750,400);
+    stats.setPosition(750,400);
+    sf::Sprite info;
+    info.setTexture(infoT);
+    info.setOrigin(750,1150);
+    info.setPosition(750,1150);
+    sf::Sprite backButton;
+    backButton.setTexture(backButtonT);
+    backButton.setOrigin(160,150);
+    backButton.setPosition(160,150);
+    sf::Sprite infoScreen;
+    infoScreen.setTexture(infoScreenT);
     sf::Sprite endScreen;
     endScreen.setTexture(endScreenT);
     sf::Sprite background;
@@ -173,8 +195,8 @@ int main() {
                 xV+=deltaTime*speed*cos(angle/180*pi);
                 yV+=deltaTime*speed*sin(angle/180*pi);
             }
-            xV=xV*0.999;
-            yV=yV*0.999;
+            xV=xV*powf(frict,deltaTime);
+            yV=yV*powf(frict,deltaTime);
             window.clear(sf::Color(192,192,192));
             //window.draw(background);
             window.draw(player);
@@ -211,16 +233,20 @@ int main() {
                     sf::Time fadeT;
                     fadeT = fadeC.getElapsedTime();
                     while(255-fadeT.asSeconds()*255 > 0) {
-                        fadeT = fadeC.getElapsedTime();
-                        endScreen.setColor(sf::Color(255,255,255,255-fadeT.asSeconds()*255));
-                        button.setColor(sf::Color(255,255,255,255-fadeT.asSeconds()*255));
-                        window.clear(sf::Color(192,192,192));
                         window.draw(background);
                         window.draw(player);
                         window.draw(endScreen);
                         window.draw(button);
+                        window.draw(stats);
+                        window.draw(info);
                         window.draw(score);
                         window.display();
+                        fadeT = fadeC.getElapsedTime();
+                        endScreen.setColor(sf::Color(255,255,255,255-fadeT.asSeconds()*255));
+                        button.setColor(sf::Color(255,255,255,255-fadeT.asSeconds()*255));
+                        stats.setColor(sf::Color(255,255,255,255-fadeT.asSeconds()*255));
+                        info.setColor(sf::Color(255,255,255,255-fadeT.asSeconds()*255));
+                        window.clear(sf::Color(192,192,192));
                     }
                     enemyTimeC.restart();
                     deltaTimeC.restart();
@@ -228,22 +254,79 @@ int main() {
                     pointScoreC.restart();
                     break;
                 }
+                if (replayTimeT.asSeconds() >= replayTime && event.type == sf::Event::MouseButtonPressed && mx >= 275 && mx <= 1215 && my >= 1055 && my <= 1245) {
+                    screen = 2;
+                    break;
+                }
             }
             float mx = sf::Mouse::getPosition(window).x;
             float my = sf::Mouse::getPosition(window).y;
-            if(large == false && mx >= 262 && mx <= 1237 && my >= 562 && my <= 937) {
-                button.setScale(0.8,0.8);
-                large = true;
+            if(large1 == false && mx >= 262 && mx <= 1237 && my >= 562 && my <= 937) {
+                button.setScale(1.075,1.075);
+                large1 = true;
             }
-            if(large == true && (mx < 262 || mx > 1237 || my < 562 || my > 937)){
-                button.setScale(0.75,0.75);
-                large = false;
+            if(large1 == true && (mx < 262 || mx > 1237 || my < 562 || my > 937)){
+                button.setScale(1,1);
+                large1 = false;
             }
-            window.clear(sf::Color(192,192,192));
-            window.draw(endScreen);
-            window.draw(button);
-            window.draw(score);
-            window.display();
+            if(large2 == false && mx >= 275 && mx <= 1215 && my >= 305 && my <= 495) {
+                stats.setScale(1.075,1.075);
+                large2 = true;
+            }
+            if(large2 == true && (mx < 275 || mx > 1215 || my < 305 || my > 495)){
+                stats.setScale(1,1);
+                large2 = false;
+            }
+            if(large3 == false && mx >= 275 && mx <= 1215 && my >= 1055 && my <= 1245) {
+                info.setScale(1.075,1.075);
+                large3 = true;
+            }
+            if(large3 == true && (mx < 275 || mx > 1215 || my < 1055 || my > 1245)){
+                info.setScale(1,1);
+                large3 = false;
+            }
+            if(screen == 1) {
+                window.clear(sf::Color(192,192,192));
+                window.draw(endScreen);
+                window.draw(button);
+                window.draw(stats);
+                window.draw(info);
+                window.draw(score);
+                window.display();
+            }
+        }
+        if(screen == 2) {
+            replayTimeT = replayTimeC.getElapsedTime();
+            sf::Event event;
+            while (window.pollEvent(event)) {
+                if (event.type == sf::Event::Closed) {
+                    window.close();
+                    break;
+                }
+                float mx = sf::Mouse::getPosition(window).x;
+                float my = sf::Mouse::getPosition(window).y;
+                if (replayTimeT.asSeconds() >= replayTime && event.type == sf::Event::MouseButtonPressed && mx >= 60 && mx <= 260 && my >= 80 && my <= 220) {
+                    screen = 1;
+                    break;
+                }
+            }
+            float mx = sf::Mouse::getPosition(window).x;
+            float my = sf::Mouse::getPosition(window).y;
+            if(large4 == false && mx >= 60 && mx <= 260 && my >= 80 && my <= 220) {
+                backButton.setScale(1.075,1.075);
+                large4 = true;
+            }
+            if(large4 == true && (mx < 60 || mx > 260 || my < 80 || my > 220)){
+                backButton.setScale(1,1);
+                large4 = false;
+            }
+            if(screen == 2) {
+                window.clear(sf::Color(192,192,192));
+                window.draw(endScreen);
+                window.draw(infoScreen);
+                window.draw(backButton);
+                window.display();
+            }
         }
     }
     return EXIT_SUCCESS;
