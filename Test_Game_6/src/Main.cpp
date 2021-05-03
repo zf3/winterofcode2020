@@ -14,9 +14,9 @@ int main() {
     window.setFramerateLimit(60);
     // run the main loop
     bool mouseButton = false, large1 = false, large2 = false, large3 = false, large4 = false;
-    float speed = 1000, eSpeed = 100, xV = 0, yV = 0, deltaTime = 0, enemyTime = 0, enemyAmn = 0, enemyTimeM = 0.5, replayTime = 1, frict = 0.15;
-    int hitbox = 100, hitboxE = 100, wordSize = 100, screen = 1;
-    string scoreString = "0";
+    float speed = 1000, eSpeed = 100, xV = 0, yV = 0, deltaTime = 0, enemyTime = 0, enemyAmn = 0, enemyTimeM = 0.5, replayTime = 1, frict = 0.15, movementN = 0;
+    int hitbox = 100, hitboxE = 100, wordSize = 100, screen = 1, wordSize2 = 50, topScoreN = 0, totalScoreN = 0, runsN = 0;
+    string scoreString = "0", scoreString2 = "0", scoreString3 = "0", scoreString4 = "0", scoreString5 = "0";
     vector<float> xVs, yVs;
     vector<sf::Sprite> enemies;
     sf::Clock replayTimeC;
@@ -47,6 +47,8 @@ int main() {
     infoScreenT.loadFromFile("resources/InstructionsScreen.png");
     sf::Texture backButtonT;
     backButtonT.loadFromFile("resources/BackButton.png");
+    sf::Texture statsScreenT;
+    statsScreenT.loadFromFile("resources/StatsScreen.png");
     sf::Sprite player;
     player.setTexture(playerT);
     player.setOrigin(hitbox/2,hitbox/2);
@@ -73,6 +75,8 @@ int main() {
     endScreen.setTexture(endScreenT);
     sf::Sprite background;
     background.setTexture(backgroundT);
+    sf::Sprite statsScreen;
+    statsScreen.setTexture(statsScreenT);
     sf::Font scoreFont;
     scoreFont.loadFromFile("resources/sansation.ttf");
     sf::Text score;
@@ -81,6 +85,30 @@ int main() {
     score.setCharacterSize(wordSize);
     score.setFillColor(sf::Color::Black);
     score.setPosition(1500.0-2.0*(wordSize*scoreString.size())/3.0,-20);
+    sf::Text topScore;
+    topScore.setFont(scoreFont);
+    topScore.setString(scoreString2);
+    topScore.setCharacterSize(wordSize2);
+    topScore.setFillColor(sf::Color::Black);
+    topScore.setPosition(320,420);
+    sf::Text totalScore;
+    totalScore.setFont(scoreFont);
+    totalScore.setString(scoreString3);
+    totalScore.setCharacterSize(wordSize2);
+    totalScore.setFillColor(sf::Color::Black);
+    totalScore.setPosition(360,500);
+    sf::Text runs;
+    runs.setFont(scoreFont);
+    runs.setString(scoreString4);
+    runs.setCharacterSize(wordSize2);
+    runs.setFillColor(sf::Color::Black);
+    runs.setPosition(180,585);
+    sf::Text movement;
+    movement.setFont(scoreFont);
+    movement.setString(scoreString5);
+    movement.setCharacterSize(wordSize2);
+    movement.setFillColor(sf::Color::Black);
+    movement.setPosition(315,665);
     while (window.isOpen()) {
         if(screen == 0) {
             sf::Event event;
@@ -142,6 +170,7 @@ int main() {
             deltaTimeC.restart();
             //player AI
             player.move(xV*deltaTime,yV*deltaTime);
+            movementN+=sqrtf((xV*deltaTime)*(xV*deltaTime)+(yV*deltaTime)*(yV*deltaTime));
             float pX = player.getPosition().x;
             float pY = player.getPosition().y;
             if(pX > 1500 || pX < 0 || pY > 1500 || pY < 0) {
@@ -149,6 +178,10 @@ int main() {
                 replayTimeC.restart();
                 button.setColor(sf::Color(255,255,255,255));
                 endScreen.setColor(sf::Color(255,255,255,255));
+                int pointScore = pointScoreT.asSeconds();
+                totalScoreN += pointScore;
+                topScoreN = max(topScoreN, pointScore);
+                runsN++;
             }
             //enemy AI
             for(int i = 0; i < enemyAmn; i++) {
@@ -182,6 +215,10 @@ int main() {
                     replayTimeC.restart();
                     button.setColor(sf::Color(255,255,255,255));
                     endScreen.setColor(sf::Color(255,255,255,255));
+                    int pointScore = pointScoreT.asSeconds();
+                    totalScoreN += pointScore;
+                    topScoreN = max(topScoreN, pointScore);
+                    runsN++;
                     break;
                 }
             }
@@ -258,6 +295,26 @@ int main() {
                     screen = 2;
                     break;
                 }
+                if (replayTimeT.asSeconds() >= replayTime && event.type == sf::Event::MouseButtonPressed && mx >= 275 && mx <= 1215 && my >= 305 && my <= 495) {
+                    screen = 3;
+                    stringstream conv;
+                    conv << topScoreN;
+                    scoreString2 = conv.str();
+                    topScore.setString(scoreString2);
+                    stringstream conv2;
+                    conv2 << totalScoreN;
+                    scoreString3 = conv2.str();
+                    totalScore.setString(scoreString3);
+                    stringstream conv3;
+                    conv3 << runsN;
+                    scoreString4 = conv3.str();
+                    runs.setString(scoreString4);
+                    stringstream conv4;
+                    conv4 << movementN;
+                    scoreString5 = conv4.str();
+                    movement.setString(scoreString5);
+                    break;
+                }
             }
             float mx = sf::Mouse::getPosition(window).x;
             float my = sf::Mouse::getPosition(window).y;
@@ -292,8 +349,8 @@ int main() {
                 window.draw(stats);
                 window.draw(info);
                 window.draw(score);
-                window.display();
             }
+            window.display();
         }
         if(screen == 2) {
             replayTimeT = replayTimeC.getElapsedTime();
@@ -320,13 +377,46 @@ int main() {
                 backButton.setScale(1,1);
                 large4 = false;
             }
-            if(screen == 2) {
-                window.clear(sf::Color(192,192,192));
-                window.draw(endScreen);
-                window.draw(infoScreen);
-                window.draw(backButton);
-                window.display();
+            window.clear(sf::Color(192,192,192));
+            window.draw(endScreen);
+            window.draw(infoScreen);
+            window.draw(backButton);
+            window.display();
+        }
+        if(screen == 3) {
+            replayTimeT = replayTimeC.getElapsedTime();
+            sf::Event event;
+            while (window.pollEvent(event)) {
+                if (event.type == sf::Event::Closed) {
+                    window.close();
+                    break;
+                }
+                float mx = sf::Mouse::getPosition(window).x;
+                float my = sf::Mouse::getPosition(window).y;
+                if (replayTimeT.asSeconds() >= replayTime && event.type == sf::Event::MouseButtonPressed && mx >= 60 && mx <= 260 && my >= 80 && my <= 220) {
+                    screen = 1;
+                    break;
+                }
             }
+            float mx = sf::Mouse::getPosition(window).x;
+            float my = sf::Mouse::getPosition(window).y;
+            if(large4 == false && mx >= 60 && mx <= 260 && my >= 80 && my <= 220) {
+                backButton.setScale(1.075,1.075);
+                large4 = true;
+            }
+            if(large4 == true && (mx < 60 || mx > 260 || my < 80 || my > 220)){
+                backButton.setScale(1,1);
+                large4 = false;
+            }
+            window.clear(sf::Color(192,192,192));
+            window.draw(endScreen);
+            window.draw(statsScreen);
+            window.draw(topScore);
+            window.draw(totalScore);
+            window.draw(runs);
+            window.draw(movement);
+            window.draw(backButton);
+            window.display();
         }
     }
     return EXIT_SUCCESS;
