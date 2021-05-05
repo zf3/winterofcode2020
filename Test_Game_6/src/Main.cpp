@@ -5,6 +5,8 @@
 #include <cstdlib>
 #include <vector>
 #include <sstream>
+#include <iostream>
+#include <fstream>
 
 using namespace std;
 const float pi = 3.1415;
@@ -12,11 +14,23 @@ const int h = 1500, w = 1500;
 int main() {
     sf::RenderWindow window(sf::VideoMode(h, w), "My window");
     window.setFramerateLimit(60);
-    // run the main loop
-    bool mouseButton = false, large1 = false, large2 = false, large3 = false, large4 = false;
+    fstream savefile;
+    savefile.open("resources/savefile.txt");
+    bool mouseButton = false, large1 = false, large2 = false, large3 = false, large4 = false, largeArr[4][5];
+    for(int i = 0; i < 4; i++) {
+        for(int j = 0; j < 5; j++) {
+            largeArr[i][j] = false;
+        }
+    }
     float speed = 1000, eSpeed = 100, xV = 0, yV = 0, deltaTime = 0, enemyTime = 0, enemyAmn = 0, enemyTimeM = 0.5, replayTime = 1, frict = 0.15, movementN = 0;
-    int hitbox = 100, hitboxE = 100, wordSize = 100, screen = 1, wordSize2 = 50, topScoreN = 0, totalScoreN = 0, runsN = 0;
+    int hitbox = 100, hitboxE = 100, wordSize = 100, screen = 1, wordSize2 = 50, topScoreN = 0, totalScoreN = 0, runsN = 0, chosenSkin[4];
     string scoreString = "0", scoreString2 = "0", scoreString3 = "0", scoreString4 = "0", scoreString5 = "0";
+    savefile >> topScoreN >> totalScoreN >> runsN >> movementN;
+    for(int i = 0; i < 4; i++) {
+        savefile >> chosenSkin[i];
+    }
+    savefile.close();
+    savefile.open("resources/savefile.txt");
     vector<float> xVs, yVs;
     vector<sf::Sprite> enemies;
     sf::Clock replayTimeC;
@@ -29,28 +43,58 @@ int main() {
     sf::Time enemyTimeT;
     sf::Clock deltaTimeC;
     sf::Time deltaTimeT;
-    sf::Texture playerT;
-    playerT.loadFromFile("resources/Player.png");
-    sf::Texture enemyT;
-    enemyT.loadFromFile("resources/Enemy.png");
-    sf::Texture endScreenT;
-    endScreenT.loadFromFile("resources/StartScreen.png");
     sf::Texture buttonT;
     buttonT.loadFromFile("resources/Button.png");
     sf::Texture statsT;
     statsT.loadFromFile("resources/StatsSkins.png");
     sf::Texture infoT;
     infoT.loadFromFile("resources/Instructions.png");
-    sf::Texture backgroundT;
-    backgroundT.loadFromFile("resources/Background.png");
     sf::Texture infoScreenT;
     infoScreenT.loadFromFile("resources/InstructionsScreen.png");
     sf::Texture backButtonT;
     backButtonT.loadFromFile("resources/BackButton.png");
     sf::Texture statsScreenT;
     statsScreenT.loadFromFile("resources/StatsScreen.png");
+    sf::Texture skins[4][5];
+    skins[0][0].loadFromFile("resources/pS1.png");
+    skins[0][1].loadFromFile("resources/pS2.png");
+    skins[0][2].loadFromFile("resources/pS3.png");
+    skins[0][3].loadFromFile("resources/pS4.png");
+    skins[0][4].loadFromFile("resources/pS5.png");
+    skins[1][0].loadFromFile("resources/eS1.png");
+    skins[1][1].loadFromFile("resources/eS2.png");
+    skins[1][2].loadFromFile("resources/eS3.png");
+    skins[1][3].loadFromFile("resources/eS4.png");
+    skins[1][4].loadFromFile("resources/eS5.png");
+    skins[2][0].loadFromFile("resources/gS1.png");
+    skins[2][1].loadFromFile("resources/gS2.png");
+    skins[2][2].loadFromFile("resources/gS3.png");
+    skins[2][3].loadFromFile("resources/gS4.png");
+    skins[2][4].loadFromFile("resources/gS5.png");
+    skins[3][0].loadFromFile("resources/bS1.png");
+    skins[3][1].loadFromFile("resources/bS2.png");
+    skins[3][2].loadFromFile("resources/bS3.png");
+    skins[3][3].loadFromFile("resources/bS4.png");
+    skins[3][4].loadFromFile("resources/bS5.png");
+    sf::Sprite skinDisps[4][5];
+    for(int i = 0; i < 4; i++) {
+        for(int j = 0; j < 5; j++) {
+            skinDisps[i][j].setTexture(skins[i][j]);
+            if(i == 2 || i == 3) {
+                skinDisps[i][j].setOrigin(750,750);
+                skinDisps[i][j].setScale(4/75.0,4/75.0);
+            }
+            else {
+                skinDisps[i][j].setOrigin(50,50);
+                skinDisps[i][j].setScale(0.8,0.8);
+            }
+            skinDisps[i][j].setPosition(368.5+j*183.5,806.5+i*180);
+        }
+    }
     sf::Sprite player;
-    player.setTexture(playerT);
+    sf::Sprite tmp;
+    sf::Sprite endScreen;
+    sf::Sprite background;
     player.setOrigin(hitbox/2,hitbox/2);
     player.setPosition(h/2,w/2);
     sf::Sprite button;
@@ -71,12 +115,28 @@ int main() {
     backButton.setPosition(160,150);
     sf::Sprite infoScreen;
     infoScreen.setTexture(infoScreenT);
-    sf::Sprite endScreen;
-    endScreen.setTexture(endScreenT);
-    sf::Sprite background;
-    background.setTexture(backgroundT);
     sf::Sprite statsScreen;
     statsScreen.setTexture(statsScreenT);
+    for(int i = 0; i < 4; i++) {
+        if(i == 0 || i == 1) {
+            skinDisps[i][chosenSkin[i]].setScale(1,1);
+        }
+        else {
+            skinDisps[i][chosenSkin[i]].setScale(1/15.0,1/15.0);
+        }
+        if(i == 0) {
+            player.setTexture(skins[i][chosenSkin[i]]);
+        }
+        if(i == 1) {
+            tmp.setTexture(skins[i][chosenSkin[i]]);
+        }
+        if(i == 2) {
+            background.setTexture(skins[i][chosenSkin[i]]);
+        }
+        if(i == 3) {
+            endScreen.setTexture(skins[i][chosenSkin[i]]);
+        }
+    }
     sf::Font scoreFont;
     scoreFont.loadFromFile("resources/sansation.ttf");
     sf::Text score;
@@ -114,6 +174,11 @@ int main() {
             sf::Event event;
             while (window.pollEvent(event)) {
                 if (event.type == sf::Event::Closed) {
+                    savefile << topScoreN << endl << totalScoreN << endl << runsN << endl << movementN << endl;
+                    for(int i = 0; i < 4; i++) {
+                        savefile << chosenSkin[i] << endl;
+                    }
+                    savefile.close();
                     window.close();
                     break;
                 }
@@ -143,8 +208,6 @@ int main() {
                 enemyTimeC.restart();
                 int type = rand()%4;
                 float angle = ((rand()%180)+type*90)%360;
-                sf::Sprite tmp;
-                tmp.setTexture(enemyT);
                 tmp.setOrigin(hitboxE/2,hitboxE/2);
                 tmp.setRotation(angle+90);
                 if(type == 0) {
@@ -178,6 +241,8 @@ int main() {
                 replayTimeC.restart();
                 button.setColor(sf::Color(255,255,255,255));
                 endScreen.setColor(sf::Color(255,255,255,255));
+                stats.setColor(sf::Color(255,255,255,255));
+                info.setColor(sf::Color(255,255,255,255));
                 int pointScore = pointScoreT.asSeconds();
                 totalScoreN += pointScore;
                 topScoreN = max(topScoreN, pointScore);
@@ -215,6 +280,8 @@ int main() {
                     replayTimeC.restart();
                     button.setColor(sf::Color(255,255,255,255));
                     endScreen.setColor(sf::Color(255,255,255,255));
+                    stats.setColor(sf::Color(255,255,255,255));
+                    info.setColor(sf::Color(255,255,255,255));
                     int pointScore = pointScoreT.asSeconds();
                     totalScoreN += pointScore;
                     topScoreN = max(topScoreN, pointScore);
@@ -248,6 +315,11 @@ int main() {
             sf::Event event;
             while (window.pollEvent(event)) {
                 if (event.type == sf::Event::Closed) {
+                    savefile << topScoreN << endl << totalScoreN << endl << runsN << endl << movementN << endl;
+                    for(int i = 0; i < 4; i++) {
+                        savefile << chosenSkin[i] << endl;
+                    }
+                    savefile.close();
                     window.close();
                     break;
                 }
@@ -349,14 +421,19 @@ int main() {
                 window.draw(stats);
                 window.draw(info);
                 window.draw(score);
+                window.display();
             }
-            window.display();
         }
         if(screen == 2) {
             replayTimeT = replayTimeC.getElapsedTime();
             sf::Event event;
             while (window.pollEvent(event)) {
                 if (event.type == sf::Event::Closed) {
+                    savefile << topScoreN << endl << totalScoreN << endl << runsN << endl << movementN << endl;
+                    for(int i = 0; i < 4; i++) {
+                        savefile << chosenSkin[i] << endl;
+                    }
+                    savefile.close();
                     window.close();
                     break;
                 }
@@ -388,11 +465,45 @@ int main() {
             sf::Event event;
             while (window.pollEvent(event)) {
                 if (event.type == sf::Event::Closed) {
+                    savefile << topScoreN << endl << totalScoreN << endl << runsN << endl << movementN << endl;
+                    for(int i = 0; i < 4; i++) {
+                        savefile << chosenSkin[i] << endl;
+                    }
+                    savefile.close();
                     window.close();
                     break;
                 }
                 float mx = sf::Mouse::getPosition(window).x;
                 float my = sf::Mouse::getPosition(window).y;
+                if(event.type == sf::Event::MouseButtonPressed) {
+                    for(int i = 0; i < 4; i++) {
+                        for(int j = 0; j < 5; j++) {
+                            if(mx >= 318.5+j*183.5 && mx <= 418.5+j*183.5 && my >= 756.5+i*180 && my <= 856.5+i*180) {
+                                if(i == 0) {
+                                    player.setTexture(skins[i][j]);
+                                }
+                                if(i == 1) {
+                                    tmp.setTexture(skins[i][j]);
+                                }
+                                if(i == 2) {
+                                    background.setTexture(skins[i][j]);
+                                }
+                                if(i == 3) {
+                                    endScreen.setTexture(skins[i][j]);
+                                }
+                                if(i == 0 || i == 1) {
+                                    skinDisps[i][chosenSkin[i]].setScale(0.8,0.8);
+                                    skinDisps[i][j].setScale(1,1);
+                                }
+                                else {
+                                    skinDisps[i][chosenSkin[i]].setScale(4/75.0,4/75.0);
+                                    skinDisps[i][j].setScale(1/15.0,1/15.0);
+                                }
+                                chosenSkin[i] = j;
+                            }
+                        }
+                    }
+                }
                 if (replayTimeT.asSeconds() >= replayTime && event.type == sf::Event::MouseButtonPressed && mx >= 60 && mx <= 260 && my >= 80 && my <= 220) {
                     screen = 1;
                     break;
@@ -400,6 +511,28 @@ int main() {
             }
             float mx = sf::Mouse::getPosition(window).x;
             float my = sf::Mouse::getPosition(window).y;
+            for(int i = 0; i < 4; i++) {
+                for(int j = 0; j < 5; j++) {
+                    if(chosenSkin[i] != j && largeArr[i][j] == false && mx >= 318.5+j*183.5 && mx <= 418.5+j*183.5 && my >= 756.5+i*180 && my <= 856.5+i*180) {
+                        if(i == 0 || i == 1) {
+                            skinDisps[i][j].setScale(0.9,0.9);
+                        }
+                        else {
+                            skinDisps[i][j].setScale(0.06,0.06);
+                        }
+                        largeArr[i][j] = true;
+                    }
+                    if(chosenSkin[i] != j && largeArr[i][j] == true && (mx < 318.5+j*183.5 || mx > 418.5+j*183.5 || my < 756.5+i*180 || my > 856.5+i*180)) {
+                        if(i == 0 || i == 1) {
+                            skinDisps[i][j].setScale(0.8,0.8);
+                        }
+                        else {
+                            skinDisps[i][j].setScale(4/75.0,4/75.0);
+                        }
+                        largeArr[i][j] = false;
+                    }
+                }
+            }
             if(large4 == false && mx >= 60 && mx <= 260 && my >= 80 && my <= 220) {
                 backButton.setScale(1.075,1.075);
                 large4 = true;
@@ -415,6 +548,11 @@ int main() {
             window.draw(totalScore);
             window.draw(runs);
             window.draw(movement);
+            for(int i = 0; i < 4; i++) {
+                for(int j = 0; j < 5; j++) {
+                    window.draw(skinDisps[i][j]);
+                }
+            }
             window.draw(backButton);
             window.display();
         }
