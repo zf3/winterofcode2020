@@ -16,7 +16,7 @@ const int h = 1500, w = 1500;
 util::Platform platform;
 
 int main() {
-    cout << filesystem::current_path() << endl;
+    // cout << filesystem::current_path() << endl;
 
     sf::RenderWindow window(sf::VideoMode(h, w), "My window");
     window.setFramerateLimit(60);

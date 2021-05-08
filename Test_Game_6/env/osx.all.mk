@@ -1,5 +1,5 @@
 CC := clang++
-CFLAGS := $(CFLAGS:-s=)
+CFLAGS := $(CFLAGS:-s=) -mmacosx-version-min=10.13
 
 LIB_DIRS := \
 	/usr/local/lib
@@ -7,7 +7,7 @@ LIB_DIRS := \
 INCLUDE_DIRS := \
 	/usr/local/include
 
-BUILD_FLAGS :=
+BUILD_FLAGS := -mmacosx-version-min=10.13
 
 MACOS_FRAMEWORK_PATHS := \
 	/Library/Frameworks
@@ -23,8 +23,8 @@ PRODUCTION_DEPENDENCIES := \
 	$(PRODUCTION_DEPENDENCIES)
 
 PRODUCTION_MACOS_BUNDLE_DEVELOPER := iCoder
-PRODUCTION_MACOS_BUNDLE_DISPLAY_NAME := Test_Game_6
-PRODUCTION_MACOS_BUNDLE_NAME := Test_Game_6
+PRODUCTION_MACOS_BUNDLE_DISPLAY_NAME := Triangle Dodge
+PRODUCTION_MACOS_BUNDLE_NAME := Triangle_Dodge
 PRODUCTION_MACOS_MAKE_DMG := true
 PRODUCTION_MACOS_BACKGROUND := dmg-background
 
