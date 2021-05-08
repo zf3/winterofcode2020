@@ -7,11 +7,17 @@
 #include <sstream>
 #include <iostream>
 #include <fstream>
+#include <filesystem>
+#include "Platform/Platform.hpp"
 
 using namespace std;
 const float pi = 3.1415;
 const int h = 1500, w = 1500;
+util::Platform platform;
+
 int main() {
+    cout << filesystem::current_path() << endl;
+
     sf::RenderWindow window(sf::VideoMode(h, w), "My window");
     window.setFramerateLimit(60);
     fstream savefile;
@@ -187,6 +193,7 @@ int main() {
     waitC.restart();
     while (window.isOpen()) {
         sf::Event event;
+
         if(screen == -1) {
             while(window.pollEvent(event)) {
                 if (event.type == sf::Event::Closed) {
