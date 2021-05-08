@@ -8,6 +8,10 @@
 #include <iostream>
 #include <fstream>
 #include <filesystem>
+
+#include <CoreFoundation/CoreFoundation.h>
+#include <unistd.h>
+
 #include "Platform/Platform.hpp"
 
 using namespace std;
@@ -15,13 +19,36 @@ const float pi = 3.1415;
 const int h = 1500, w = 1500;
 util::Platform platform;
 
+extern "C" {
+    void NSLog(CFStringRef format, ...);
+}
+
 int main() {
     // cout << filesystem::current_path() << endl;
 
+    char cwd[PATH_MAX];
+    if (getcwd(cwd, sizeof(cwd)) != NULL) {
+        NSLog(CFSTR("Current dir: %s"), cwd);
+    } else
+        NSLog(CFSTR("Cannot get current working dir."));
+
+    string rpath;
+    CFBundleRef mainBundle = CFBundleGetMainBundle();
+    CFURLRef resourcesURL = CFBundleCopyResourcesDirectoryURL(mainBundle);
+    if (!CFURLGetFileSystemRepresentation(resourcesURL, TRUE, (UInt8*)cwd, PATH_MAX)) {
+        NSLog(CFSTR("Cannot get resource path!"));
+    } else {
+        NSLog(CFSTR("Resource path: %s"), cwd);
+    }
+    CFRelease(resourcesURL);
+    rpath = cwd;
+    rpath = rpath + "/";
+
     sf::RenderWindow window(sf::VideoMode(h, w), "My window");
     window.setFramerateLimit(60);
+        NSLog(CFSTR("Opening save file!"));
     fstream savefile;
-    savefile.open("resources/savefile.txt");
+    savefile.open(rpath+"resources/savefile.txt");
     bool mouseButton = false, large1 = false, large2 = false, large3 = false, large4 = false, largeArr[4][5];
     for(int i = 0; i < 4; i++) {
         for(int j = 0; j < 5; j++) {
@@ -31,12 +58,17 @@ int main() {
     float speed = 1000, eSpeed = 100, xV = 0, yV = 0, deltaTime = 0, enemyTime = 0, enemyAmn = 0, enemyTimeM = 0.5, replayTime = 1, frict = 0.15, movementN = 0;
     int hitbox = 100, hitboxE = 100, wordSize = 100, screen = -1, wordSize2 = 50, topScoreN = 0, totalScoreN = 0, runsN = 0, chosenSkin[4];
     string scoreString = "0", scoreString2 = "0", scoreString3 = "0", scoreString4 = "0", scoreString5 = "0";
-    savefile >> topScoreN >> totalScoreN >> runsN >> movementN;
-    for(int i = 0; i < 4; i++) {
-        savefile >> chosenSkin[i];
+    if (savefile) {
+        savefile >> topScoreN >> totalScoreN >> runsN >> movementN;
+        for(int i = 0; i < 4; i++) {
+            savefile >> chosenSkin[i];
+        }
+        savefile.close();
+    } else {
+        NSLog(CFSTR("Did not open save file successfully. Not loading."));
     }
-    savefile.close();
-    savefile.open("resources/savefile.txt");
+            NSLog(CFSTR("Opening save file again. For write?"));
+    savefile.open(rpath+"resources/savefile.txt");
     vector<float> xVs, yVs;
     vector<sf::Sprite> enemies;
     sf::Clock replayTimeC;
@@ -54,47 +86,58 @@ int main() {
     sf::Clock fadeC;
     sf::Time fadeT;
     sf::Texture buttonT;
-    buttonT.loadFromFile("resources/Button.png");
+            NSLog(CFSTR("Loading resources."));
+            bool s = true;
+    if (!buttonT.loadFromFile(rpath+"resources/Button.png")) {
+        NSLog(CFSTR("Cannot load Button.png"));
+        return 1;
+    }
     sf::Texture statsT;
-    statsT.loadFromFile("resources/StatsSkins.png");
+    s = s && statsT.loadFromFile(rpath+"resources/StatsSkins.png");
     sf::Texture infoT;
-    infoT.loadFromFile("resources/Instructions.png");
+    s = s && infoT.loadFromFile(rpath+"resources/Instructions.png");
     sf::Texture infoScreenT;
-    infoScreenT.loadFromFile("resources/InstructionsScreen.png");
+    s = s && infoScreenT.loadFromFile(rpath+"resources/InstructionsScreen.png");
     sf::Texture backButtonT;
-    backButtonT.loadFromFile("resources/BackButton.png");
+    s = s && backButtonT.loadFromFile(rpath+"resources/BackButton.png");
     sf::Texture statsScreenT;
-    statsScreenT.loadFromFile("resources/StatsScreen.png");
+    s = s && statsScreenT.loadFromFile(rpath+"resources/StatsScreen.png");
     sf::Texture lockT;
-    lockT.loadFromFile("resources/Lock.png");
+    s = s && lockT.loadFromFile(rpath+"resources/Lock.png");
     sf::Texture creditT;
-    creditT.loadFromFile("resources/Credit.png");
+    s = s && creditT.loadFromFile(rpath+"resources/Credit.png");
     sf::Texture skins[4][5];
-    skins[0][0].loadFromFile("resources/pS1.png");
-    skins[0][1].loadFromFile("resources/pS2.png");
-    skins[0][2].loadFromFile("resources/pS3.png");
-    skins[0][3].loadFromFile("resources/pS4.png");
-    skins[0][4].loadFromFile("resources/pS5.png");
-    skins[1][0].loadFromFile("resources/eS1.png");
-    skins[1][1].loadFromFile("resources/eS2.png");
-    skins[1][2].loadFromFile("resources/eS3.png");
-    skins[1][3].loadFromFile("resources/eS4.png");
-    skins[1][4].loadFromFile("resources/eS5.png");
-    skins[2][0].loadFromFile("resources/gS1.png");
-    skins[2][1].loadFromFile("resources/gS2.png");
-    skins[2][2].loadFromFile("resources/gS3.png");
-    skins[2][3].loadFromFile("resources/gS4.png");
-    skins[2][4].loadFromFile("resources/gS5.png");
-    skins[3][0].loadFromFile("resources/bS1.png");
-    skins[3][1].loadFromFile("resources/bS2.png");
-    skins[3][2].loadFromFile("resources/bS3.png");
-    skins[3][3].loadFromFile("resources/bS4.png");
-    skins[3][4].loadFromFile("resources/bS5.png");
+    NSLog(s ? CFSTR("Done loading 1/2 resources!") : CFSTR("Failure loading 1/2 resources!"));
+    s = s && skins[0][0].loadFromFile(rpath+"resources/pS1.png");
+    s = s && skins[0][1].loadFromFile(rpath+"resources/pS2.png");
+    s = s && skins[0][2].loadFromFile(rpath+"resources/pS3.png");
+    s = s && skins[0][3].loadFromFile(rpath+"resources/pS4.png");
+    s = s && skins[0][4].loadFromFile(rpath+"resources/pS5.png");
+    s = s && skins[1][0].loadFromFile(rpath+"resources/eS1.png");
+    s = s && skins[1][1].loadFromFile(rpath+"resources/eS2.png");
+    s = s && skins[1][2].loadFromFile(rpath+"resources/eS3.png");
+    s = s && skins[1][3].loadFromFile(rpath+"resources/eS4.png");
+    s = s && skins[1][4].loadFromFile(rpath+"resources/eS5.png");
+    s = s && skins[2][0].loadFromFile(rpath+"resources/gS1.png");
+    s = s && skins[2][1].loadFromFile(rpath+"resources/gS2.png");
+    s = s && skins[2][2].loadFromFile(rpath+"resources/gS3.png");
+    s = s && skins[2][3].loadFromFile(rpath+"resources/gS4.png");
+    s = s && skins[2][4].loadFromFile(rpath+"resources/gS5.png");
+    s = s && skins[3][0].loadFromFile(rpath+"resources/bS1.png");
+    s = s && skins[3][1].loadFromFile(rpath+"resources/bS2.png");
+    s = s && skins[3][2].loadFromFile(rpath+"resources/bS3.png");
+    s = s && skins[3][3].loadFromFile(rpath+"resources/bS4.png");
+    s = s && skins[3][4].loadFromFile(rpath+"resources/bS5.png");
+    NSLog(s ? CFSTR("Done loading resources!") : CFSTR("Failure loading resources!"));
+
     sf::Sprite skinDisps[4][5];
     sf::Sprite lockDisps[4][5];
     for(int i = 0; i < 4; i++) {
         for(int j = 0; j < 5; j++) {
             lockDisps[i][j].setTexture(lockT);
+            if (i == 0 && j == 0) {
+                NSLog(CFSTR("First lock texture set."));
+            }
             lockDisps[i][j].setOrigin(60,60);
             lockDisps[i][j].setPosition(368.5+j*183.5,806.5+i*180);
             skinDisps[i][j].setTexture(skins[i][j]);
@@ -109,6 +152,8 @@ int main() {
             skinDisps[i][j].setPosition(368.5+j*183.5,806.5+i*180);
         }
     }
+    NSLog(CFSTR("Skin and locks initialized."));
+
     sf::Sprite credit;
     credit.setTexture(creditT);
     sf::Sprite player;
@@ -137,7 +182,10 @@ int main() {
     infoScreen.setTexture(infoScreenT);
     sf::Sprite statsScreen;
     statsScreen.setTexture(statsScreenT);
+    NSLog(CFSTR("Starting last part of texture setup."));
     for(int i = 0; i < 4; i++) {
+        NSLog(CFSTR("i=%d"), i);
+
         if(i == 0 || i == 1) {
             skinDisps[i][chosenSkin[i]].setScale(1,1);
         }
@@ -157,8 +205,12 @@ int main() {
             endScreen.setTexture(skins[i][chosenSkin[i]]);
         }
     }
+    NSLog(CFSTR("Loading font."));
+    sleep(1);
+    NSLog(CFSTR("Loading font...."));
+
     sf::Font scoreFont;
-    scoreFont.loadFromFile("resources/sansation.ttf");
+    scoreFont.loadFromFile(rpath+"resources/sansation.ttf");
     sf::Text score;
     score.setFont(scoreFont);
     score.setString(scoreString);
@@ -191,17 +243,21 @@ int main() {
     movement.setPosition(315,665);
     fadeC.restart();
     waitC.restart();
+            NSLog(CFSTR("Entering main loop."));
+
     while (window.isOpen()) {
         sf::Event event;
 
         if(screen == -1) {
             while(window.pollEvent(event)) {
                 if (event.type == sf::Event::Closed) {
-                    savefile << topScoreN << endl << totalScoreN << endl << runsN << endl << movementN << endl;
-                    for(int i = 0; i < 4; i++) {
-                        savefile << chosenSkin[i] << endl;
+                    if (savefile) {
+                        savefile << topScoreN << endl << totalScoreN << endl << runsN << endl << movementN << endl;
+                        for(int i = 0; i < 4; i++) {
+                            savefile << chosenSkin[i] << endl;
+                        }
+                        savefile.close();
                     }
-                    savefile.close();
                     window.close();
                     break;
                 }
@@ -218,11 +274,13 @@ int main() {
                 while(255-fadeT.asSeconds()*225 > 0) {
                     window.pollEvent(event);
                     if (event.type == sf::Event::Closed) {
-                        savefile << topScoreN << endl << totalScoreN << endl << runsN << endl << movementN << endl;
-                        for(int i = 0; i < 4; i++) {
-                            savefile << chosenSkin[i] << endl;
+                        if (savefile) {
+                            savefile << topScoreN << endl << totalScoreN << endl << runsN << endl << movementN << endl;
+                            for(int i = 0; i < 4; i++) {
+                                savefile << chosenSkin[i] << endl;
+                            }
+                            savefile.close();
                         }
-                        savefile.close();
                         window.close();
                         break;
                     }
@@ -246,11 +304,13 @@ int main() {
             sf::Event event;
             while (window.pollEvent(event)) {
                 if (event.type == sf::Event::Closed) {
-                    savefile << topScoreN << endl << totalScoreN << endl << runsN << endl << movementN << endl;
-                    for(int i = 0; i < 4; i++) {
-                        savefile << chosenSkin[i] << endl;
+                    if (savefile) {
+                        savefile << topScoreN << endl << totalScoreN << endl << runsN << endl << movementN << endl;
+                        for(int i = 0; i < 4; i++) {
+                            savefile << chosenSkin[i] << endl;
+                        }
+                        savefile.close();
                     }
-                    savefile.close();
                     window.close();
                     break;
                 }
@@ -387,11 +447,13 @@ int main() {
             sf::Event event;
             while (window.pollEvent(event)) {
                 if (event.type == sf::Event::Closed) {
-                    savefile << topScoreN << endl << totalScoreN << endl << runsN << endl << movementN << endl;
-                    for(int i = 0; i < 4; i++) {
-                        savefile << chosenSkin[i] << endl;
+                    if (savefile) {
+                        savefile << topScoreN << endl << totalScoreN << endl << runsN << endl << movementN << endl;
+                        for(int i = 0; i < 4; i++) {
+                            savefile << chosenSkin[i] << endl;
+                        }
+                        savefile.close();
                     }
-                    savefile.close();
                     window.close();
                     break;
                 }
@@ -416,11 +478,13 @@ int main() {
                     while(255-fadeT.asSeconds()*255 > 0) {
                         window.pollEvent(event);
                         if (event.type == sf::Event::Closed) {
-                            savefile << topScoreN << endl << totalScoreN << endl << runsN << endl << movementN << endl;
-                            for(int i = 0; i < 4; i++) {
-                                savefile << chosenSkin[i] << endl;
+                            if (savefile) {
+                                savefile << topScoreN << endl << totalScoreN << endl << runsN << endl << movementN << endl;
+                                for(int i = 0; i < 4; i++) {
+                                    savefile << chosenSkin[i] << endl;
+                                }
+                                savefile.close();
                             }
-                            savefile.close();
                             window.close();
                             break;
                         }
@@ -531,11 +595,13 @@ int main() {
             sf::Event event;
             while (window.pollEvent(event)) {
                 if (event.type == sf::Event::Closed) {
-                    savefile << topScoreN << endl << totalScoreN << endl << runsN << endl << movementN << endl;
-                    for(int i = 0; i < 4; i++) {
-                        savefile << chosenSkin[i] << endl;
+                    if (savefile) {
+                        savefile << topScoreN << endl << totalScoreN << endl << runsN << endl << movementN << endl;
+                        for(int i = 0; i < 4; i++) {
+                            savefile << chosenSkin[i] << endl;
+                        }
+                        savefile.close();
                     }
-                    savefile.close();
                     window.close();
                     break;
                 }
@@ -568,11 +634,13 @@ int main() {
             sf::Event event;
             while (window.pollEvent(event)) {
                 if (event.type == sf::Event::Closed) {
-                    savefile << topScoreN << endl << totalScoreN << endl << runsN << endl << movementN << endl;
-                    for(int i = 0; i < 4; i++) {
-                        savefile << chosenSkin[i] << endl;
+                    if (savefile) {
+                        savefile << topScoreN << endl << totalScoreN << endl << runsN << endl << movementN << endl;
+                        for(int i = 0; i < 4; i++) {
+                            savefile << chosenSkin[i] << endl;
+                        }
+                        savefile.close();
                     }
-                    savefile.close();
                     window.close();
                     break;
                 }

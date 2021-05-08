@@ -14,7 +14,8 @@ MACOS_FRAMEWORK_PATHS := \
 
 # Name, no extension (eg. CoreFoundation, ogg)
 MACOS_FRAMEWORKS := \
-	CoreFoundation
+	CoreFoundation \
+	Foundation
 
 # Icon .png
 PRODUCTION_MACOS_ICON := sfml
