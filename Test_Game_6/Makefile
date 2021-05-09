@@ -402,7 +402,8 @@ ifeq ($(PLATFORM),osx)
 #	brew install makeicns
 #	$(color_reset)
 #endif
-	$(_Q)makeicns -in env/osx/$(PRODUCTION_MACOS_ICON).png -out $(PRODUCTION_FOLDER)/Resources/$(PRODUCTION_MACOS_ICON).icns
+	$(_Q)makeicns -in env/osx/$(PRODUCTION_MACOS_ICON).png
+	$(_Q)cp env/osx/$(PRODUCTION_MACOS_ICON).icns $(PRODUCTION_FOLDER)/Resources
 	@echo
 	$(_Q)plutil -convert binary1 env/osx/Info.plist.json -o $(PRODUCTION_FOLDER)/Info.plist
 	$(_Q)plutil -replace CFBundleExecutable -string $(NAME) $(PRODUCTION_FOLDER)/Info.plist
