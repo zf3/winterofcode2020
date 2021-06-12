@@ -387,17 +387,23 @@ define copy_to
 	$(if $(wildcard $(2)/$(notdir $(1))),,$(if $(_CLEAN),$(call do_copy_to_clean,$(1),$(2)),$(call do_copy_to,$(1),$(2))))
 endef
 
+define copya_to
+	@echo  "cp -a $(1) $(2)"
+	$(shell cp -a $(1) $(2))
+endef
+
 releasetoprod: $(TARGET)
 	$(color_reset)
 ifeq ($(PLATFORM),osx)
 	@echo '   Creating the MacOS application bundle...'
 	@echo
 	$(MKDIR) $(PRODUCTION_FOLDER)/Resources $(PRODUCTION_FOLDER)/Frameworks $(PRODUCTION_FOLDER)/MacOS
-ifeq ($(shell brew ls --versions makeicns),)
-	brew install makeicns
-	$(color_reset)
-endif
-	$(_Q)makeicns -in env/osx/$(PRODUCTION_MACOS_ICON).png -out $(PRODUCTION_FOLDER)/Resources/$(PRODUCTION_MACOS_ICON).icns
+#ifeq ($(shell brew ls --versions makeicns),)
+#	brew install makeicns
+#	$(color_reset)
+#endif
+	$(_Q)makeicns -in env/osx/$(PRODUCTION_MACOS_ICON).png
+	$(_Q)cp env/osx/$(PRODUCTION_MACOS_ICON).icns $(PRODUCTION_FOLDER)/Resources
 	@echo
 	$(_Q)plutil -convert binary1 env/osx/Info.plist.json -o $(PRODUCTION_FOLDER)/Info.plist
 	$(_Q)plutil -replace CFBundleExecutable -string $(NAME) $(PRODUCTION_FOLDER)/Info.plist
@@ -440,7 +446,7 @@ ifeq ($(PLATFORM),osx)
 	$(foreach dylib,$(PRODUCTION_MACOS_DYLIBS),$(shell install_name_tool -change @rpath/$(notdir $(dylib)) @rpath/MacOS/$(notdir $(dylib)) $(PRODUCTION_FOLDER)/MacOS/$(NAME)))
 	$(foreach dylib,$(PRODUCTION_MACOS_DYLIBS),$(shell install_name_tool -change $(notdir $(dylib)) @rpath/MacOS/$(notdir $(dylib)) $(PRODUCTION_FOLDER)/MacOS/$(NAME)))
 	$(foreach dylib,$(PRODUCTION_MACOS_DYLIBS),$(shell install_name_tool -change $(dylib) @rpath/MacOS/$(notdir $(dylib)) $(PRODUCTION_FOLDER)/MacOS/$(NAME)))
-	$(foreach framework,$(PRODUCTION_MACOS_FRAMEWORKS),$(call copy_to,$(framework),$(PRODUCTION_FOLDER)/Frameworks))
+	$(foreach framework,$(PRODUCTION_MACOS_FRAMEWORKS),$(call copya_to,$(framework),$(PRODUCTION_FOLDER)/Frameworks))
 ifeq ($(PRODUCTION_MACOS_MAKE_DMG),true)
 	$(shell hdiutil detach /Volumes/$(PRODUCTION_MACOS_BUNDLE_NAME)/ &> /dev/null)
 	@echo

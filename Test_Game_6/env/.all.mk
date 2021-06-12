@@ -26,5 +26,5 @@ PRODUCTION_EXCLUDE := \
 	.DS_Store
 
 PRODUCTION_DEPENDENCIES := \
-	content
+	resources
 

@@ -9,5 +9,6 @@
 	"CFBundleSignature": "????",
 	"CFBundleExecutable": "${NAME}",
 	"CFBundleIconFile": "${MACOS_ICON}",
-	"NSHighResolutionCapable": true
+	"NSHighResolutionCapable": true,
+	"LSMinimumSystemVersion": "10.13.0"
 }
