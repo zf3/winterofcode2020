@@ -1,5 +1,6 @@
 #include <SFML/Graphics.hpp>
 #include <SFML/Audio.hpp>
+#include <vector>
 using namespace std;
 class TileMap : public sf::Drawable, public sf::Transformable
 {
@@ -40,19 +41,51 @@ private:
 //const float pi = 3.1415;
 const int h = 1500, w = 1500;
 const float pi = 3.1415;
+class bullet {
+    public:
+    float xV;
+    float yV;
+    sf::Texture bodyT;
+    sf::Sprite body;
+    bullet(string t1, int x, int y, int xVe, int yVe) {
+        xV = xVe;
+        yV = yVe;
+        bodyT.loadFromFile(t1);
+        body.setTexture(bodyT);
+        body.setOrigin(7,14);
+        body.setPosition(x,y);
+    }
+};
 class plane {
     public:
     float speed;
     sf::Texture bodyT;
     sf::Sprite body;
-    plane(string t1, float spd, int x, int y) {
+    sf::Time shotT;
+    sf::Clock shotC;
+    float shotCooldown;
+    float shotSpeed;
+    int shotAmn;
+    vector<bullet> shots;
+    string shotTexture;
+    void shoot() {
+        float ang = (body.getRotation()-90)/180*pi;
+        shots.push_back(bullet(shotTexture,body.getPosition().x, body.getPosition().y,shotSpeed*cos(ang),shotSpeed*sin(ang)));
+        shots[shotAmn].body.setRotation(body.getRotation());
+        shotAmn++;
+    }
+    plane(string t1, string t2, float spd, int x, int y, float shotM, int shotS) {
         speed = spd;
         bodyT.loadFromFile(t1);
+        shotTexture = t2;
         bodyT.setSmooth(true);
         body.setTexture(bodyT);
         body.setOrigin(290,220);
         body.setScale(0.25,0.25);
         body.setPosition(x,y);
+        shotAmn = 0;
+        shotSpeed = shotS;
+        shotCooldown = shotM;
     }
 };
 int main()
@@ -97,11 +130,11 @@ int main()
     };
     TileMap map;
     if (!map.load("resources/grass.png", sf::Vector2u(100, 100), level, 32, 32)) return -1;
-    plane player("resources/player.png", 2000, 750, 750);
+    plane player("resources/player.png", "resources/shot.png", 2000, 750, 750, 0.2, 3000);
     sf::Time deltaTimeT;
     sf::Clock deltaTimeC;
     float deltaTime, xV = 0, yV = 0, frict = 0.15;
-    bool mouseButton = false;
+    bool mouseButton = false, shootA = false;
     while (window.isOpen()) {
         sf::Event event;
         while (window.pollEvent(event)) {
@@ -111,14 +144,30 @@ int main()
             if(event.type == sf::Event::MouseButtonReleased) {
                 mouseButton = false;
             }
+            if(event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::A) {
+                shootA = true;
+            }
+            if(event.type == sf::Event::KeyReleased && event.key.code == sf::Keyboard::A) {
+                shootA = false;
+            }
             if(event.type == sf::Event::Closed) {
                 window.close();
             }
+        }
+        //bullet shooting
+        player.shotT = player.shotC.getElapsedTime();
+        if(shootA == true && player.shotT.asSeconds() >= player.shotCooldown) {
+            player.shoot();
+            player.shotC.restart();
         }
         //deltaTime
         deltaTimeT = deltaTimeC.getElapsedTime();
         deltaTime = deltaTimeT.asSeconds();
         deltaTimeC.restart();
+        //bullet AI
+        for(int i = 0; i < player.shotAmn; i++) {
+            player.shots[i].body.move(player.shots[i].xV*deltaTime,player.shots[i].yV*deltaTime);
+        }
         //player AI
         player.body.move(xV*deltaTime,yV*deltaTime);
         view1.move(xV*deltaTime,yV*deltaTime);
@@ -138,6 +187,10 @@ int main()
         //rendering
         window.clear(sf::Color(192,192,192));
         window.draw(map);
+        for(int i = 0; i < player.shotAmn; i++) {
+            player.shots[i].body.setTexture(player.shots[i].bodyT);
+            window.draw(player.shots[i].body);
+        }
         window.draw(player.body);
         window.display();
     }
