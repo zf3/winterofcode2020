@@ -158,6 +158,7 @@ int main()
         player.shotT = player.shotC.getElapsedTime();
         if(shootA == true && player.shotT.asSeconds() >= player.shotCooldown) {
             player.shoot();
+            player.shots[player.shotAmn-1].body.setTexture(player.shots[player.shotAmn-1].bodyT);
             player.shotC.restart();
         }
         //deltaTime
@@ -188,7 +189,6 @@ int main()
         window.clear(sf::Color(192,192,192));
         window.draw(map);
         for(int i = 0; i < player.shotAmn; i++) {
-            player.shots[i].body.setTexture(player.shots[i].bodyT);
             window.draw(player.shots[i].body);
         }
         window.draw(player.body);
