@@ -239,7 +239,6 @@ int main()
         }
         //missile AI
         for(int i = 0; i < player.missileAmn; i++) {
-            player.missiles[i].body.move(player.missiles[i].xV*deltaTime,player.missiles[i].yV*deltaTime);
             float mx = sf::Mouse::getPosition(window).x+view1.getCenter().x-w/2;
             float my = sf::Mouse::getPosition(window).y+view1.getCenter().y-h/2;
             float bx = player.missiles[i].body.getPosition().x;
@@ -261,8 +260,9 @@ int main()
             player.missiles[i].body.setRotation(changeA+90);
             player.missiles[i].xV = player.missiles[i].speed*cos((changeA)/180*pi);
             player.missiles[i].yV = player.missiles[i].speed*sin((changeA)/180*pi);
+            player.missiles[i].body.move(player.missiles[i].xV*deltaTime,player.missiles[i].yV*deltaTime);
             if(sqrtf((my-by)*(my-by)+(mx-bx)*(mx-bx)) < player.missiles[i].explodeD) {
-                player.missiles.erase(player.missiles.begin()+i,player.missiles.begin()+i);
+                player.missiles.erase(player.missiles.begin()+i);
                 player.missileAmn--;
             }
         }
