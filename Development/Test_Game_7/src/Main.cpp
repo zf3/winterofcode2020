@@ -226,6 +226,9 @@ int main()
             if(px < 0 || py < 0 || px > width*sz || py > height*sz) {
                 player.shots.erase(player.shots.begin()+i);
                 player.shotAmn--;
+                for(int j = 0; j < player.shotAmn; j++) {
+                    player.shots[j].body.setTexture(player.shots[j].bodyT);
+                }
             }
         }
         //missile AI
@@ -255,6 +258,9 @@ int main()
             if(sqrtf((my-by)*(my-by)+(mx-bx)*(mx-bx)) < player.missiles[i].explodeD) {
                 player.missiles.erase(player.missiles.begin()+i);
                 player.missileAmn--;
+                for(int j = 0; j < player.missileAmn; j++) {
+                    player.missiles[j].body.setTexture(player.missiles[j].bodyT);
+                }
             }
         }
         //player AI
