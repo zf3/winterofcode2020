@@ -98,6 +98,8 @@ class plane {
     float missileSpeed;
     float missileCooldown;
     float explodeD;
+    float xV;
+    float yV;
     int shotAmn;
     int missileAmn;
     int missileAmmo;
@@ -144,6 +146,8 @@ class plane {
         missileAmmo = missileA;
         missileSpeed = missileS;
         explodeD = eD;
+        xV = 0;
+        yV = 0;
     }
 };
 int main()
@@ -174,11 +178,16 @@ int main()
     TileMap map;
     if (!map.load("resources/Tileset.png", sf::Vector2u(sz, sz), level, width, height)) return -1;
     plane player("resources/player.png", "resources/shot.png", "resources/missile.png", 2000, 750, 750, 0.2, 10, 10, 50, 1, 1500, 3000, 30, 100);
+    vector<plane> enemies;
     sf::Time deltaTimeT;
     sf::Clock deltaTimeC;
+    sf::Time enemyT;
+    sf::Clock enemyC;
+    float enemyM = 10;
     float deltaTime, xV = 0, yV = 0, frict = 0.15;
     bool mouseButton1 = false;
     bool mouseButton2 = false;
+    int enemyAmn = 0;
     while (window.isOpen()) {
         sf::Event event;
         while (window.pollEvent(event)) {
@@ -218,6 +227,42 @@ int main()
         deltaTimeT = deltaTimeC.getElapsedTime();
         deltaTime = deltaTimeT.asSeconds();
         deltaTimeC.restart();
+        //enemy spawning
+        enemyT = enemyC.getElapsedTime();
+        if(enemyT.asSeconds() >= enemyM) {
+            enemies.push_back(plane("resources/enemy.png", "resources/shot2.png", "resources/missile.png", 400, 750, 750, 0.2, 10, 10, 50, 1, 1500, 3000, 30, 100));
+            enemyAmn++;
+            for(int i = 0; i < enemyAmn; i++) {
+                enemies[i].body.setTexture(enemies[i].bodyT);
+            }
+            enemyC.restart();
+        }
+        //enemy AI
+        for(int i = 0; i < enemyAmn; i++) {
+            //movement
+            float px = player.body.getPosition().x;
+            float py = player.body.getPosition().y;
+            float bx = enemies[i].body.getPosition().x;
+            float by = enemies[i].body.getPosition().y;
+            float angle = atan2(py-by,px-bx)*180/pi;
+            float currA = enemies[i].body.getRotation()+270;
+            float changeA;
+            float tmp1 = currA-angle+360;
+            float tmp2 = angle-currA+360;
+            if(currA > 360) currA -= 360;
+            if(tmp1 > 360) tmp1 -= 360;
+            if(tmp2 > 360) tmp2 -= 360;
+            if(tmp1 > tmp2) {
+                changeA = min(currA+enemies[i].missileTurn*deltaTime,angle);
+            }
+            if(tmp1 < tmp2) {
+                changeA = max(currA-enemies[i].missileTurn*deltaTime,angle);
+            }
+            enemies[i].body.setRotation(changeA+90);
+            enemies[i].xV = enemies[i].speed*cos((changeA)/180*pi);
+            enemies[i].yV = enemies[i].speed*sin((changeA)/180*pi);
+            enemies[i].body.move(enemies[i].xV*deltaTime,enemies[i].yV*deltaTime);
+        }
         //bullet AI
         for(int i = 0; i < player.shotAmn; i++) {
             player.shots[i].body.move(player.shots[i].xV*deltaTime,player.shots[i].yV*deltaTime);
@@ -285,6 +330,9 @@ int main()
         }
         for(int i = 0; i < player.missileAmn; i++) {
             window.draw(player.missiles[i].body);
+        }
+        for(int i = 0; i < enemyAmn; i++) {
+            window.draw(enemies[i].body);
         }
         window.draw(player.body);
         window.display();
