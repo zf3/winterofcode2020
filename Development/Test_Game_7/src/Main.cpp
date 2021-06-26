@@ -230,7 +230,7 @@ int main()
         //enemy spawning
         enemyT = enemyC.getElapsedTime();
         if(enemyT.asSeconds() >= enemyM) {
-            enemies.push_back(plane("resources/enemy.png", "resources/shot2.png", "resources/missile.png", 400, 750, 750, 0.2, 10, 10, 50, 1, 1500, 3000, 30, 100));
+            enemies.push_back(plane("resources/enemy.png", "resources/shot2.png", "resources/missile.png", 400, 750, 750, 1, 5, 10, 50, 1, 1000, 2000, 30, 100));
             enemyAmn++;
             for(int i = 0; i < enemyAmn; i++) {
                 enemies[i].body.setTexture(enemies[i].bodyT);
@@ -262,6 +262,26 @@ int main()
             enemies[i].xV = enemies[i].speed*cos((changeA)/180*pi);
             enemies[i].yV = enemies[i].speed*sin((changeA)/180*pi);
             enemies[i].body.move(enemies[i].xV*deltaTime,enemies[i].yV*deltaTime);
+            //shooting
+            enemies[i].shotT = enemies[i].shotC.getElapsedTime();
+            if(changeA == angle && enemies[i].shotT.asSeconds() >= enemies[i].shotCooldown) {
+                enemies[i].shoot();
+                enemies[i].shots[enemies[i].shotAmn-1].body.setTexture(enemies[i].shots[enemies[i].shotAmn-1].bodyT);
+                enemies[i].shotC.restart();
+            }
+            //bullets
+            for(int j = 0; j < enemies[i].shotAmn; j++) {
+                enemies[i].shots[j].body.move(enemies[i].shots[j].xV*deltaTime,enemies[i].shots[j].yV*deltaTime);
+                float sx = enemies[i].shots[j].body.getPosition().x;
+                float sy = enemies[i].shots[j].body.getPosition().y;
+                if(sx < 0 || sy < 0 || sx > width*sz || sy > height*sz) {
+                    enemies[i].shots.erase(enemies[i].shots.begin()+j);
+                    enemies[i].shotAmn--;
+                    for(int l = 0; l < enemies[i].shotAmn; l++) {
+                        enemies[i].shots[l].body.setTexture(enemies[i].shots[l].bodyT);
+                    }
+                }
+            }
         }
         //bullet AI
         for(int i = 0; i < player.shotAmn; i++) {
@@ -333,6 +353,9 @@ int main()
         }
         for(int i = 0; i < enemyAmn; i++) {
             window.draw(enemies[i].body);
+            for(int j = 0; j < enemies[i].shotAmn; j++) {
+                window.draw(enemies[i].shots[j].body);
+            }
         }
         window.draw(player.body);
         window.display();
