@@ -46,9 +46,12 @@ class bullet {
     float xV;
     float yV;
     float shotDmg;
+    float durM;
+    sf::Time durT;
+    sf::Clock durC;
     sf::Texture bodyT;
     sf::Sprite body;
-    bullet(string t1, int x, int y, int xVe, int yVe, int shotD) {
+    bullet(string t1, int x, int y, int xVe, int yVe, int shotD, float dM) {
         xV = xVe;
         yV = yVe;
         shotDmg = shotD;
@@ -56,6 +59,7 @@ class bullet {
         body.setTexture(bodyT);
         body.setOrigin(7,14);
         body.setPosition(x,y);
+        durM = dM;
     }
 };
 class missile {
@@ -66,9 +70,12 @@ class missile {
     float turnRadius;
     float speed;
     float explodeD;
+    float durM;
+    sf::Time durT;
+    sf::Clock durC;
     sf::Texture bodyT;
     sf::Sprite body;
-    missile(string t1, int x, int y, int xVe, int yVe, float shotD, float turnR, float spd, float eD) {
+    missile(string t1, int x, int y, int xVe, int yVe, float shotD, float turnR, float spd, float eD, float dM) {
         xV = xVe;
         yV = yVe;
         speed = spd;
@@ -79,6 +86,7 @@ class missile {
         body.setTexture(bodyT);
         body.setOrigin(7,30);
         body.setPosition(x,y);
+        durM = dM;
     }
 };
 class plane {
@@ -93,10 +101,12 @@ class plane {
     float shotCooldown;
     float shotSpeed;
     float shotDmg;
+    float shotLong;
     float missileTurn;
     float missileDmg;
     float missileSpeed;
     float missileCooldown;
+    float missileLong;
     float explodeD;
     float xV;
     float yV;
@@ -109,7 +119,7 @@ class plane {
     string missileTexture;
     void shoot() {
         float ang = (body.getRotation()-90)/180*pi;
-        shots.push_back(bullet(shotTexture,body.getPosition().x, body.getPosition().y,shotSpeed*cos(ang),shotSpeed*sin(ang),shotDmg));
+        shots.push_back(bullet(shotTexture,body.getPosition().x, body.getPosition().y,shotSpeed*cos(ang),shotSpeed*sin(ang),shotDmg, shotLong));
         shots[shotAmn].body.setRotation(body.getRotation());
         shotAmn++;
     }
@@ -117,14 +127,14 @@ class plane {
         float ang = (body.getRotation()-90)/180*pi;
         for(int i = 0; i < 6; i++) {
             if(missileAmmo > 0) {
-                missiles.push_back(missile(missileTexture,body.getPosition().x-cos(ang+pi/2)*(23.0*i-57.5), body.getPosition().y-sin(ang+pi/2)*(23.0*i-57.5),missileSpeed*cos(ang),missileSpeed*sin(ang), missileDmg, missileTurn, missileSpeed,explodeD));
+                missiles.push_back(missile(missileTexture,body.getPosition().x-cos(ang+pi/2)*(23.0*i-57.5), body.getPosition().y-sin(ang+pi/2)*(23.0*i-57.5),missileSpeed*cos(ang),missileSpeed*sin(ang), missileDmg, missileTurn, missileSpeed, explodeD, missileLong));
                 missiles[missileAmn].body.setRotation(body.getRotation()-90);
                 missileAmn++;
                 missileAmmo--;
             }
         }
     }
-    plane(string t1, string t2, string t3, float spd, int x, int y, float shotM, float shotD, float turnR, float missileD, float missileM, float missileS, float shotS, float eD, int missileA) {
+    plane(string t1, string t2, string t3, float spd, int x, int y, float shotM, float shotD, float turnR, float missileD, float missileM, float missileS, float shotS, float eD, float mL, float sL, int missileA) {
         speed = spd;
         bodyT.loadFromFile(t1);
         shotTexture = t2;
@@ -145,6 +155,8 @@ class plane {
         missileCooldown = missileM;
         missileAmmo = missileA;
         missileSpeed = missileS;
+        missileLong = mL;
+        shotLong = sL;
         explodeD = eD;
         xV = 0;
         yV = 0;
@@ -177,7 +189,7 @@ int main()
     };
     TileMap map;
     if (!map.load("resources/Tileset.png", sf::Vector2u(sz, sz), level, width, height)) return -1;
-    plane player("resources/player.png", "resources/shot.png", "resources/missile.png", 2000, 750, 750, 0.2, 10, 10, 50, 1, 1500, 3000, 30, 100);
+    plane player("resources/player.png", "resources/shot.png", "resources/missile.png", 2000, 750, 750, 0.2, 10, 10, 50, 1, 1500, 3000, 30, 10, 2, 100);
     vector<plane> enemies;
     sf::Time deltaTimeT;
     sf::Clock deltaTimeC;
@@ -230,7 +242,7 @@ int main()
         //enemy spawning
         enemyT = enemyC.getElapsedTime();
         if(enemyT.asSeconds() >= enemyM) {
-            enemies.push_back(plane("resources/enemy.png", "resources/shot2.png", "resources/missile.png", 400, 750, 750, 1, 5, 10, 50, 1, 1000, 2000, 30, 100));
+            enemies.push_back(plane("resources/enemy.png", "resources/shot2.png", "resources/missile.png", 400, 750, 750, 1, 5, 10, 50, 1, 1000, 2000, 30, 5, 1, 100));
             enemyAmn++;
             for(int i = 0; i < enemyAmn; i++) {
                 enemies[i].body.setTexture(enemies[i].bodyT);
@@ -274,7 +286,8 @@ int main()
                 enemies[i].shots[j].body.move(enemies[i].shots[j].xV*deltaTime,enemies[i].shots[j].yV*deltaTime);
                 float sx = enemies[i].shots[j].body.getPosition().x;
                 float sy = enemies[i].shots[j].body.getPosition().y;
-                if(sx < 0 || sy < 0 || sx > width*sz || sy > height*sz) {
+                enemies[i].shots[j].durT = enemies[i].shots[j].durC.getElapsedTime();
+                if(sx < 0 || sy < 0 || sx > width*sz || sy > height*sz || enemies[i].shots[j].durT.asSeconds() >= enemies[i].shots[j].durM) {
                     enemies[i].shots.erase(enemies[i].shots.begin()+j);
                     enemies[i].shotAmn--;
                     for(int l = 0; l < enemies[i].shotAmn; l++) {
@@ -288,7 +301,8 @@ int main()
             player.shots[i].body.move(player.shots[i].xV*deltaTime,player.shots[i].yV*deltaTime);
             float px = player.shots[i].body.getPosition().x;
             float py = player.shots[i].body.getPosition().y;
-            if(px < 0 || py < 0 || px > width*sz || py > height*sz) {
+            player.shots[i].durT = player.shots[i].durC.getElapsedTime();
+            if(px < 0 || py < 0 || px > width*sz || py > height*sz || player.shots[i].durT.asSeconds() >= player.shots[i].durM) {
                 player.shots.erase(player.shots.begin()+i);
                 player.shotAmn--;
                 for(int j = 0; j < player.shotAmn; j++) {
@@ -320,7 +334,8 @@ int main()
             player.missiles[i].xV = player.missiles[i].speed*cos((changeA)/180*pi);
             player.missiles[i].yV = player.missiles[i].speed*sin((changeA)/180*pi);
             player.missiles[i].body.move(player.missiles[i].xV*deltaTime,player.missiles[i].yV*deltaTime);
-            if(sqrtf((my-by)*(my-by)+(mx-bx)*(mx-bx)) < player.missiles[i].explodeD) {
+            player.missiles[i].durT = player.missiles[i].durC.getElapsedTime();
+            if(sqrtf((my-by)*(my-by)+(mx-bx)*(mx-bx)) < player.missiles[i].explodeD || player.missiles[i].durT.asSeconds() >= player.missiles[i].durM) {
                 player.missiles.erase(player.missiles.begin()+i);
                 player.missileAmn--;
                 for(int j = 0; j < player.missileAmn; j++) {
