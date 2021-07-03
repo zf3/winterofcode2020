@@ -414,6 +414,11 @@ int main()
         yV+=deltaTime*player.speed*sin(angle/180*pi);
         xV=xV*powf(frict,deltaTime);
         yV=yV*powf(frict,deltaTime);
+        if(player.hp <= 0) {
+            player = plane("resources/player.png", "resources/shot.png", "resources/missile.png", 100, 0.5, 2000, 750, 750, 0.2, 2, 10, 50, 1, 1500, 3000, 30, 10, 2, 250, 50, 100);
+            player.body.setTexture(player.bodyT);
+            view1.setCenter(w/2,h/2);
+        }
         //rendering
         window.clear(sf::Color(192,192,192));
         window.draw(map);
