@@ -119,6 +119,7 @@ class plane {
     float yV;
     float hp;
     float maxHP;
+    float maxSpeed;
     int shotAmn;
     int missileAmn;
     int missileAmmo;
@@ -143,7 +144,7 @@ class plane {
             }
         }
     }
-    plane(string t1, string t2, string t3, float hpM, float rg, float spd, int x, int y, float shotM, float shotD, float turnR, float missileD, float missileM, float missileS, float shotS, float eD, float mL, float sL, float eR, float eR2, int missileA) {
+    plane(string t1, string t2, string t3, float hpM, float rg, float spd, float maxS, int x, int y, float shotM, float shotD, float turnR, float missileD, float missileM, float missileS, float shotS, float eD, float mL, float sL, float eR, float eR2, int missileA) {
         speed = spd;
         bodyT.loadFromFile(t1);
         shotTexture = t2;
@@ -169,6 +170,7 @@ class plane {
         explodeD = eD;
         explodeR = eR;
         explodeR2 = eR2;
+        maxSpeed = maxS;
         hp = hpM;
         maxHP = hpM;
         regen = rg;
@@ -203,12 +205,28 @@ int main()
     };
     TileMap map;
     if (!map.load("resources/Tileset.png", sf::Vector2u(sz, sz), level, width, height)) return -1;
-    plane player("resources/player.png", "resources/shot.png", "resources/missile.png", 100, 0.5, 2000, 750, 750, 0.2, 2, 10, 50, 1, 1500, 3000, 30, 10, 2, 250, 50, 100);
+    plane player("resources/player.png", "resources/shot.png", "resources/missile.png", 100, 0.5, 2000, 1040, 750, 750, 0.2, 2, 10, 50, 5, 1500, 3000, 30, 10, 2, 250, 50, 100);
     vector<plane> enemies;
     sf::Time deltaTimeT;
     sf::Clock deltaTimeC;
     sf::Time enemyT;
     sf::Clock enemyC;
+    sf::Sprite hotBarMain;
+    sf::Texture hotBarMainT;
+    hotBarMainT.loadFromFile("resources/GameScreen.png");
+    hotBarMain.setTexture(hotBarMainT);
+    sf::RectangleShape hotBar1(sf::Vector2f(956,97));
+    hotBar1.setPosition(543,2);
+    hotBar1.setFillColor(sf::Color(224,32,32));
+    sf::RectangleShape hotBar2(sf::Vector2f(233,43));
+    hotBar2.setPosition(783,107);
+    hotBar2.setFillColor(sf::Color(32,32,224));
+    sf::RectangleShape hotBar3(sf::Vector2f(233,43));
+    hotBar3.setPosition(1023,107);
+    hotBar3.setFillColor(sf::Color(224,112,32));
+    sf::RectangleShape hotBar4(sf::Vector2f(233,43));
+    hotBar4.setPosition(1264,107);
+    hotBar4.setFillColor(sf::Color(224,224,32));
     float enemyM = 10;
     float deltaTime, xV = 0, yV = 0, frict = 0.15;
     bool mouseButton1 = false;
@@ -258,7 +276,7 @@ int main()
         //enemy spawning
         enemyT = enemyC.getElapsedTime();
         if(enemyT.asSeconds() >= enemyM) {
-            enemies.push_back(plane("resources/enemy.png", "resources/shot2.png", "resources/missile.png", 10, 0, 400, 750, 750, 1, 2, 10, 50, 1, 1000, 2000, 30, 5, 1, 125, 50, 100));
+            enemies.push_back(plane("resources/enemy.png", "resources/shot2.png", "resources/missile.png", 10, 0, 400, 400, 750, 750, 1, 2, 10, 25, 10, 1000, 2000, 30, 5, 1, 125, 50, 100));
             enemyAmn++;
             for(int i = 0; i < enemyAmn; i++) {
                 enemies[i].body.setTexture(enemies[i].bodyT);
@@ -266,6 +284,7 @@ int main()
             enemyC.restart();
         }
         //enemy AI
+        bool bulletDel = false;
         for(int i = 0; i < enemyAmn; i++) {
             //regen
             enemies[i].hp= min(enemies[i].maxHP,enemies[i].hp+enemies[i].regen*deltaTime);
@@ -309,19 +328,19 @@ int main()
                 enemies[i].shots[j].durT = enemies[i].shots[j].durC.getElapsedTime();
                 if(sqrtf((px-sx)*(px-sx)+(py-sy)*(py-sy)) <= enemies[i].shots[j].explodeR) {
                     player.hp-=enemies[i].shots[j].shotDmg;
-                    printf("%f\n",player.hp);
                     enemies[i].shots.erase(enemies[i].shots.begin()+j);
                     enemies[i].shotAmn--;
                     for(int l = 0; l < enemies[i].shotAmn; l++) {
                         enemies[i].shots[l].body.setTexture(enemies[i].shots[l].bodyT);
                     }
                 }
-                if(sx < 0 || sy < 0 || sx > width*sz || sy > height*sz || enemies[i].shots[j].durT.asSeconds() >= enemies[i].shots[j].durM) {
+                if((sx < 0 || sy < 0 || sx > width*sz || sy > height*sz || enemies[i].shots[j].durT.asSeconds() >= enemies[i].shots[j].durM) && bulletDel == false) {
                     enemies[i].shots.erase(enemies[i].shots.begin()+j);
                     enemies[i].shotAmn--;
                     for(int l = 0; l < enemies[i].shotAmn; l++) {
                         enemies[i].shots[l].body.setTexture(enemies[i].shots[l].bodyT);
                     }
+                    bulletDel = true;
                 }
             }
             //death
@@ -403,6 +422,11 @@ int main()
         //player AI
         player.body.move(xV*deltaTime,yV*deltaTime);
         view1.move(xV*deltaTime,yV*deltaTime);
+        hotBarMain.move(xV*deltaTime,yV*deltaTime);
+        hotBar1.move(xV*deltaTime,yV*deltaTime);
+        hotBar2.move(xV*deltaTime,yV*deltaTime);
+        hotBar3.move(xV*deltaTime,yV*deltaTime);
+        hotBar4.move(xV*deltaTime,yV*deltaTime);
         window.setView(view1);
         float mx = sf::Mouse::getPosition(window).x;
         float my = sf::Mouse::getPosition(window).y;
@@ -415,10 +439,24 @@ int main()
         xV=xV*powf(frict,deltaTime);
         yV=yV*powf(frict,deltaTime);
         if(player.hp <= 0) {
-            player = plane("resources/player.png", "resources/shot.png", "resources/missile.png", 100, 0.5, 2000, 750, 750, 0.2, 2, 10, 50, 1, 1500, 3000, 30, 10, 2, 250, 50, 100);
+            player = plane("resources/player.png", "resources/shot.png", "resources/missile.png", 100, 0.5, 2000, 1037, 750, 750, 0.2, 2, 10, 50, 5, 1500, 3000, 30, 10, 2, 250, 50, 100);
             player.body.setTexture(player.bodyT);
             view1.setCenter(w/2,h/2);
         }
+        //status bars
+        float h1 = player.hp/player.maxHP*956;
+        float h2 = sqrtf(xV*xV+yV*yV)/player.maxSpeed*233;
+        float h3 = min(player.missileCooldown,player.missileT.asSeconds())/player.missileCooldown*233;
+        float h4 = min(player.shotCooldown,player.shotT.asSeconds())/player.shotCooldown*233;
+        float vX = view1.getCenter().x-w/2, vY = view1.getCenter().y-h/2;
+        hotBar1.setSize(sf::Vector2f(h1,97));
+        hotBar1.setPosition(sf::Vector2f(543+956-h1+vX,2+vY));
+        hotBar2.setSize(sf::Vector2f(h2,43));
+        hotBar2.setPosition(sf::Vector2f(232+783-h2+vX,107+vY));
+        hotBar3.setSize(sf::Vector2f(h3,43));
+        hotBar3.setPosition(sf::Vector2f(232+1023-h3+vX,107+vY));
+        hotBar4.setSize(sf::Vector2f(h4,43));
+        hotBar4.setPosition(sf::Vector2f(232+1264-h4+vX,107+vY));
         //rendering
         window.clear(sf::Color(192,192,192));
         window.draw(map);
@@ -435,6 +473,11 @@ int main()
             }
         }
         window.draw(player.body);
+        window.draw(hotBarMain);
+        window.draw(hotBar1);
+        window.draw(hotBar2);
+        window.draw(hotBar3);
+        window.draw(hotBar4);
         window.display();
     }
     return 0;
