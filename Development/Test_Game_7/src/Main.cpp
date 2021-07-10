@@ -1,6 +1,7 @@
 #include <SFML/Graphics.hpp>
 #include <SFML/Audio.hpp>
 #include <vector>
+#include <sstream>
 using namespace std;
 class TileMap : public sf::Drawable, public sf::Transformable
 {
@@ -207,6 +208,14 @@ int main()
     if (!map.load("resources/Tileset.png", sf::Vector2u(sz, sz), level, width, height)) return -1;
     plane player("resources/player.png", "resources/shot.png", "resources/missile.png", 100, 0.5, 2000, 1040, 750, 750, 0.2, 2, 10, 50, 5, 1500, 3000, 30, 10, 2, 250, 50, 100);
     vector<plane> enemies;
+    sf::Font mainFont;
+    mainFont.loadFromFile("resources/sansation.ttf");
+    sf::Text deathAmn;
+    deathAmn.setFont(mainFont);
+    deathAmn.setString("0");
+    deathAmn.setCharacterSize(80);
+    deathAmn.setFillColor(sf::Color::Black);
+    deathAmn.setPosition(sf::Vector2f(363,5));
     sf::Time deltaTimeT;
     sf::Clock deltaTimeC;
     sf::Time enemyT;
@@ -232,6 +241,7 @@ int main()
     bool mouseButton1 = false;
     bool mouseButton2 = false;
     int enemyAmn = 0;
+    int deaths = 0;
     while (window.isOpen()) {
         sf::Event event;
         while (window.pollEvent(event)) {
@@ -427,6 +437,7 @@ int main()
         hotBar2.move(xV*deltaTime,yV*deltaTime);
         hotBar3.move(xV*deltaTime,yV*deltaTime);
         hotBar4.move(xV*deltaTime,yV*deltaTime);
+        deathAmn.move(xV*deltaTime,yV*deltaTime);
         window.setView(view1);
         float mx = sf::Mouse::getPosition(window).x;
         float my = sf::Mouse::getPosition(window).y;
@@ -442,6 +453,14 @@ int main()
             player = plane("resources/player.png", "resources/shot.png", "resources/missile.png", 100, 0.5, 2000, 1037, 750, 750, 0.2, 2, 10, 50, 5, 1500, 3000, 30, 10, 2, 250, 50, 100);
             player.body.setTexture(player.bodyT);
             view1.setCenter(w/2,h/2);
+            hotBarMain.setPosition(0,0);
+            deaths++;
+            deathAmn.setPosition(363,5);
+            string tmp1;
+            stringstream tmp2;
+            tmp2 << deaths;
+            tmp2 >> tmp1;
+            deathAmn.setString(tmp1);
         }
         //status bars
         float h1 = player.hp/player.maxHP*956;
@@ -478,6 +497,7 @@ int main()
         window.draw(hotBar2);
         window.draw(hotBar3);
         window.draw(hotBar4);
+        window.draw(deathAmn);
         window.display();
     }
     return 0;
