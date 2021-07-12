@@ -124,6 +124,7 @@ class plane {
     int shotAmn;
     int missileAmn;
     int missileAmmo;
+    int value;
     vector<bullet> shots;
     vector<missile> missiles;
     string shotTexture;
@@ -139,13 +140,13 @@ class plane {
         for(int i = 0; i < 6; i++) {
             if(missileAmmo > 0) {
                 missiles.push_back(missile(missileTexture,body.getPosition().x-cos(ang+pi/2)*(23.0*i-57.5), body.getPosition().y-sin(ang+pi/2)*(23.0*i-57.5),missileSpeed*cos(ang),missileSpeed*sin(ang), missileDmg, missileTurn, missileSpeed, explodeD, missileLong, explodeR));
-                missiles[missileAmn].body.setRotation(body.getRotation()-90);
+                missiles[missileAmn].body.setRotation(body.getRotation());
                 missileAmn++;
                 missileAmmo--;
             }
         }
     }
-    plane(string t1, string t2, string t3, float hpM, float rg, float spd, float maxS, int x, int y, float shotM, float shotD, float turnR, float missileD, float missileM, float missileS, float shotS, float eD, float mL, float sL, float eR, float eR2, int missileA) {
+    plane(string t1, string t2, string t3, float hpM, float rg, float spd, float maxS, int x, int y, float shotM, float shotD, float turnR, float missileD, float missileM, float missileS, float shotS, float eD, float mL, float sL, float eR, float eR2, int missileA, int val) {
         speed = spd;
         bodyT.loadFromFile(t1);
         shotTexture = t2;
@@ -175,6 +176,7 @@ class plane {
         hp = hpM;
         maxHP = hpM;
         regen = rg;
+        value = val;
         xV = 0;
         yV = 0;
     }
@@ -206,7 +208,7 @@ int main()
     };
     TileMap map;
     if (!map.load("resources/Tileset.png", sf::Vector2u(sz, sz), level, width, height)) return -1;
-    plane player("resources/player.png", "resources/shot.png", "resources/missile.png", 100, 0.5, 2000, 1040, 750, 750, 0.2, 2, 10, 50, 5, 1500, 3000, 30, 10, 2, 250, 50, 100);
+    plane player("resources/player.png", "resources/shot.png", "resources/missile.png", 100, 0.5, 2000, 1040, 750, 750, 0.2, 2, 180, 50, 5, 1500, 3000, 30, 10, 2, 250, 50, 100, 100);
     vector<plane> enemies;
     sf::Font mainFont;
     mainFont.loadFromFile("resources/sansation.ttf");
@@ -216,6 +218,12 @@ int main()
     deathAmn.setCharacterSize(80);
     deathAmn.setFillColor(sf::Color::Black);
     deathAmn.setPosition(sf::Vector2f(363,5));
+    sf::Text coinAmn;
+    coinAmn.setFont(mainFont);
+    coinAmn.setString("0");
+    coinAmn.setCharacterSize(80);
+    coinAmn.setFillColor(sf::Color::Black);
+    coinAmn.setPosition(sf::Vector2f(293,97));
     sf::Time deltaTimeT;
     sf::Clock deltaTimeC;
     sf::Time enemyT;
@@ -242,6 +250,7 @@ int main()
     bool mouseButton2 = false;
     int enemyAmn = 0;
     int deaths = 0;
+    int coins = 0;
     while (window.isOpen()) {
         sf::Event event;
         while (window.pollEvent(event)) {
@@ -286,7 +295,7 @@ int main()
         //enemy spawning
         enemyT = enemyC.getElapsedTime();
         if(enemyT.asSeconds() >= enemyM) {
-            enemies.push_back(plane("resources/enemy.png", "resources/shot2.png", "resources/missile.png", 10, 0, 400, 400, 750, 750, 1, 2, 10, 25, 10, 1000, 2000, 30, 5, 1, 125, 50, 100));
+            enemies.push_back(plane("resources/enemy.png", "resources/shot2.png", "resources/missile.png", 10, 0, 400, 400, 750, 750, 1, 2, 180, 25, 10, 1000, 2000, 30, 5, 1, 125, 50, 100, 10));
             enemyAmn++;
             for(int i = 0; i < enemyAmn; i++) {
                 enemies[i].body.setTexture(enemies[i].bodyT);
@@ -304,18 +313,19 @@ int main()
             float bx = enemies[i].body.getPosition().x;
             float by = enemies[i].body.getPosition().y;
             float angle = atan2(py-by,px-bx)*180/pi;
-            float currA = enemies[i].body.getRotation()+270;
-            float changeA;
-            float tmp1 = currA-angle+360;
-            float tmp2 = angle-currA+360;
-            if(currA > 360) currA -= 360;
-            if(tmp1 > 360) tmp1 -= 360;
-            if(tmp2 > 360) tmp2 -= 360;
-            if(tmp1 > tmp2) {
-                changeA = min(currA+enemies[i].missileTurn*deltaTime,angle);
-            }
+            float currA = enemies[i].body.getRotation()-90;
+            float changeA = 0;
+            float tmp1 = angle+360-currA;
+            float tmp2 = currA-angle+360;
+            if(tmp1 > 360) tmp1-=360;
+            if(tmp2 > 360) tmp2-=360;
             if(tmp1 < tmp2) {
-                changeA = max(currA-enemies[i].missileTurn*deltaTime,angle);
+                changeA = currA+min(tmp1,enemies[i].missileTurn*deltaTime)+360;
+                if(changeA > 360) changeA -= 360;
+            }
+            if(tmp2 < tmp1) {
+                changeA = currA+max(-tmp2,-enemies[i].missileTurn*deltaTime)+360;
+                if(changeA > 360) changeA -= 360;
             }
             enemies[i].body.setRotation(changeA+90);
             enemies[i].xV = enemies[i].speed*cos((changeA)/180*pi);
@@ -344,7 +354,7 @@ int main()
                         enemies[i].shots[l].body.setTexture(enemies[i].shots[l].bodyT);
                     }
                 }
-                if((sx < 0 || sy < 0 || sx > width*sz || sy > height*sz || enemies[i].shots[j].durT.asSeconds() >= enemies[i].shots[j].durM) && bulletDel == false) {
+                if((enemies[i].shots[j].durT.asSeconds() >= enemies[i].shots[j].durM) && bulletDel == false) {
                     enemies[i].shots.erase(enemies[i].shots.begin()+j);
                     enemies[i].shotAmn--;
                     for(int l = 0; l < enemies[i].shotAmn; l++) {
@@ -360,6 +370,12 @@ int main()
                 for(int j = 0; j < enemyAmn; j++) {
                     enemies[j].body.setTexture(enemies[j].bodyT);
                 }
+                coins+=enemies[i].value;
+                string tmp1;
+                stringstream tmp2;
+                tmp2 << coins;
+                tmp2 >> tmp1;
+                coinAmn.setString(tmp1);
             }
         }
         //bullet AI
@@ -381,7 +397,7 @@ int main()
                     break;
                 }
             }
-            if(px < 0 || py < 0 || px > width*sz || py > height*sz || player.shots[i].durT.asSeconds() >= player.shots[i].durM) {
+            if(player.shots[i].durT.asSeconds() >= player.shots[i].durM) {
                 player.shots.erase(player.shots.begin()+i);
                 player.shotAmn--;
                 for(int j = 0; j < player.shotAmn; j++) {
@@ -396,17 +412,16 @@ int main()
             float bx = player.missiles[i].body.getPosition().x;
             float by = player.missiles[i].body.getPosition().y;
             float angle = atan2(my-by,mx-bx)*180/pi;
-            float currA = player.missiles[i].body.getRotation()+270;
+            float currA = player.missiles[i].body.getRotation()-90;
             float changeA;
-            float tmp1 = currA-angle+360;
-            float tmp2 = angle-currA+360;
-            if(currA > 360) currA -= 360;
+            float tmp1 = angle+360-currA;
+            float tmp2 = currA+360-angle;
             if(tmp1 > 360) tmp1 -= 360;
             if(tmp2 > 360) tmp2 -= 360;
-            if(tmp1 > tmp2) {
-                changeA = min(currA+player.missiles[i].turnRadius*deltaTime,angle);
-            }
             if(tmp1 < tmp2) {
+                changeA = currA+min(tmp1,player.missiles[i].turnRadius*deltaTime)+360;
+            }
+            if(tmp2 < tmp1) {
                 changeA = max(currA-player.missiles[i].turnRadius*deltaTime,angle);
             }
             player.missiles[i].body.setRotation(changeA+90);
@@ -438,6 +453,7 @@ int main()
         hotBar3.move(xV*deltaTime,yV*deltaTime);
         hotBar4.move(xV*deltaTime,yV*deltaTime);
         deathAmn.move(xV*deltaTime,yV*deltaTime);
+        coinAmn.move(xV*deltaTime,yV*deltaTime);
         window.setView(view1);
         float mx = sf::Mouse::getPosition(window).x;
         float my = sf::Mouse::getPosition(window).y;
@@ -450,7 +466,7 @@ int main()
         xV=xV*powf(frict,deltaTime);
         yV=yV*powf(frict,deltaTime);
         if(player.hp <= 0) {
-            player = plane("resources/player.png", "resources/shot.png", "resources/missile.png", 100, 0.5, 2000, 1037, 750, 750, 0.2, 2, 10, 50, 5, 1500, 3000, 30, 10, 2, 250, 50, 100);
+            player = plane("resources/player.png", "resources/shot.png", "resources/missile.png", 100, 0.5, 2000, 1037, 750, 750, 0.2, 2, 180, 50, 5, 1500, 3000, 30, 10, 2, 250, 50, 100, 100);
             player.body.setTexture(player.bodyT);
             view1.setCenter(w/2,h/2);
             hotBarMain.setPosition(0,0);
@@ -461,6 +477,7 @@ int main()
             tmp2 << deaths;
             tmp2 >> tmp1;
             deathAmn.setString(tmp1);
+            coinAmn.setPosition(293,97);
         }
         //status bars
         float h1 = player.hp/player.maxHP*956;
@@ -498,6 +515,7 @@ int main()
         window.draw(hotBar3);
         window.draw(hotBar4);
         window.draw(deathAmn);
+        window.draw(coinAmn);
         window.display();
     }
     return 0;
