@@ -121,6 +121,10 @@ class plane {
     float hp;
     float maxHP;
     float maxSpeed;
+    float upgrades[9];
+    int upgradeAmn[9];
+    float costs[10];
+    float maxUpgrades;
     int shotAmn;
     int missileAmn;
     int missileAmmo;
@@ -146,7 +150,38 @@ class plane {
             }
         }
     }
-    plane(string t1, string t2, string t3, float hpM, float rg, float spd, float maxS, int x, int y, float shotM, float shotD, float turnR, float missileD, float missileM, float missileS, float shotS, float eD, float mL, float sL, float eR, float eR2, int missileA, int val) {
+    void incr(int which) {
+        if(which == 0) {
+            hp+=upgrades[0]/maxHP*hp;
+            maxHP+=upgrades[0];
+        }
+        if(which == 1) {
+            regen+=upgrades[1];
+        }
+        if(which == 2) {
+            maxSpeed+=upgrades[2]/speed*maxSpeed;
+            speed+=upgrades[2];
+        }
+        if(which == 3) {
+            shotCooldown-=upgrades[3];
+        }
+        if(which == 4) {
+            shotDmg+=upgrades[4];
+        }
+        if(which == 5) {
+            shotSpeed+=upgrades[5];
+        }
+        if(which == 6) {
+            missileCooldown-=upgrades[6];
+        }
+        if(which == 7) {
+            missileDmg+=upgrades[7];
+        }
+        if(which == 8) {
+            missileTurn+=upgrades[8];
+        }
+    }
+    plane(string t1, string t2, string t3, float hpM, float rg, float spd, float maxS, int x, int y, float shotM, float shotD, float turnR, float missileD, float missileM, float missileS, float shotS, float eD, float mL, float sL, float eR, float eR2, int missileA, int val, float upgrs[9], float csts[10], float maxUpgr) {
         speed = spd;
         bodyT.loadFromFile(t1);
         shotTexture = t2;
@@ -179,6 +214,14 @@ class plane {
         value = val;
         xV = 0;
         yV = 0;
+        for(int i = 0; i < 9; i++) {
+            upgrades[i] = upgrs[i];
+            upgradeAmn[i] = 0;
+        }
+        for(int i = 0; i < 10; i++) {
+            costs[i] = csts[i];
+        }
+        maxUpgrades = maxUpgr;
     }
 };
 int main()
@@ -187,6 +230,10 @@ int main()
     sf::View view1(sf::FloatRect(0.f, 0.f, 1500.f, 1500.f));
     window.setFramerateLimit(60);
     const int width = 32, height = 16, sz = 200;
+    float upgrTmp[9] = {20,0.1,200,0.02,0.4,600,0.5,2,36};
+    float cstTmp[10] = {5,10,15,20,30,0,0,0,0,0};
+    float upgrTmpE[9] = {0,0,0,0,0,0,0,0,0};
+    float cstTmpE[10] = {0,0,0,0,0,0,0,0,0,0};
     const int level[] =
     {
         0,0,0,0,0,2,6,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
@@ -208,7 +255,7 @@ int main()
     };
     TileMap map;
     if (!map.load("resources/Tileset.png", sf::Vector2u(sz, sz), level, width, height)) return -1;
-    plane player("resources/player.png", "resources/shot.png", "resources/missile.png", 100, 0.5, 2000, 1040, 750, 750, 0.2, 2, 180, 50, 5, 1500, 3000, 30, 10, 2, 250, 50, 100, 100);
+    plane player("resources/player.png", "resources/shot.png", "resources/missile.png", 100, 0.5, 2000, 1040, 750, 750, 0.2, 2, 180, 10, 5, 1500, 3000, 30, 10, 2, 250, 50, 100, 100, upgrTmp, cstTmp, 5);
     vector<plane> enemies;
     sf::Font mainFont;
     mainFont.loadFromFile("resources/sansation.ttf");
@@ -228,6 +275,8 @@ int main()
     sf::Clock deltaTimeC;
     sf::Time enemyT;
     sf::Clock enemyC;
+    sf::Time upgradeT;
+    sf::Clock upgradeC;
     sf::Sprite hotBarMain;
     sf::Texture hotBarMainT;
     hotBarMainT.loadFromFile("resources/GameScreen.png");
@@ -246,6 +295,7 @@ int main()
     hotBar4.setFillColor(sf::Color(224,224,32));
     float enemyM = 10;
     float deltaTime, xV = 0, yV = 0, frict = 0.15;
+    float upgradeCD = 0.1;
     bool mouseButton1 = false;
     bool mouseButton2 = false;
     int enemyAmn = 0;
@@ -265,6 +315,23 @@ int main()
             }
             if(event.type == sf::Event::MouseButtonReleased && event.mouseButton.button == sf::Mouse::Right) {
                 mouseButton2 = false;
+            }
+            upgradeT = upgradeC.getElapsedTime();
+            if(upgradeT.asSeconds() >= upgradeCD) {
+                for(int i = 0; i < 9; i++) {
+                    if(player.upgradeAmn[i] < player.maxUpgrades && player.costs[player.upgradeAmn[i]] <= coins && sf::Keyboard::isKeyPressed(sf::Keyboard::Key(i+27)) == true) {
+                        coins -= player.costs[player.upgradeAmn[i]];
+                        player.incr(i);
+                        player.upgradeAmn[i]++;
+                        string tmp1;
+                        stringstream tmp2;
+                        tmp2 << coins;
+                        tmp2 >> tmp1;
+                        coinAmn.setString(tmp1);
+                        upgradeC.restart();
+                        break;
+                    }
+                }
             }
             if(event.type == sf::Event::Closed) {
                 window.close();
@@ -295,7 +362,7 @@ int main()
         //enemy spawning
         enemyT = enemyC.getElapsedTime();
         if(enemyT.asSeconds() >= enemyM) {
-            enemies.push_back(plane("resources/enemy.png", "resources/shot2.png", "resources/missile.png", 10, 0, 400, 400, 750, 750, 1, 2, 180, 25, 10, 1000, 2000, 30, 5, 1, 125, 50, 100, 10));
+            enemies.push_back(plane("resources/enemy.png", "resources/shot2.png", "resources/missile.png", 10, 0, 400, 400, 750, 750, 1, 2, 180, 25, 10, 1000, 2000, 30, 5, 1, 125, 50, 100, 10, upgrTmpE,cstTmpE,0));
             enemyAmn++;
             for(int i = 0; i < enemyAmn; i++) {
                 enemies[i].body.setTexture(enemies[i].bodyT);
@@ -466,7 +533,7 @@ int main()
         xV=xV*powf(frict,deltaTime);
         yV=yV*powf(frict,deltaTime);
         if(player.hp <= 0) {
-            player = plane("resources/player.png", "resources/shot.png", "resources/missile.png", 100, 0.5, 2000, 1037, 750, 750, 0.2, 2, 180, 50, 5, 1500, 3000, 30, 10, 2, 250, 50, 100, 100);
+            player = plane("resources/player.png", "resources/shot.png", "resources/missile.png", 100, 0.5, 2000, 1037, 750, 750, 0.2, 2, 180, 50, 5, 1500, 3000, 30, 10, 2, 250, 50, 100, 100, upgrTmp, cstTmp,5);
             player.body.setTexture(player.bodyT);
             view1.setCenter(w/2,h/2);
             hotBarMain.setPosition(0,0);
