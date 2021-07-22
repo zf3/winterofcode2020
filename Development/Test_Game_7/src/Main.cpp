@@ -301,6 +301,7 @@ int main()
     sf::Texture upgradeButtonT;
     upgradeButtonT.loadFromFile("resources/UpgradeButton.png");
     sf::Sprite upgradeButtons[9];
+    sf::Text upgradeAmnDisps[9];
     for(int i = 0; i < 9; i++) {
         int tmp1 = i/3;
         int tmp2 = i%3;
@@ -309,6 +310,11 @@ int main()
         upgradeButtons[i].setTexture(upgradeButtonT);
         upgradeButtons[i].setOrigin(102,102);
         upgradeButtons[i].setPosition(sf::Vector2f(posX,posY));
+        upgradeAmnDisps[i].setFont(mainFont);
+        upgradeAmnDisps[i].setString("0/5");
+        upgradeAmnDisps[i].setCharacterSize(60);
+        upgradeAmnDisps[i].setFillColor(sf::Color::Black);
+        upgradeAmnDisps[i].setPosition(sf::Vector2f(posX+127,posY-40));
     }
     float enemyM = 10;
     float deltaTime, xV = 0, yV = 0, frict = 0.15;
@@ -530,6 +536,7 @@ int main()
             upgradeScreen.move(xV*deltaTime,yV*deltaTime);
             for(int i = 0; i < 9; i++) {
                 upgradeButtons[i].move(xV*deltaTime,yV*deltaTime);
+                upgradeAmnDisps[i].move(xV*deltaTime,yV*deltaTime);
             }
             window.setView(view1);
             float mx = sf::Mouse::getPosition(window).x;
@@ -618,6 +625,11 @@ int main()
                                 tmp2 << coins;
                                 tmp2 >> tmp1;
                                 coinAmn.setString(tmp1);
+                                string tmp3;
+                                stringstream tmp4;
+                                tmp4 << player.upgradeAmn[i] << "/" << player.maxUpgrades;
+                                tmp4 >> tmp3;
+                                upgradeAmnDisps[i].setString(tmp3);
                                 upgradeC.restart();
                                 break;
                             }
@@ -641,6 +653,7 @@ int main()
             window.draw(deathAmn);
             for(int i = 0; i < 9; i++) {
                 window.draw(upgradeButtons[i]);
+                window.draw(upgradeAmnDisps[i]);
             }
             window.display();
         }
