@@ -223,6 +223,20 @@ class plane {
         }
         maxUpgrades = maxUpgr;
     }
+    plane() {}
+};
+class spawnPlane {
+    public:
+    plane spawned;
+    float time;
+    float x;
+    float y;
+    spawnPlane (float tme, float xP, float yP, plane sp) {
+        spawned = sp;
+        time = tme;
+        x = xP;
+        y = yP;
+    }
 };
 int main()
 {
@@ -232,7 +246,7 @@ int main()
     int screen = 0;
     const int width = 32, height = 16, sz = 200;
     float upgrTmp[9] = {20,0.1,200,0.02,0.4,600,0.5,2,36};
-    float cstTmp[10] = {5,10,15,20,30,0,0,0,0,0};
+    float cstTmp[10] = {50,100,150,200,300,0,0,0,0,0};
     float upgrTmpE[9] = {0,0,0,0,0,0,0,0,0};
     float cstTmpE[10] = {0,0,0,0,0,0,0,0,0,0};
     const int level[] =
@@ -256,8 +270,19 @@ int main()
     };
     TileMap map;
     if (!map.load("resources/Tileset.png", sf::Vector2u(sz, sz), level, width, height)) return -1;
-    plane player("resources/player.png", "resources/shot.png", "resources/missile.png", 100, 0.5, 2000, 1040, 750, 750, 0.2, 2, 180, 10, 5, 1500, 3000, 30, 10, 2, 250, 50, 100, 100, upgrTmp, cstTmp, 5);
+    plane playerTemplate("resources/player.png", "resources/shot.png", "resources/missile.png", 100, 0.5, 2000, 1040, 750, 750, 0.2, 2, 180, 10, 5, 1500, 3000, 30, 10, 2, 250, 50, 100, 100, upgrTmp, cstTmp, 5);
+    plane player = playerTemplate;
+    plane enemyTemplate1("resources/enemy.png", "resources/shot2.png", "resources/missile.png", 10, 0, 400, 400, 750, 750, 1, 2, 180, 25, 10, 1000, 2000, 30, 5, 1, 125, 50, 100, 10, upgrTmpE,cstTmpE,0);
     vector<plane> enemies;
+    vector<spawnPlane> spawningEnemies;
+    int spawningAmn = 5, currEnemy = 0;
+    spawningEnemies.push_back(spawnPlane(2,750,750,enemyTemplate1));
+    spawningEnemies.push_back(spawnPlane(4,750,750,enemyTemplate1));
+    spawningEnemies.push_back(spawnPlane(6,750,750,enemyTemplate1));
+    spawningEnemies.push_back(spawnPlane(8,750,750,enemyTemplate1));
+    spawningEnemies.push_back(spawnPlane(10,750,750,enemyTemplate1));
+    sf::Clock gameTimeC;
+    sf::Time gameTimeT;
     sf::Font mainFont;
     mainFont.loadFromFile("resources/sansation.ttf");
     sf::Text deathAmn;
@@ -268,7 +293,7 @@ int main()
     deathAmn.setPosition(sf::Vector2f(363,5));
     sf::Text coinAmn;
     coinAmn.setFont(mainFont);
-    coinAmn.setString("1000");
+    coinAmn.setString("10000");
     coinAmn.setCharacterSize(80);
     coinAmn.setFillColor(sf::Color::Black);
     coinAmn.setPosition(sf::Vector2f(293,97));
@@ -278,8 +303,6 @@ int main()
     upgradeScreen.setTexture(upgradeScreenT);
     sf::Time deltaTimeT;
     sf::Clock deltaTimeC;
-    sf::Time enemyT;
-    sf::Clock enemyC;
     sf::Time upgradeT;
     sf::Clock upgradeC;
     sf::Sprite hotBarMain;
@@ -302,6 +325,7 @@ int main()
     upgradeButtonT.loadFromFile("resources/UpgradeButton.png");
     sf::Sprite upgradeButtons[9];
     sf::Text upgradeAmnDisps[9];
+    sf::Text upgradeCostDisps[9];
     for(int i = 0; i < 9; i++) {
         int tmp1 = i/3;
         int tmp2 = i%3;
@@ -312,18 +336,22 @@ int main()
         upgradeButtons[i].setPosition(sf::Vector2f(posX,posY));
         upgradeAmnDisps[i].setFont(mainFont);
         upgradeAmnDisps[i].setString("0/5");
-        upgradeAmnDisps[i].setCharacterSize(60);
+        upgradeAmnDisps[i].setCharacterSize(50);
         upgradeAmnDisps[i].setFillColor(sf::Color::Black);
-        upgradeAmnDisps[i].setPosition(sf::Vector2f(posX+127,posY-40));
+        upgradeAmnDisps[i].setPosition(sf::Vector2f(posX+127,posY-35));
+        upgradeCostDisps[i].setFont(mainFont);
+        upgradeCostDisps[i].setString("50");
+        upgradeCostDisps[i].setCharacterSize(50);
+        upgradeCostDisps[i].setFillColor(sf::Color::Black);
+        upgradeCostDisps[i].setPosition(sf::Vector2f(posX-222,posY-35));
     }
-    float enemyM = 10;
     float deltaTime, xV = 0, yV = 0, frict = 0.15;
     float upgradeCD = 0.25;
     bool mouseButton1 = false;
     bool mouseButton2 = false;
     int enemyAmn = 0;
     int deaths = 0;
-    int coins = 1000;
+    int coins = 10000;
     while (window.isOpen()) {
         sf::Event event;
         if(screen == 0) {
@@ -372,14 +400,14 @@ int main()
             //player regen
             player.hp=min(player.maxHP,player.hp+player.regen*deltaTime);
             //enemy spawning
-            enemyT = enemyC.getElapsedTime();
-            if(enemyT.asSeconds() >= enemyM) {
-                enemies.push_back(plane("resources/enemy.png", "resources/shot2.png", "resources/missile.png", 10, 0, 400, 400, 750, 750, 1, 2, 180, 25, 10, 1000, 2000, 30, 5, 1, 125, 50, 100, 10, upgrTmpE,cstTmpE,0));
+            gameTimeT = gameTimeC.getElapsedTime();
+            while(currEnemy < spawningAmn && gameTimeT.asSeconds() >= spawningEnemies[currEnemy].time) {
+                enemies.push_back(enemyTemplate1);
                 enemyAmn++;
+                currEnemy++;
                 for(int i = 0; i < enemyAmn; i++) {
                     enemies[i].body.setTexture(enemies[i].bodyT);
                 }
-                enemyC.restart();
             }
             //enemy AI
             bool bulletDel = false;
@@ -537,6 +565,7 @@ int main()
             for(int i = 0; i < 9; i++) {
                 upgradeButtons[i].move(xV*deltaTime,yV*deltaTime);
                 upgradeAmnDisps[i].move(xV*deltaTime,yV*deltaTime);
+                upgradeCostDisps[i].move(xV*deltaTime,yV*deltaTime);
             }
             window.setView(view1);
             float mx = sf::Mouse::getPosition(window).x;
@@ -550,10 +579,20 @@ int main()
             xV=xV*powf(frict,deltaTime);
             yV=yV*powf(frict,deltaTime);
             if(player.hp <= 0) {
-                player = plane("resources/player.png", "resources/shot.png", "resources/missile.png", 100, 0.5, 2000, 1037, 750, 750, 0.2, 2, 180, 50, 5, 1500, 3000, 30, 10, 2, 250, 50, 100, 100, upgrTmp, cstTmp,5);
+                player = playerTemplate;
                 player.body.setTexture(player.bodyT);
                 view1.setCenter(w/2,h/2);
                 hotBarMain.setPosition(0,0);
+                upgradeScreen.setPosition(0,0);
+                for(int i = 0; i < 9; i++) {
+                    int tmp1 = i/3;
+                    int tmp2 = i%3;
+                    float posX = 228+tmp2*523;
+                    float posY = 444+tmp1*465;
+                    upgradeButtons[i].setPosition(sf::Vector2f(posX,posY));
+                    upgradeAmnDisps[i].setPosition(sf::Vector2f(posX+127,posY-35));
+                    upgradeCostDisps[i].setPosition(sf::Vector2f(posX-222,posY-35));
+                }
                 deaths++;
                 deathAmn.setPosition(363,5);
                 string tmp1;
@@ -619,6 +658,8 @@ int main()
                             if(upgradeT.asSeconds() >= upgradeCD && sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
                                 coins -= player.costs[player.upgradeAmn[i]];
                                 player.incr(i);
+                                playerTemplate.incr(i);
+                                playerTemplate.upgradeAmn[i]++;
                                 player.upgradeAmn[i]++;
                                 string tmp1;
                                 stringstream tmp2;
@@ -630,6 +671,16 @@ int main()
                                 tmp4 << player.upgradeAmn[i] << "/" << player.maxUpgrades;
                                 tmp4 >> tmp3;
                                 upgradeAmnDisps[i].setString(tmp3);
+                                if(player.upgradeAmn[i] < player.maxUpgrades) {
+                                    string tmp5;
+                                    stringstream tmp6;
+                                    tmp6 << player.costs[player.upgradeAmn[i]];
+                                    tmp6 >> tmp5;
+                                    upgradeCostDisps[i].setString(tmp5);
+                                }
+                                else {
+                                    upgradeCostDisps[i].setString("N/A");
+                                }
                                 upgradeC.restart();
                                 break;
                             }
@@ -654,6 +705,7 @@ int main()
             for(int i = 0; i < 9; i++) {
                 window.draw(upgradeButtons[i]);
                 window.draw(upgradeAmnDisps[i]);
+                window.draw(upgradeCostDisps[i]);
             }
             window.display();
         }
