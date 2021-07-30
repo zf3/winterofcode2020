@@ -3,10 +3,9 @@
 #include <vector>
 #include <sstream>
 using namespace std;
-class TileMap : public sf::Drawable, public sf::Transformable
-{
+class TileMap : public sf::Drawable, public sf::Transformable {
 public:
-    bool load(const std::string& tileset, sf::Vector2u tileSize, const int* tiles, unsigned int width, unsigned int height)
+    bool load(const std::string& tileset, sf::Vector2u tileSize, int tiles[100][100], unsigned int width, unsigned int height)
     {
         if (!m_tileset.loadFromFile(tileset)) return false;
         m_vertices.setPrimitiveType(sf::Quads);
@@ -14,7 +13,7 @@ public:
         for (unsigned int i = 0; i < width; ++i)
             for (unsigned int j = 0; j < height; ++j)
             {
-                int tileNumber = tiles[i + j * width];
+                int tileNumber = tiles[j][i];
                 int tu = tileNumber % (m_tileset.getSize().x / tileSize.x);
                 int tv = tileNumber / (m_tileset.getSize().x / tileSize.x);
                 sf::Vertex* quad = &m_vertices[(i + j * width) * 4];
@@ -75,17 +74,19 @@ class missile {
     float explodeD;
     float durM;
     float explodeR;
+    float contactR;
     sf::Time durT;
     sf::Clock durC;
     sf::Texture bodyT;
     sf::Sprite body;
-    missile(string t1, int x, int y, int xVe, int yVe, float shotD, float turnR, float spd, float eD, float dM, float eR) {
+    missile(string t1, int x, int y, int xVe, int yVe, float shotD, float turnR, float spd, float eD, float dM, float eR, float cR) {
         xV = xVe;
         yV = yVe;
         speed = spd;
         shotDmg = shotD;
         turnRadius = turnR;
         explodeD = eD;
+        contactR = cR;
         bodyT.loadFromFile(t1);
         body.setTexture(bodyT);
         body.setOrigin(7,30);
@@ -115,6 +116,7 @@ class plane {
     float explodeD;
     float explodeR;
     float explodeR2;
+    float contactR;
     float regen;
     float xV;
     float yV;
@@ -143,7 +145,7 @@ class plane {
         float ang = (body.getRotation()-90)/180*pi;
         for(int i = 0; i < 6; i++) {
             if(missileAmmo > 0) {
-                missiles.push_back(missile(missileTexture,body.getPosition().x-cos(ang+pi/2)*(23.0*i-57.5), body.getPosition().y-sin(ang+pi/2)*(23.0*i-57.5),missileSpeed*cos(ang),missileSpeed*sin(ang), missileDmg, missileTurn, missileSpeed, explodeD, missileLong, explodeR));
+                missiles.push_back(missile(missileTexture,body.getPosition().x-cos(ang+pi/2)*(23.0*i-57.5), body.getPosition().y-sin(ang+pi/2)*(23.0*i-57.5),missileSpeed*cos(ang),missileSpeed*sin(ang), missileDmg, missileTurn, missileSpeed, explodeD, missileLong, explodeR, contactR));
                 missiles[missileAmn].body.setRotation(body.getRotation());
                 missileAmn++;
                 missileAmmo--;
@@ -181,7 +183,7 @@ class plane {
             missileTurn+=upgrades[8];
         }
     }
-    plane(string t1, string t2, string t3, float hpM, float rg, float spd, float maxS, int x, int y, float shotM, float shotD, float turnR, float missileD, float missileM, float missileS, float shotS, float eD, float mL, float sL, float eR, float eR2, int missileA, int val, float upgrs[9], float csts[10], float maxUpgr) {
+    plane(string t1, string t2, string t3, float hpM, float rg, float spd, float maxS, int x, int y, float shotM, float shotD, float turnR, float missileD, float missileM, float missileS, float shotS, float eD, float mL, float sL, float eR, float cR, float eR2, int missileA, int val, float upgrs[9], float csts[10], float maxUpgr) {
         speed = spd;
         bodyT.loadFromFile(t1);
         shotTexture = t2;
@@ -207,6 +209,7 @@ class plane {
         explodeD = eD;
         explodeR = eR;
         explodeR2 = eR2;
+        contactR = cR;
         maxSpeed = maxS;
         hp = hpM;
         maxHP = hpM;
@@ -244,43 +247,43 @@ int main()
     sf::View view1(sf::FloatRect(0.f, 0.f, 1500.f, 1500.f));
     window.setFramerateLimit(60);
     int screen = 0;
-    const int width = 32, height = 16, sz = 200;
+    const int width = 100, height = 100, sz = 200;
     float upgrTmp[9] = {20,0.1,200,0.02,0.4,600,0.5,2,36};
     float cstTmp[10] = {50,100,150,200,300,0,0,0,0,0};
     float upgrTmpE[9] = {0,0,0,0,0,0,0,0,0};
     float cstTmpE[10] = {0,0,0,0,0,0,0,0,0,0};
-    const int level[] =
-    {
-        0,0,0,0,0,2,6,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-        0,0,0,0,0,2,6,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-        0,0,0,0,0,2,6,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-        1,1,1,1,1,2,6,4,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-        5,5,5,5,5,5,19,5,5,5,5,5,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-        3,3,3,3,3,2,6,4,3,3,3,3,3,0,0,0,0,0,0,0,0,9,8,9,0,9,8,9,0,9,8,9,
-        0,0,0,0,0,2,6,4,0,0,0,0,0,0,0,0,0,0,0,0,0,9,8,9,0,9,8,9,0,9,8,9,
-        0,0,0,0,0,2,6,4,0,0,0,0,0,0,0,0,0,0,0,0,0,9,8,9,0,9,8,9,0,9,8,9,
-        0,0,0,0,0,2,6,4,0,0,0,0,0,0,0,0,0,0,0,0,0,9,8,9,0,9,8,9,0,9,8,9,
-        0,0,0,0,0,0,6,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,8,9,0,9,8,9,0,9,8,9,
-        0,0,0,0,0,0,6,0,0,0,0,0,0,0,0,0,0,24,5,5,7,7,10,7,7,7,10,7,7,7,10,7,
-        0,0,0,0,0,0,6,0,0,0,0,0,0,0,0,24,5,26,0,0,0,9,8,9,0,9,8,9,0,9,8,9,
-        0,0,0,0,0,0,25,5,5,5,5,5,5,5,5,26,0,0,0,0,0,9,8,9,0,9,8,9,0,9,8,9,
-        0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,8,9,0,9,8,9,0,9,8,9,
-        0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,8,9,0,9,8,9,0,9,8,9,
-        0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,8,9,0,9,8,9,0,9,8,9,
-    };
+    int level[height][width];
+    freopen("resources/gameMap1..csv","r",stdin);
+    for(int i = 0; i < height; i++) {
+        for(int j = 0; j < width; j++) {
+            scanf("%d",&level[i][j]);
+        }
+    }
     TileMap map;
     if (!map.load("resources/Tileset.png", sf::Vector2u(sz, sz), level, width, height)) return -1;
-    plane playerTemplate("resources/player.png", "resources/shot.png", "resources/missile.png", 100, 0.5, 2000, 1040, 750, 750, 0.2, 2, 180, 10, 5, 1500, 3000, 30, 10, 2, 250, 50, 100, 100, upgrTmp, cstTmp, 5);
+    plane playerTemplate("resources/player.png", "resources/shot.png", "resources/missile.png", 100, 0.5, 2000, 1040, 750, 750, 0.2, 2, 180, 10, 5, 1500, 3000, 10, 10, 2.5, 250, 50, 50, 100, 100, upgrTmp, cstTmp, 5);
     plane player = playerTemplate;
-    plane enemyTemplate1("resources/enemy.png", "resources/shot2.png", "resources/missile.png", 10, 0, 400, 400, 750, 750, 1, 2, 180, 25, 10, 1000, 2000, 30, 5, 1, 125, 50, 100, 10, upgrTmpE,cstTmpE,0);
+    plane enemyTemplate1("resources/enemy1.png", "resources/shot2.png", "resources/missile.png", 50, 0, 400, 400, 750, 750, 1, 2, 180, 25, 10, 1000, 2000, 30, 5, 1, 125, 25, 50, 100, 25, upgrTmpE,cstTmpE,0);
+    plane enemyTemplate2("resources/enemy2.png", "resources/shot3.png", "resources/missile.png", 100, 0, 400, 350, 750, 750, 0.5, 10, 180, 25, 10, 1000, 2000, 30, 5, 1, 125, 25, 75, 100, 50, upgrTmpE,cstTmpE,0);
+    plane enemyTemplate3("resources/enemy3.png", "resources/shot4.png", "resources/missile.png", 250, 0, 200, 300, 750, 750, 1, 25, 90, 25, 10, 1000, 1000, 30, 5, 4, 125, 25, 100, 100, 125, upgrTmpE,cstTmpE,0);
     vector<plane> enemies;
     vector<spawnPlane> spawningEnemies;
-    int spawningAmn = 5, currEnemy = 0;
+    int spawningAmn = 15, currEnemy = 0;
     spawningEnemies.push_back(spawnPlane(2,750,750,enemyTemplate1));
     spawningEnemies.push_back(spawnPlane(4,750,750,enemyTemplate1));
     spawningEnemies.push_back(spawnPlane(6,750,750,enemyTemplate1));
     spawningEnemies.push_back(spawnPlane(8,750,750,enemyTemplate1));
     spawningEnemies.push_back(spawnPlane(10,750,750,enemyTemplate1));
+    spawningEnemies.push_back(spawnPlane(12,750,750,enemyTemplate2));
+    spawningEnemies.push_back(spawnPlane(14,750,750,enemyTemplate2));
+    spawningEnemies.push_back(spawnPlane(16,750,750,enemyTemplate2));
+    spawningEnemies.push_back(spawnPlane(18,750,750,enemyTemplate2));
+    spawningEnemies.push_back(spawnPlane(20,750,750,enemyTemplate2));
+    spawningEnemies.push_back(spawnPlane(22,750,750,enemyTemplate3));
+    spawningEnemies.push_back(spawnPlane(24,750,750,enemyTemplate3));
+    spawningEnemies.push_back(spawnPlane(26,750,750,enemyTemplate3));
+    spawningEnemies.push_back(spawnPlane(28,750,750,enemyTemplate3));
+    spawningEnemies.push_back(spawnPlane(30,750,750,enemyTemplate3));
     sf::Clock gameTimeC;
     sf::Time gameTimeT;
     sf::Font mainFont;
@@ -293,7 +296,7 @@ int main()
     deathAmn.setPosition(sf::Vector2f(363,5));
     sf::Text coinAmn;
     coinAmn.setFont(mainFont);
-    coinAmn.setString("10000");
+    coinAmn.setString("0");
     coinAmn.setCharacterSize(80);
     coinAmn.setFillColor(sf::Color::Black);
     coinAmn.setPosition(sf::Vector2f(293,97));
@@ -351,7 +354,7 @@ int main()
     bool mouseButton2 = false;
     int enemyAmn = 0;
     int deaths = 0;
-    int coins = 10000;
+    int coins = 0;
     while (window.isOpen()) {
         sf::Event event;
         if(screen == 0) {
@@ -402,7 +405,7 @@ int main()
             //enemy spawning
             gameTimeT = gameTimeC.getElapsedTime();
             while(currEnemy < spawningAmn && gameTimeT.asSeconds() >= spawningEnemies[currEnemy].time) {
-                enemies.push_back(enemyTemplate1);
+                enemies.push_back(spawningEnemies[currEnemy].spawned);
                 enemyAmn++;
                 currEnemy++;
                 for(int i = 0; i < enemyAmn; i++) {
@@ -536,7 +539,7 @@ int main()
                 player.missiles[i].yV = player.missiles[i].speed*sin((changeA)/180*pi);
                 player.missiles[i].body.move(player.missiles[i].xV*deltaTime,player.missiles[i].yV*deltaTime);
                 player.missiles[i].durT = player.missiles[i].durC.getElapsedTime();
-                if(sqrtf((mx-bx)*(mx-bx)+(my-by)*(my-by)) < player.missiles[i].explodeD || player.missiles[i].durT.asSeconds() >= player.missiles[i].durM) {
+                if(sqrtf((mx-bx)*(mx-bx)+(my-by)*(my-by)) < player.missiles[i].contactR || player.missiles[i].durT.asSeconds() >= player.missiles[i].durM) {
                     for(int j = 0; j < enemyAmn; j++) {
                         float ex = enemies[j].body.getPosition().x;
                         float ey = enemies[j].body.getPosition().y;
@@ -710,5 +713,6 @@ int main()
             window.display();
         }
     }
+    fclose(stdin);
     return 0;
 }
