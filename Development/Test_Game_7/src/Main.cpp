@@ -269,21 +269,21 @@ int main()
     vector<plane> enemies;
     vector<spawnPlane> spawningEnemies;
     int spawningAmn = 15, currEnemy = 0;
-    spawningEnemies.push_back(spawnPlane(2,750,750,enemyTemplate1));
-    spawningEnemies.push_back(spawnPlane(4,750,750,enemyTemplate1));
-    spawningEnemies.push_back(spawnPlane(6,750,750,enemyTemplate1));
-    spawningEnemies.push_back(spawnPlane(8,750,750,enemyTemplate1));
-    spawningEnemies.push_back(spawnPlane(10,750,750,enemyTemplate1));
-    spawningEnemies.push_back(spawnPlane(12,750,750,enemyTemplate2));
-    spawningEnemies.push_back(spawnPlane(14,750,750,enemyTemplate2));
-    spawningEnemies.push_back(spawnPlane(16,750,750,enemyTemplate2));
-    spawningEnemies.push_back(spawnPlane(18,750,750,enemyTemplate2));
-    spawningEnemies.push_back(spawnPlane(20,750,750,enemyTemplate2));
-    spawningEnemies.push_back(spawnPlane(22,750,750,enemyTemplate3));
-    spawningEnemies.push_back(spawnPlane(24,750,750,enemyTemplate3));
-    spawningEnemies.push_back(spawnPlane(26,750,750,enemyTemplate3));
-    spawningEnemies.push_back(spawnPlane(28,750,750,enemyTemplate3));
-    spawningEnemies.push_back(spawnPlane(30,750,750,enemyTemplate3));
+    spawningEnemies.push_back(spawnPlane(10,3600,1800,enemyTemplate1));
+    spawningEnemies.push_back(spawnPlane(12,4600,1800,enemyTemplate1));
+    spawningEnemies.push_back(spawnPlane(14,3600,1200,enemyTemplate1));
+    spawningEnemies.push_back(spawnPlane(16,2200,1200,enemyTemplate1));
+    spawningEnemies.push_back(spawnPlane(18,2200,2200,enemyTemplate2));
+    spawningEnemies.push_back(spawnPlane(30,5600,14200,enemyTemplate1));
+    spawningEnemies.push_back(spawnPlane(32,4600,14200,enemyTemplate1));
+    spawningEnemies.push_back(spawnPlane(34,5600,13600,enemyTemplate1));
+    spawningEnemies.push_back(spawnPlane(36,5600,15800,enemyTemplate1));
+    spawningEnemies.push_back(spawnPlane(38,6600,14200,enemyTemplate2));
+    spawningEnemies.push_back(spawnPlane(50,14200,11600,enemyTemplate1));
+    spawningEnemies.push_back(spawnPlane(52,13200,11600,enemyTemplate2));
+    spawningEnemies.push_back(spawnPlane(54,15800,11600,enemyTemplate1));
+    spawningEnemies.push_back(spawnPlane(56,14200,10800,enemyTemplate2));
+    spawningEnemies.push_back(spawnPlane(58,14200,13200,enemyTemplate3));
     sf::Clock gameTimeC;
     sf::Time gameTimeT;
     sf::Font mainFont;
@@ -406,6 +406,7 @@ int main()
             gameTimeT = gameTimeC.getElapsedTime();
             while(currEnemy < spawningAmn && gameTimeT.asSeconds() >= spawningEnemies[currEnemy].time) {
                 enemies.push_back(spawningEnemies[currEnemy].spawned);
+                enemies[enemyAmn].body.setPosition(sf::Vector2f(spawningEnemies[currEnemy].x,spawningEnemies[currEnemy].y));
                 enemyAmn++;
                 currEnemy++;
                 for(int i = 0; i < enemyAmn; i++) {
