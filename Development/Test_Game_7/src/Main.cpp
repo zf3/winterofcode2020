@@ -441,7 +441,14 @@ int main()
                 enemies[i].body.setRotation(changeA+90);
                 enemies[i].xV = enemies[i].speed*cos((changeA)/180*pi);
                 enemies[i].yV = enemies[i].speed*sin((changeA)/180*pi);
-                enemies[i].body.move(enemies[i].xV*deltaTime,enemies[i].yV*deltaTime);
+                float cX = enemies[i].body.getPosition().x+enemies[i].xV*deltaTime;
+                float cY = enemies[i].body.getPosition().y+enemies[i].yV*deltaTime;
+                if(cX > 0 && cX < width*sz) {
+                    enemies[i].body.move(enemies[i].xV*deltaTime,0);
+                }
+                if(cY > 0 && cY < height*sz) {
+                    enemies[i].body.move(0,enemies[i].yV*deltaTime);
+                }
                 //shooting
                 enemies[i].shotT = enemies[i].shotC.getElapsedTime();
                 if(changeA == angle && enemies[i].shotT.asSeconds() >= enemies[i].shotCooldown) {
@@ -476,17 +483,17 @@ int main()
                 }
                 //death
                 if(enemies[i].hp <= 0) {
-                    enemies.erase(enemies.begin()+i);
-                    enemyAmn--;
-                    for(int j = 0; j < enemyAmn; j++) {
-                        enemies[j].body.setTexture(enemies[j].bodyT);
-                    }
                     coins+=enemies[i].value;
                     string tmp1;
                     stringstream tmp2;
                     tmp2 << coins;
                     tmp2 >> tmp1;
                     coinAmn.setString(tmp1);
+                    enemies.erase(enemies.begin()+i);
+                    enemyAmn--;
+                    for(int j = 0; j < enemyAmn; j++) {
+                        enemies[j].body.setTexture(enemies[j].bodyT);
+                    }
                 }
             }
             //bullet AI
@@ -556,20 +563,41 @@ int main()
                 }
             }
             //player AI
-            player.body.move(xV*deltaTime,yV*deltaTime);
-            view1.move(xV*deltaTime,yV*deltaTime);
-            hotBarMain.move(xV*deltaTime,yV*deltaTime);
-            hotBar1.move(xV*deltaTime,yV*deltaTime);
-            hotBar2.move(xV*deltaTime,yV*deltaTime);
-            hotBar3.move(xV*deltaTime,yV*deltaTime);
-            hotBar4.move(xV*deltaTime,yV*deltaTime);
-            deathAmn.move(xV*deltaTime,yV*deltaTime);
-            coinAmn.move(xV*deltaTime,yV*deltaTime);
-            upgradeScreen.move(xV*deltaTime,yV*deltaTime);
-            for(int i = 0; i < 9; i++) {
-                upgradeButtons[i].move(xV*deltaTime,yV*deltaTime);
-                upgradeAmnDisps[i].move(xV*deltaTime,yV*deltaTime);
-                upgradeCostDisps[i].move(xV*deltaTime,yV*deltaTime);
+            float cX = player.body.getPosition().x+xV*deltaTime;
+            float cY = player.body.getPosition().y+yV*deltaTime;
+            if(cX > 0 && cX < width*sz) {
+                player.body.move(xV*deltaTime,0);
+                view1.move(xV*deltaTime,0);
+                hotBarMain.move(xV*deltaTime,0);
+                hotBar1.move(xV*deltaTime,0);
+                hotBar2.move(xV*deltaTime,0);
+                hotBar3.move(xV*deltaTime,0);
+                hotBar4.move(xV*deltaTime,0);
+                deathAmn.move(xV*deltaTime,0);
+                coinAmn.move(xV*deltaTime,0);
+                upgradeScreen.move(xV*deltaTime,0);
+                for(int i = 0; i < 9; i++) {
+                    upgradeButtons[i].move(xV*deltaTime,0);
+                    upgradeAmnDisps[i].move(xV*deltaTime,0);
+                    upgradeCostDisps[i].move(xV*deltaTime,0);
+                }
+            }
+            if(cY > 0 && cY < height*sz) {
+                player.body.move(0,yV*deltaTime);
+                view1.move(0,yV*deltaTime);
+                hotBarMain.move(0,yV*deltaTime);
+                hotBar1.move(0,yV*deltaTime);
+                hotBar2.move(0,yV*deltaTime);
+                hotBar3.move(0,yV*deltaTime);
+                hotBar4.move(0,yV*deltaTime);
+                deathAmn.move(0,yV*deltaTime);
+                coinAmn.move(0,yV*deltaTime);
+                upgradeScreen.move(0,yV*deltaTime);
+                for(int i = 0; i < 9; i++) {
+                    upgradeButtons[i].move(0,yV*deltaTime);
+                    upgradeAmnDisps[i].move(0,yV*deltaTime);
+                    upgradeCostDisps[i].move(0,yV*deltaTime);
+                }
             }
             window.setView(view1);
             float mx = sf::Mouse::getPosition(window).x;
