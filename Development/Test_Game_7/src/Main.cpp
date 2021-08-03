@@ -253,12 +253,13 @@ int main()
     float upgrTmpE[9] = {0,0,0,0,0,0,0,0,0};
     float cstTmpE[10] = {0,0,0,0,0,0,0,0,0,0};
     int level[height][width];
-    freopen("resources/gameMap1..csv","r",stdin);
+    freopen("resources/gameMap1.csv","r",stdin);
     for(int i = 0; i < height; i++) {
         for(int j = 0; j < width; j++) {
             scanf("%d",&level[i][j]);
         }
     }
+    fclose(stdin);
     TileMap map;
     if (!map.load("resources/Tileset.png", sf::Vector2u(sz, sz), level, width, height)) return -1;
     plane playerTemplate("resources/player.png", "resources/shot.png", "resources/missile.png", 100, 0.5, 2000, 1040, 750, 750, 0.2, 2, 180, 10, 5, 1500, 3000, 10, 10, 2.5, 250, 50, 50, 100, 100, upgrTmp, cstTmp, 5);
@@ -268,22 +269,17 @@ int main()
     plane enemyTemplate3("resources/enemy3.png", "resources/shot4.png", "resources/missile.png", 250, 0, 200, 300, 750, 750, 1, 25, 90, 25, 10, 1000, 1000, 30, 5, 4, 125, 25, 100, 100, 125, upgrTmpE,cstTmpE,0);
     vector<plane> enemies;
     vector<spawnPlane> spawningEnemies;
-    int spawningAmn = 15, currEnemy = 0;
-    spawningEnemies.push_back(spawnPlane(10,3600,1800,enemyTemplate1));
-    spawningEnemies.push_back(spawnPlane(12,4600,1800,enemyTemplate1));
-    spawningEnemies.push_back(spawnPlane(14,3600,1200,enemyTemplate1));
-    spawningEnemies.push_back(spawnPlane(16,2200,1200,enemyTemplate1));
-    spawningEnemies.push_back(spawnPlane(18,2200,2200,enemyTemplate2));
-    spawningEnemies.push_back(spawnPlane(30,5600,14200,enemyTemplate1));
-    spawningEnemies.push_back(spawnPlane(32,4600,14200,enemyTemplate1));
-    spawningEnemies.push_back(spawnPlane(34,5600,13600,enemyTemplate1));
-    spawningEnemies.push_back(spawnPlane(36,5600,15800,enemyTemplate1));
-    spawningEnemies.push_back(spawnPlane(38,6600,14200,enemyTemplate2));
-    spawningEnemies.push_back(spawnPlane(50,14200,11600,enemyTemplate1));
-    spawningEnemies.push_back(spawnPlane(52,13200,11600,enemyTemplate2));
-    spawningEnemies.push_back(spawnPlane(54,15800,11600,enemyTemplate1));
-    spawningEnemies.push_back(spawnPlane(56,14200,10800,enemyTemplate2));
-    spawningEnemies.push_back(spawnPlane(58,14200,13200,enemyTemplate3));
+    int spawningAmn = 0, currEnemy = 0;
+    freopen("resources/enemies1.txt","r",stdin);
+    scanf("%d",&spawningAmn);
+    for(int i = 0; i < spawningAmn; i++) {
+        int a,b,c,d;
+        scanf("%d%d%d%d",&a,&b,&c,&d);
+        if(d == 1) spawningEnemies.push_back(spawnPlane(a,b,c,enemyTemplate1));
+        if(d == 2) spawningEnemies.push_back(spawnPlane(a,b,c,enemyTemplate2));
+        if(d == 3) spawningEnemies.push_back(spawnPlane(a,b,c,enemyTemplate3));
+    }
+    fclose(stdin);
     sf::Clock gameTimeC;
     sf::Time gameTimeT;
     sf::Font mainFont;
@@ -310,6 +306,8 @@ int main()
     sf::Clock upgradeC;
     sf::Sprite hotBarMain;
     sf::Texture hotBarMainT;
+    sf::Clock upgradeEnterC;
+    sf::Time upgradeEnterT;
     hotBarMainT.loadFromFile("resources/GameScreen.png");
     hotBarMain.setTexture(hotBarMainT);
     sf::RectangleShape hotBar1(sf::Vector2f(956,97));
@@ -324,6 +322,16 @@ int main()
     sf::RectangleShape hotBar4(sf::Vector2f(233,43));
     hotBar4.setPosition(1264,107);
     hotBar4.setFillColor(sf::Color(224,224,32));
+    sf::Texture completionScreenT;
+    completionScreenT.loadFromFile("resources/CompletionScreen.png");
+    sf::Sprite completionScreen;
+    completionScreen.setTexture(completionScreenT);
+    sf::Texture nextMissionT;
+    nextMissionT.loadFromFile("resources/nextMission.png");
+    sf::Sprite nextMission;
+    nextMission.setTexture(nextMissionT);
+    nextMission.setOrigin(1400,90);
+    nextMission.setPosition(1400,90);
     sf::Texture upgradeButtonT;
     upgradeButtonT.loadFromFile("resources/UpgradeButton.png");
     sf::Sprite upgradeButtons[9];
@@ -350,8 +358,10 @@ int main()
     }
     float deltaTime, xV = 0, yV = 0, frict = 0.15;
     float upgradeCD = 0.25;
+    float enterTime = 5;
     bool mouseButton1 = false;
     bool mouseButton2 = false;
+    bool isEnter = false;
     int enemyAmn = 0;
     int deaths = 0;
     int coins = 0;
@@ -372,13 +382,16 @@ int main()
                     mouseButton2 = false;
                 }
                 upgradeT = upgradeC.getElapsedTime();
-                if(upgradeT.asSeconds() >= upgradeCD && sf::Keyboard::isKeyPressed(sf::Keyboard::Key::M)) {
-                    screen = 1;
-                    upgradeC.restart();
-                }
                 if(event.type == sf::Event::Closed) {
                     window.close();
                 }
+            }
+            //upgrade entry
+            upgradeEnterT = upgradeEnterC.getElapsedTime();
+            if(isEnter == true && upgradeEnterT.asSeconds() >= enterTime) {
+                screen = 1;
+                isEnter = false;
+                upgradeC.restart();
             }
             //bullet shooting
             player.shotT = player.shotC.getElapsedTime();
@@ -494,6 +507,10 @@ int main()
                     for(int j = 0; j < enemyAmn; j++) {
                         enemies[j].body.setTexture(enemies[j].bodyT);
                     }
+                    if(enemyAmn == 0 && currEnemy == spawningAmn) {
+                        upgradeEnterC.restart();
+                        isEnter = true;
+                    }
                 }
             }
             //bullet AI
@@ -576,6 +593,8 @@ int main()
                 deathAmn.move(xV*deltaTime,0);
                 coinAmn.move(xV*deltaTime,0);
                 upgradeScreen.move(xV*deltaTime,0);
+                completionScreen.move(xV*deltaTime,0);
+                nextMission.move(xV*deltaTime,0);
                 for(int i = 0; i < 9; i++) {
                     upgradeButtons[i].move(xV*deltaTime,0);
                     upgradeAmnDisps[i].move(xV*deltaTime,0);
@@ -593,6 +612,8 @@ int main()
                 deathAmn.move(0,yV*deltaTime);
                 coinAmn.move(0,yV*deltaTime);
                 upgradeScreen.move(0,yV*deltaTime);
+                completionScreen.move(0,yV*deltaTime);
+                nextMission.move(0,yV*deltaTime);
                 for(int i = 0; i < 9; i++) {
                     upgradeButtons[i].move(0,yV*deltaTime);
                     upgradeAmnDisps[i].move(0,yV*deltaTime);
@@ -627,12 +648,15 @@ int main()
                 }
                 deaths++;
                 deathAmn.setPosition(363,5);
+                nextMission.setOrigin(1400,90);
+                nextMission.setPosition(1400,90);
+                coinAmn.setPosition(293,97);
+                completionScreen.setPosition(0,0);
                 string tmp1;
                 stringstream tmp2;
                 tmp2 << deaths;
                 tmp2 >> tmp1;
                 deathAmn.setString(tmp1);
-                coinAmn.setPosition(293,97);
             }
             //status bars
             float h1 = player.hp/player.maxHP*956;
@@ -671,60 +695,118 @@ int main()
             window.draw(hotBar4);
             window.draw(deathAmn);
             window.draw(coinAmn);
+            if(isEnter == true) {
+                window.draw(completionScreen);
+            }
             window.display();
         }
         if(screen == 1) {
             while(window.pollEvent(event)) {
                 upgradeT = upgradeC.getElapsedTime();
-                    float mx = sf::Mouse::getPosition(window).x;
-                    float my = sf::Mouse::getPosition(window).y;
-                    for(int i = 0; i < 9; i++) {
-                        int tmp1 = i/3;
-                        int tmp2 = i%3;
-                        float minX = 126+tmp2*523;
-                        float minY = 342+tmp1*465;
-                        float maxX = minX+204;
-                        float maxY = minY+204;
-                        if(player.upgradeAmn[i] < player.maxUpgrades && player.costs[player.upgradeAmn[i]] <= coins && mx >= minX && my >= minY && mx <= maxX && my <= maxY) {
-                            upgradeButtons[i].setScale(1.2,1.2);
-                            if(upgradeT.asSeconds() >= upgradeCD && sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
-                                coins -= player.costs[player.upgradeAmn[i]];
-                                player.incr(i);
-                                playerTemplate.incr(i);
-                                playerTemplate.upgradeAmn[i]++;
-                                player.upgradeAmn[i]++;
-                                string tmp1;
-                                stringstream tmp2;
-                                tmp2 << coins;
-                                tmp2 >> tmp1;
-                                coinAmn.setString(tmp1);
-                                string tmp3;
-                                stringstream tmp4;
-                                tmp4 << player.upgradeAmn[i] << "/" << player.maxUpgrades;
-                                tmp4 >> tmp3;
-                                upgradeAmnDisps[i].setString(tmp3);
-                                if(player.upgradeAmn[i] < player.maxUpgrades) {
-                                    string tmp5;
-                                    stringstream tmp6;
-                                    tmp6 << player.costs[player.upgradeAmn[i]];
-                                    tmp6 >> tmp5;
-                                    upgradeCostDisps[i].setString(tmp5);
-                                }
-                                else {
-                                    upgradeCostDisps[i].setString("N/A");
-                                }
-                                upgradeC.restart();
-                                break;
+                float mx = sf::Mouse::getPosition(window).x;
+                float my = sf::Mouse::getPosition(window).y;
+                if(mx > 1255 && my < 182) {
+                    nextMission.setScale(1.1,1.1);
+                    if(event.type == sf::Event::MouseButtonPressed && event.mouseButton.button == sf::Mouse::Left) {
+                        //respawning
+                        player = playerTemplate;
+                        player.body.setTexture(player.bodyT);
+                        view1.setCenter(w/2,h/2);
+                        hotBarMain.setPosition(0,0);
+                        upgradeScreen.setPosition(0,0);
+                        for(int i = 0; i < 9; i++) {
+                            int tmp1 = i/3;
+                            int tmp2 = i%3;
+                            float posX = 228+tmp2*523;
+                            float posY = 444+tmp1*465;
+                            upgradeButtons[i].setPosition(sf::Vector2f(posX,posY));
+                            upgradeAmnDisps[i].setPosition(sf::Vector2f(posX+127,posY-35));
+                            upgradeCostDisps[i].setPosition(sf::Vector2f(posX-222,posY-35));
+                        }
+                        deathAmn.setPosition(363,5);
+                        nextMission.setOrigin(1400,90);
+                        nextMission.setPosition(1400,90);
+                        completionScreen.setPosition(0,0);
+                        coinAmn.setPosition(293,97);
+                        string tmp1;
+                        stringstream tmp2;
+                        tmp2 << deaths;
+                        tmp2 >> tmp1;
+                        deathAmn.setString(tmp1);
+                        //map loading
+                        gameTimeC.restart();
+                        for(int i = 0; i < spawningAmn; i++) {
+                            spawningEnemies.pop_back();
+                        }
+                        freopen("resources/gameMap2.csv","r",stdin);
+                        for(int i = 0; i < height; i++) {
+                            for(int j = 0; j < width; j++) {
+                                scanf("%d",&level[i][j]);
                             }
                         }
-                        else {
-                            upgradeButtons[i].setScale(1,1);
+                        if (!map.load("resources/Tileset.png", sf::Vector2u(sz, sz), level, width, height)) return -1;
+                        fclose(stdin);
+                        currEnemy = 0;
+                        freopen("resources/enemies2.txt","r",stdin);
+                        scanf("%d",&spawningAmn);
+                        for(int i = 0; i < spawningAmn; i++) {
+                            int a,b,c,d;
+                            scanf("%d%d%d%d",&a,&b,&c,&d);
+                            if(d == 1) spawningEnemies.push_back(spawnPlane(a,b,c,enemyTemplate1));
+                            if(d == 2) spawningEnemies.push_back(spawnPlane(a,b,c,enemyTemplate2));
+                            if(d == 3) spawningEnemies.push_back(spawnPlane(a,b,c,enemyTemplate3));
+                        }
+                        fclose(stdin);
+                        //entering next level
+                        screen = 0;
+                        deaths = 0;
+                    }
+                }
+                else {
+                    nextMission.setScale(1,1);
+                }
+                for(int i = 0; i < 9; i++) {
+                    int tmp1 = i/3;
+                    int tmp2 = i%3;
+                    float minX = 126+tmp2*523;
+                    float minY = 342+tmp1*465;
+                    float maxX = minX+204;
+                    float maxY = minY+204;
+                    if(player.upgradeAmn[i] < player.maxUpgrades && player.costs[player.upgradeAmn[i]] <= coins && mx >= minX && my >= minY && mx <= maxX && my <= maxY) {
+                        upgradeButtons[i].setScale(1.2,1.2);
+                        if(upgradeT.asSeconds() >= upgradeCD && sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
+                            coins -= player.costs[player.upgradeAmn[i]];
+                            player.incr(i);
+                            playerTemplate.incr(i);
+                            playerTemplate.upgradeAmn[i]++;
+                            player.upgradeAmn[i]++;
+                            string tmp1;
+                            stringstream tmp2;
+                            tmp2 << coins;
+                            tmp2 >> tmp1;
+                            coinAmn.setString(tmp1);
+                            string tmp3;
+                            stringstream tmp4;
+                            tmp4 << player.upgradeAmn[i] << "/" << player.maxUpgrades;
+                            tmp4 >> tmp3;
+                            upgradeAmnDisps[i].setString(tmp3);
+                            if(player.upgradeAmn[i] < player.maxUpgrades) {
+                                string tmp5;
+                                stringstream tmp6;
+                                tmp6 << player.costs[player.upgradeAmn[i]];
+                                tmp6 >> tmp5;
+                                upgradeCostDisps[i].setString(tmp5);
+                            }
+                            else {
+                                upgradeCostDisps[i].setString("N/A");
+                            }
+                            upgradeC.restart();
+                            break;
                         }
                     }
-                if(upgradeT.asSeconds() >= upgradeCD && sf::Keyboard::isKeyPressed(sf::Keyboard::Key::M)) {
-                    deltaTimeC.restart();
-                    screen = 0;
-                    upgradeC.restart();
+                    else {
+                        upgradeButtons[i].setScale(1,1);
+                    }
                 }
                 if(event.type == sf::Event::Closed) {
                     window.close();
@@ -734,6 +816,7 @@ int main()
             window.draw(upgradeScreen);
             window.draw(coinAmn);
             window.draw(deathAmn);
+            window.draw(nextMission);
             for(int i = 0; i < 9; i++) {
                 window.draw(upgradeButtons[i]);
                 window.draw(upgradeAmnDisps[i]);
@@ -742,6 +825,5 @@ int main()
             window.display();
         }
     }
-    fclose(stdin);
     return 0;
 }
