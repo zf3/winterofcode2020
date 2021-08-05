@@ -363,6 +363,7 @@ int main()
     bool mouseButton2 = false;
     bool isEnter = false;
     int enemyAmn = 0;
+    int nextMap = 2;
     int deaths = 0;
     int coins = 0;
     while (window.isOpen()) {
@@ -738,7 +739,17 @@ int main()
                         for(int i = 0; i < spawningAmn; i++) {
                             spawningEnemies.pop_back();
                         }
-                        freopen("resources/gameMap2.csv","r",stdin);
+                        stringstream tmp3;
+                        string tmp4;
+                        tmp3 << "resources/gameMap" << nextMap << ".csv";
+                        tmp3 >> tmp4;
+                        stringstream tmp5;
+                        string tmp6;
+                        tmp5 << "resources/enemies" << nextMap << ".txt";
+                        tmp5 >> tmp6;
+                        const char * tmp7 = tmp4.c_str();
+                        const char * tmp8 = tmp6.c_str();
+                        freopen(tmp7,"r",stdin);
                         for(int i = 0; i < height; i++) {
                             for(int j = 0; j < width; j++) {
                                 scanf("%d",&level[i][j]);
@@ -747,7 +758,7 @@ int main()
                         if (!map.load("resources/Tileset.png", sf::Vector2u(sz, sz), level, width, height)) return -1;
                         fclose(stdin);
                         currEnemy = 0;
-                        freopen("resources/enemies2.txt","r",stdin);
+                        freopen(tmp8,"r",stdin);
                         scanf("%d",&spawningAmn);
                         for(int i = 0; i < spawningAmn; i++) {
                             int a,b,c,d;
@@ -757,6 +768,7 @@ int main()
                             if(d == 3) spawningEnemies.push_back(spawnPlane(a,b,c,enemyTemplate3));
                         }
                         fclose(stdin);
+                        nextMap++;
                         //entering next level
                         screen = 0;
                         deaths = 0;
